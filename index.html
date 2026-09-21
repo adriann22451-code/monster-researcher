@@ -227,6 +227,9 @@ svg{display:block}
 .mon.img{position:relative}
 .mon.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
 .mon.img .fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+/* size image monsters by aspect-ratio, not percent height (percent height collapses to 0 in some browsers, e.g. iOS Safari) */
+.tile .mini .mon.img{height:auto;aspect-ratio:1/1}
+.plate .mon.img{height:auto;aspect-ratio:1/1}
 .mon.img.f-ancient img{filter:grayscale(.5) sepia(.35)}
 .mon.img.f-corrupted img.base{filter:hue-rotate(-70deg) saturate(1.5) contrast(1.1)}
 .mon.img.f-corrupted img.ghost{filter:hue-rotate(170deg) saturate(2.4);opacity:.6;transform:translate(4%,-2%);
