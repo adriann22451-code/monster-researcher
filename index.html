@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Monster Research Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E7EFEC; --surface:#F7FBF9; --surface2:#D8E5E0; --ink:#14303A; --ink2:#496770; --line:#B7CCC5;
+  --lamp:#F0A22E; --lampink:#33200A; --moss:#2F7D5B; --signal:#D24B3E;
+  --plate:#10262E; --plateline:#2A4C57;
+  --display:"Bricolage Grotesque","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme: light dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14303A; --surface:#1B3E4A; --surface2:#25505E; --ink:#E4F0EC; --ink2:#9FBDB7; --line:#33606D;
+    --lamp:#F4B04A; --lampink:#33200A; --moss:#5BC49A; --signal:#F07A6D;
+    --plate:#0B1B21; --plateline:#33606D;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14303A; --surface:#1B3E4A; --surface2:#25505E; --ink:#E4F0EC; --ink2:#9FBDB7; --line:#33606D;
+  --lamp:#F4B04A; --lampink:#33200A; --moss:#5BC49A; --signal:#F07A6D;
+  --plate:#0B1B21; --plateline:#33606D;
+}
+*{box-sizing:border-box}
+html{height:100%;-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--body);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
+button:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 28px}
+@media (min-width:520px){.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+svg{display:block}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:10px;padding:14px 0 10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+.top h2{font:700 22px/1 var(--display);flex:1;letter-spacing:-.01em}
+.back{width:40px;height:40px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none}
+.back svg{width:22px;height:22px}
+.res{display:flex;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 11px 5px 8px;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.dot.coin{background:var(--lamp)}
+.dot.dp{background:var(--moss);border-radius:3px;transform:rotate(45deg) scale(.85)}
+
+/* home */
+.hero h1{font:800 clamp(30px,9vw,40px)/1 var(--display);letter-spacing:-.02em;margin:22px 0 6px}
+.hero p{color:var(--ink2)}
+.labart{width:100%;height:auto;margin:10px 0 8px}
+.labart .dish{transform-origin:142px 42px;animation:sway 6s ease-in-out infinite}
+.labart .sig{animation:pulse 2.4s ease-out infinite;opacity:0}
+.labart .sig2{animation-delay:.8s}
+@keyframes sway{50%{transform:rotate(14deg)}}
+@keyframes pulse{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--surface);border-radius:24px;padding:16px 18px}
+.big .n{font:800 54px/1 var(--display);letter-spacing:-.03em}
+.big .of{font:600 20px var(--display);color:var(--ink2);margin-left:5px}
+.big .lb{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
+.rs .rt{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+.rs .rt b{font:700 20px var(--display)}
+.mini-res{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.menu{display:grid;gap:10px;margin-top:14px}
+.mrow{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);min-height:70px;position:relative;transition:transform .12s}
+.mrow:active{transform:scale(.985)}
+.mi{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:#fff;flex:none}
+.mi svg{width:24px;height:24px}
+.mt{font:700 18px/1.1 var(--display)}
+.ms{font-size:14px;color:var(--ink2);margin-top:2px}
+.badge{position:absolute;right:14px;top:50%;margin-top:-6px;width:12px;height:12px;border-radius:50%;background:var(--lamp);box-shadow:0 0 0 4px color-mix(in srgb,var(--lamp) 30%,transparent)}
+
+/* bars */
+.bar{position:relative;height:10px;border-radius:99px;background:var(--surface2);margin:8px 0}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--moss);transition:width .5s}
+.bar b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--surface);opacity:.9}
+.bar.sm{height:6px;margin:4px 0 0}
+.bar.sm b{display:none}
+
+/* explore */
+.locs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.loc{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:20px;background:var(--surface);border:2px solid transparent;min-height:118px}
+.loc.sel{border-color:var(--ink);background:color-mix(in srgb,var(--tint) 16%,var(--surface))}
+.loc .lic{width:38px;height:38px;border-radius:12px;background:var(--tint);color:#fff;display:grid;place-items:center}
+.loc .lic svg{width:22px;height:22px}
+.loc .ln{font:700 17px/1.1 var(--display)}
+.loc .lb{font-size:13px;color:var(--ink2);line-height:1.3}
+.loc.locked{opacity:.72}
+.loc.locked .lic{background:var(--surface2);color:var(--ink2)}
+.dock{position:sticky;bottom:0;margin:14px -16px 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,transparent,var(--bg) 32%)}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;padding:0 18px;border-radius:18px;background:var(--lamp);color:var(--lampink);font:700 18px/1 var(--display);text-align:center}
+.cta.ghost{background:var(--surface2);color:var(--ink)}
+.cta[aria-disabled="true"]{opacity:.5}
+.cta:active{transform:scale(.985)}
+.linkbtn{display:block;margin:12px auto 0;padding:8px 14px;font-weight:600;color:var(--ink2);text-decoration:underline;text-underline-offset:3px}
+
+/* plate */
+.plate{position:relative;width:min(76vw,290px);aspect-ratio:1;margin:6px auto 14px;border-radius:50%;
+  background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--plate) 82%,#5fe0c4) 0%,var(--plate) 72%);
+  border:3px solid var(--plateline);overflow:hidden;display:grid;place-items:center}
+.plate::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+   linear-gradient(90deg,transparent calc(50% - .5px),rgba(140,220,200,.18) 50%,transparent calc(50% + .5px)),
+   linear-gradient(0deg,transparent calc(50% - .5px),rgba(140,220,200,.18) 50%,transparent calc(50% + .5px)),
+   repeating-radial-gradient(circle at 50% 50%,transparent 0 34px,rgba(140,220,200,.14) 34px 35px)}
+.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg 285deg,rgba(240,162,46,.5) 360deg);animation:spin 3.2s linear infinite;mix-blend-mode:screen}
+.plate.searching .sweep{animation-duration:1.1s}
+.plate .mon{width:68%;height:68%;position:relative;z-index:2;animation:pop .55s cubic-bezier(.2,1.4,.4,1)}
+.plate .mon.img{width:82%;height:82%}
+.plate::before{z-index:1}
+.sweep{z-index:1}
+.pbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42;z-index:0;filter:saturate(.85) brightness(.9)}
+.plate.lost .mon{opacity:.35;transition:opacity .8s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{from{transform:scale(.35);opacity:0}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}}
+.mon{display:block;overflow:visible}
+.sil{filter:brightness(0) invert(1) opacity(.18)}
+.tw{animation:tw 1.8s ease-in-out infinite}
+@keyframes tw{50%{opacity:.2}}
+
+.status{text-align:center;margin-bottom:12px}
+.status h3{font:700 22px/1.15 var(--display);letter-spacing:-.01em}
+.status p{color:var(--ink2);margin-top:3px}
+.meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tag{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:3px 10px 3px 8px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;font-weight:600}
+.tag i{width:10px;height:10px;border-radius:50%;display:block}
+.pips{display:flex;justify-content:center;gap:8px;margin:2px 0 6px}
+.pips span{width:26px;height:8px;border-radius:99px;background:var(--surface2)}
+.pips span.on{background:var(--lamp)}
+.pipcap{text-align:center;font-size:13.5px;color:var(--ink2)}
+.gauge{position:relative;height:36px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:8px 0 12px;border:1px solid var(--line)}
+.gauge .z{position:absolute;top:0;bottom:0;left:var(--l);width:var(--w);background:color-mix(in srgb,var(--moss) 60%,transparent)}
+.gauge .z.p{background:var(--lamp)}
+.needle{position:absolute;top:-2px;bottom:-2px;left:0;width:5px;margin-left:-2.5px;border-radius:3px;background:var(--ink)}
+.result{background:var(--surface);border-radius:22px;padding:14px 16px;margin-top:14px;animation:rise .3s ease-out}
+.result h3{font:700 19px/1.1 var(--display)}
+.result .rl{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:10px 0 0}
+.chips li{background:var(--surface2);border-radius:99px;padding:4px 11px;font-size:13.5px;font-weight:600}
+.chips li.hl{background:var(--lamp);color:var(--lampink)}
+.hint{color:var(--ink2);font-size:14px;text-align:center;margin-top:10px}
+
+/* database */
+.chipbar{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.chipbar::-webkit-scrollbar{display:none}
+.fc{flex:0 0 auto;padding:7px 13px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:14px}
+.fc.on{background:var(--ink);color:var(--bg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.tile .mini{aspect-ratio:1;border-radius:50%;background:var(--plate);display:grid;place-items:center;overflow:hidden;margin-bottom:2px}
+.tile .mini .mon{width:80%;height:80%}
+.tn{font:700 16px/1.1 var(--display)}
+.tr{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);font-weight:600}
+.tr i{width:9px;height:9px;border-radius:50%;display:block}
+.tile.unk .tn{color:var(--ink2)}
+.count{color:var(--ink2);font-size:14px;margin:0 0 10px}
+
+/* detail */
+.dhead{text-align:center}
+.dhead h3{font:800 28px/1.05 var(--display);letter-spacing:-.02em}
+.forms{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 4px}
+.form{padding:5px 12px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:14px}
+.form.on{background:var(--ink);color:var(--bg)}
+.form.unk{background:transparent;border:1px dashed var(--line);color:var(--ink2)}
+.panel{background:var(--surface);border-radius:22px;padding:6px 16px 10px;margin-top:14px}
+.panel h3{font:700 18px/1 var(--display);padding:12px 0 4px}
+.frow{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:11px 0;border-top:1px solid var(--line);align-items:start}
+.frow:first-of-type{border-top:0}
+.fl{font-weight:700;display:flex;gap:7px;align-items:center}
+.fl i{width:10px;height:10px;border-radius:50%;border:2px solid var(--ink2);display:block;flex:none}
+.fl.ok i{background:var(--moss);border-color:var(--moss)}
+.redact{height:14px;border-radius:5px;margin-top:3px;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--line) 6px 12px)}
+.redcap{font-size:13px;color:var(--ink2);margin-top:5px}
+
+/* research tree */
+.root{margin:2px auto 0;width:fit-content;background:var(--ink);color:var(--bg);border-radius:18px;padding:10px 18px;text-align:center}
+.root b{display:block;font:700 18px/1.1 var(--display)}
+.root span{font-size:14px;opacity:.85}
+.fork{position:relative;height:24px}
+.fork s{position:absolute;background:var(--line);text-decoration:none}
+.tree{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.branch{display:flex;flex-direction:column;gap:12px}
+.bh{text-align:center;padding:2px 2px 0}
+.bh b{display:block;font:700 18px/1.1 var(--display)}
+.bh span{font-size:12.5px;color:var(--ink2);line-height:1.25;display:block;margin-top:2px}
+.node{position:relative;display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:16px;background:var(--surface);border:2px solid var(--line);min-height:112px}
+.node::before{content:"";position:absolute;left:50%;top:-14px;height:12px;width:2px;margin-left:-1px;background:var(--line)}
+.node .nt{font:700 14.5px/1.15 var(--display)}
+.node .nd{font-size:12.5px;line-height:1.3;color:var(--ink2);flex:1}
+.node .nc{font-weight:700;font-size:13px}
+.node.owned{background:var(--moss);border-color:var(--moss);color:#fff}
+.node.owned .nd{color:rgba(255,255,255,.9)}
+.node.next{border-color:var(--lamp)}
+.node.next.can{background:color-mix(in srgb,var(--lamp) 22%,var(--surface))}
+.node.lock{opacity:.6;border-style:dashed}
+:root[data-theme="dark"] .node.owned,:root:not([data-theme="light"]) .node.owned{color:#06251A}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .node.owned{color:#fff}}
+
+/* laboratory */
+.sec{margin-top:18px}
+.sec h3{font:700 20px/1.1 var(--display);margin-bottom:8px}
+.sec .note{color:var(--ink2);font-size:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:18px;padding:12px 14px;margin-bottom:8px}
+.row .rb{flex:1}
+.row .rb b{font:700 16.5px/1.15 var(--display);display:block}
+.row .rb span{font-size:13.5px;color:var(--ink2)}
+.buy{flex:none;min-height:42px;padding:0 14px;border-radius:14px;background:var(--lamp);color:var(--lampink);font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.buy[aria-disabled="true"]{background:var(--surface2);color:var(--ink2)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--surface);border-radius:16px;padding:10px 14px}
+.kv b{display:block;font:800 24px/1.1 var(--display)}
+.kv span{font-size:13.5px;color:var(--ink2)}
+.danger{margin-top:8px;padding:10px 14px;border-radius:14px;background:transparent;border:1px solid var(--signal);color:var(--signal);font-weight:700}
+.danger.arm{background:var(--signal);color:#fff}
+
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14.5px;z-index:30;max-width:90vw;text-align:center;pointer-events:none;animation:rise .2s ease-out}
+.toast[hidden]{display:none}
+/* image assets */
+.mon.img{position:relative}
+.mon.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.mon.img .fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.mon.img.f-ancient img{filter:grayscale(.5) sepia(.35)}
+.mon.img.f-corrupted img.base{filter:hue-rotate(-70deg) saturate(1.5) contrast(1.1)}
+.mon.img.f-corrupted img.ghost{filter:hue-rotate(170deg) saturate(2.4);opacity:.6;transform:translate(4%,-2%);
+  clip-path:polygon(0 24%,100% 24%,100% 33%,0 33%,0 56%,100% 56%,100% 62%,0 62%,0 75%,100% 75%,100% 80%,0 80%)}
+.mon.img.f-alpha{transform:scale(1.1);transform-origin:50% 90%}
+.mon.img.f-alpha img{filter:saturate(1.25) contrast(1.05) drop-shadow(0 0 7px rgba(229,72,77,.75))}
+.mon.img.f-shiny img{filter:hue-rotate(115deg) saturate(1.25) brightness(1.1)}
+.lban{height:56px;border-radius:12px;background:var(--tint) center/cover no-repeat;display:grid;place-items:center;color:#fff}
+.lban svg{width:22px;height:22px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.lban.off{filter:grayscale(1) brightness(.7)}
+.labimg{width:100%;aspect-ratio:12/5;object-fit:cover;border-radius:24px;margin:10px 0 8px}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}.sweep{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+(() => {
+'use strict';
+
+/* ---------- data ---------- */
+const EL = {
+  Fire:  {a:'#E4572E',b:'#A8351B',c:'#FFB56B',d:'#FFD23F',w:'Water'},
+  Water: {a:'#2E86C1',b:'#1B5A8A',c:'#8FD3F4',d:'#5EEAD4',w:'Nature'},
+  Nature:{a:'#4E9F3D',b:'#2F6B2A',c:'#B7E07A',d:'#F2C94C',w:'Fire'},
+  Earth: {a:'#B8843F',b:'#7C5527',c:'#E6C88F',d:'#D95D39',w:'Water'},
+  Ice:   {a:'#7FC8E8',b:'#4A8FB5',c:'#E6F7FF',d:'#B9A6FF',w:'Fire'},
+  Light: {a:'#F2C14E',b:'#C58B1E',c:'#FFF3C4',d:'#FF8FA3',w:'Dark'},
+  Dark:  {a:'#5B4B8A',b:'#34285A',c:'#9C8AD1',d:'#F25C7A',w:'Light'}
+};
+const RAR = [
+  {n:'Common',c:'#7A8B94'},{n:'Uncommon',c:'#3E9E6B'},{n:'Rare',c:'#3B82D6'},
+  {n:'Epic',c:'#8B5CF6'},{n:'Legendary',c:'#F0A22E'},{n:'Mythic',c:'#E5484D'}
+];
+const ICON = {
+  explore:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  db:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+  research:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M8 15h8"/>',
+  lab:'<path d="M4 20V9l8-5 8 5v11z"/><path d="M9 20v-6h6v6"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  forest:'<path d="M12 3l5 8h-3l4 6H6l4-6H7z"/><path d="M12 17v4"/>',
+  desert:'<circle cx="17" cy="7" r="3"/><path d="M2 20c3-6 6-6 9 0 2-3 5-4 11 0"/>',
+  frozen:'<path d="M12 2v20M4 7l16 10M20 7L4 17"/>',
+  volcano:'<path d="M3 21l6-12h6l6 12z"/><path d="M10 6c0-2 2-2 2-4M14 6c0-2 2-2 2-4"/>',
+  ocean:'<path d="M2 9c3-3 5 3 8 0s5 3 8 0 3 0 4 0M2 15c3-3 5 3 8 0s5 3 8 0 3 0 4 0"/>',
+  dark:'<path d="M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z"/>'
+};
+const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+
+const LOCS = [
+  {id:'forest',n:'Forest',cost:0,tint:'#3F8A62',blurb:'Mossy trails and old roots.'},
+  {id:'desert',n:'Desert',cost:0,tint:'#B9812F',blurb:'Dunes, heat haze and buried ruins.'},
+  {id:'frozen',n:'Frozen Land',cost:150,tint:'#4E9CC4',blurb:'Glaciers and howling snow.'},
+  {id:'volcano',n:'Volcano',cost:300,tint:'#D4553A',blurb:'Lava flows and hot ash.'},
+  {id:'ocean',n:'Deep Ocean',cost:600,tint:'#2D78B4',blurb:'Sunless trenches, glowing life.'},
+  {id:'dark',n:'Dark Zone',cost:1200,tint:'#6B57A6',blurb:'Where even light gets lost.'}
+];
+const LOC = (id) => LOCS.find(l => l.id === id);
+
+const SPECIES = [
+  {id:'mossling',name:'Mossling',el:'Nature',r:0,loc:'forest',lv:[2,8],art:{b:'blob',f:['leaf']},
+   ap:'A round puffball wearing a coat of living moss.',be:'Freezes and passes for a stone when footsteps come near.',
+   or:'Sprouted from spores that settled on a sleeping boulder.',ev:'Slowly grows antlers and takes the shape of a Sylvan Stag.',dr:['Moss tuft','Spore pod','Green dew']},
+  {id:'thornwolf',name:'Thornwolf',el:'Nature',r:1,loc:'forest',lv:[8,16],art:{b:'quad',f:['ears','spikes']},
+   ap:'A lean wolf with bramble spines along its back.',be:'Hunts in silence and circles prey until it tires.',
+   or:'Wolves that lived in thorn thickets took on the briars.',ev:'Lone elders are said to crown themselves with living wood.',dr:['Thorn fang','Bramble pelt','Wild burr']},
+  {id:'sylvanstag',name:'Sylvan Stag',el:'Nature',r:3,loc:'forest',lv:[24,36],art:{b:'quad',f:['antlers']},
+   ap:'A tall stag whose antlers bloom with the seasons.',be:'Walks the same trail every dawn and nothing dares block it.',
+   or:'Believed to be the forest itself given a body.',ev:'Sheds its antlers each spring and grows them back larger.',dr:['Bloom antler','Sap crystal','Ancient bark']},
+  {id:'mossbear',name:'Elder Mossbear',el:'Nature',r:4,loc:'forest',lv:[42,58],art:{b:'quad',f:['ears','leaf','crest']},
+   ap:'A mountain of a bear with a whole meadow growing on its back.',be:'Sleeps through whole seasons and lets birds nest in its fur.',
+   or:'The oldest tree in the forest woke one day and started walking.',ev:'Its back grows a full canopy that fruits once a decade.',dr:['Canopy leaf','Heartwood chip','Ancient acorn']},
+  {id:'dunescuttle',name:'Dunescuttle',el:'Earth',r:0,loc:'desert',lv:[3,9],art:{b:'blob',f:['antenna','shell']},
+   ap:'A sand-coloured crawler with a plated back.',be:'Burrows at noon and comes out when the sand cools.',
+   or:'Descended from beetles buried in an old salt flat.',ev:'Its shell hardens into glass after many sandstorms.',dr:['Sand chitin','Salt grain','Glass shard']},
+  {id:'sandviper',name:'Sandviper',el:'Earth',r:1,loc:'desert',lv:[10,18],art:{b:'serpent',f:['crest']},
+   ap:'A slender snake the colour of dry riverbeds.',be:'Lies half-buried and strikes at vibrations, not sight.',
+   or:'Follows old caravan roads and nobody knows why.',ev:'Old vipers grow a hood that flares in warning.',dr:['Dune scale','Venom drop','Dry fang']},
+  {id:'miragefox',name:'Mirage Fox',el:'Light',r:2,loc:'desert',lv:[16,26],art:{b:'quad',f:['ears','glowtail']},
+   ap:'A slim fox whose tail glows like heat haze.',be:'Shows a false image of itself, then watches from behind you.',
+   or:'Born where sunlight bends over the hottest dunes.',ev:'Grows extra tails, each casting another illusion.',dr:['Haze fur','Mirage lens','Sun shard']},
+  {id:'ruinshell',name:'Ruinshell',el:'Earth',r:3,loc:'desert',lv:[26,40],art:{b:'blob',f:['horns','shell','antenna']},
+   ap:'A hulking beetle carrying a cracked stone temple on its back.',be:'Wanders between buried ruins and patches them with its shell.',
+   or:'Said to guard a city that sank under the dunes.',ev:'Its shell carvings change to match the ruin it last visited.',dr:['Ruin brick','Carved scarab','Sun-baked relic']},
+  {id:'snowpup',name:'Snowpup',el:'Ice',r:0,loc:'frozen',lv:[3,10],art:{b:'blob',f:['ears']},
+   ap:'A fluffy pup that leaves tiny frost prints.',be:'Rolls down slopes for fun and shakes ice from its coat.',
+   or:'Found in snow dens abandoned by older Rimehorns.',ev:'Grows horns as its coat turns to glassy fur.',dr:['Frost fluff','Ice whisker','Snow charm']},
+  {id:'rimehorn',name:'Rimehorn',el:'Ice',r:2,loc:'frozen',lv:[18,28],art:{b:'quad',f:['horns','spikes']},
+   ap:'A broad-shouldered beast with icicle horns.',be:'Rams frozen lakes to open breathing holes for its herd.',
+   or:'Its horns form from meltwater that freezes on the skull.',ev:'Bull elders cast off horns of solid ice each winter.',dr:['Rime horn','Ice shard','Frozen hide']},
+  {id:'glacialwyrm',name:'Glacial Wyrm',el:'Ice',r:4,loc:'frozen',lv:[40,55],art:{b:'serpent',f:['crest','spikes','wings']},
+   ap:'A vast serpent with wings of thin ice.',be:'Sleeps inside glaciers and wakes when they crack.',
+   or:'Said to be older than the ice it lives in.',ev:'Each century its ice wings grow a new layer.',dr:['Glacier scale','Wyrm frost','Ancient ice core']},
+  {id:'emberling',name:'Emberling',el:'Fire',r:0,loc:'volcano',lv:[4,10],art:{b:'blob',f:['flame']},
+   ap:'A small ember-bodied creature with a candle-like flame.',be:'Snuffs out its flame when scared and hides in ash.',
+   or:'Hatches from cooled lava that still holds a spark.',ev:'Its flame swells into a mane as it becomes a Flamefang.',dr:['Ash pebble','Warm ember','Cinder dust']},
+  {id:'flamefang',name:'Flamefang',el:'Fire',r:2,loc:'volcano',lv:[18,30],art:{b:'quad',f:['ears','fangs','flametail']},
+   ap:'A fire-furred hunter with glowing fangs.',be:'Marks its territory by scorching the ground.',
+   or:'Emberlings that survived a full eruption.',ev:'At peak heat its flames turn white and burn without smoke.',dr:['Flame fang','Scorched pelt','Fire ruby']},
+  {id:'magmaback',name:'Magmaback',el:'Fire',r:3,loc:'volcano',lv:[30,42],art:{b:'blob',f:['shell','flame','spikes']},
+   ap:'A heavy creature with a shell of cooling lava.',be:'Sleeps in lava pools and rises only to shed its crust.',
+   or:'Formed from magma that took a slow, stubborn shape.',ev:'Its shell cracks and reforms into obsidian plates.',dr:['Magma plate','Obsidian chip','Molten core']},
+  {id:'cinderwing',name:'Cinderwing',el:'Fire',r:4,loc:'volcano',lv:[38,54],art:{b:'flyer',f:['flame','crest']},
+   ap:'A great bird of embers with wings edged in white-hot light.',be:'Rides rising heat above the crater and dives only for the brightest fires.',
+   or:'Rises from the ash of every eruption, or so the legends say.',ev:'Burns down to ash and returns with a brighter plume.',dr:['Cinder feather','Phoenix ash','Solar ember']},
+  {id:'bubblefin',name:'Bubblefin',el:'Water',r:0,loc:'ocean',lv:[3,10],art:{b:'blob',f:['fins']},
+   ap:'A round fish that trails glittering bubbles.',be:'Travels in clouds and pops bubbles to confuse hunters.',
+   or:'Hatches in tide pools warmed by shallow reefs.',ev:'Develops a lantern lure as it swims deeper.',dr:['Bubble film','Soft scale','Tide pearl']},
+  {id:'glowjaw',name:'Glowjaw',el:'Water',r:1,loc:'ocean',lv:[14,24],art:{b:'blob',f:['lure','fins','fangs']},
+   ap:'A deep-sea hunter with a glowing lure and needle teeth.',be:'Dangles its light in the dark and waits for the curious.',
+   or:'Bubblefins that drifted too deep and never came back.',ev:'Its lure grows bright enough to pass for a small sun.',dr:['Lure orb','Needle tooth','Abyss oil']},
+  {id:'kraken',name:'Abyssal Kraken',el:'Water',r:4,loc:'ocean',lv:[42,60],art:{b:'kraken',f:['spikes']},
+   ap:'A dome-headed giant with a forest of tentacles.',be:'Circles wrecks in the dark and sorts through what sinks.',
+   or:'Appears on the oldest sea charts as an island that moves.',ev:'Grows another tentacle every hundred years.',dr:['Kraken ink','Giant sucker','Deep pearl']},
+  {id:'shadeling',name:'Shadeling',el:'Dark',r:1,loc:'dark',lv:[8,16],art:{b:'blob',f:['horns']},
+   ap:'A small blot of shadow with two tiny horns.',be:'Slips between lantern beams and hides in your shadow.',
+   or:'Left behind by the light when night fell too fast.',ev:'Feeds on darkness and slowly takes a winged form.',dr:['Shade dust','Night bead','Dim horn']},
+  {id:'voidmoth',name:'Voidmoth',el:'Dark',r:2,loc:'dark',lv:[20,32],art:{b:'flyer',f:['antenna']},
+   ap:'A silent moth whose wings show a starless sky.',be:'Drawn to light sources, then swallows them.',
+   or:'First seen where a star went out.',ev:'Old moths open a third pair of wings made of pure void.',dr:['Void wing','Star dust','Dark silk']},
+  {id:'eclipsedragon',name:'Eclipse Dragon',el:'Dark',r:5,loc:'dark',lv:[55,80],art:{b:'quad',f:['horns','wings','spikes','glowtail']},
+   ap:'A dragon ringed by a corona of pale light.',be:'Appears only when day and night seem to hesitate.',
+   or:'Said to hatch once every eclipse from a ring of light.',ev:'Rumoured to swallow the sun once it reaches full power.',dr:['Eclipse scale','Corona gem','Umbral horn']}
+];
+const SP = (id) => SPECIES.find(s => s.id === id);
+const FORMS = {
+  normal:{n:'Normal',lv:1,mult:1},
+  ancient:{n:'Ancient',lv:2.7,mult:2},
+  corrupted:{n:'Corrupted',lv:1.4,mult:1.8},
+  alpha:{n:'Alpha',lv:1.7,mult:1.6},
+  shiny:{n:'Shiny',lv:1,mult:3}
+};
+const FORM_KEYS = Object.keys(FORMS);
+const formName = (sp, f) => f === 'normal' ? sp.name : `${FORMS[f].n} ${sp.name}`;
+
+const TECH = {
+  scanner:{n:'Scanner',sub:'Find rarer monsters',lv:[
+    {n:'Rare Find I',d:'Rare finds +40%. Wider scan zone.',c:40},
+    {n:'Rare Find II',d:'Rare finds +80%. Wider scan zone.',c:120},
+    {n:'Rare Find III',d:'Rare finds +120%. Wider scan zone.',c:300}]},
+  lab:{n:'Lab',sub:'Research faster',lv:[
+    {n:'Faster Research I',d:'Scan data +30%.',c:60},
+    {n:'Faster Research II',d:'Scan data +60%.',c:180}]},
+  radar:{n:'Radar',sub:'Reveal hidden forms',lv:[
+    {n:'Hidden Monsters I',d:'Ancient forms can appear.',c:80},
+    {n:'Hidden Monsters II',d:'Alpha and Corrupted forms can appear.',c:220},
+    {n:'Hidden Monsters III',d:'Shiny forms can appear.',c:500}]}
+};
+const TECH_TOTAL = 8;
+const FACETS = [['Appearance',0],['Habitat',20],['Behavior',40],['Weakness',60],['Origin',80],['Evolution',100]];
+const BASE_DP = [4,7,12,20,35,60];
+const BASE_COIN = [10,18,35,70,140,300];
+const KIT = [1,1.25,1.5,1.75];
+const KIT_COST = [200,500,1000];
+const LAB_MULT = [1,1.3,1.6];
+
+/* ---------- monster art ---------- */
+let uid = 0;
+const ARCH = {
+  blob: c => ({
+    arc:[80,96,44,40], top:[80,58], w:26, eyes:[[66,90],[94,90]], er:6.5, wing:[80,92], mouth:[80,108,9], smile:true,
+    body:`<ellipse cx="56" cy="138" rx="12" ry="6" fill="${c.b}"/><ellipse cx="104" cy="138" rx="12" ry="6" fill="${c.b}"/>
+      <ellipse cx="80" cy="96" rx="44" ry="40" fill="${c.a}"/>
+      <ellipse cx="80" cy="114" rx="28" ry="20" fill="${c.c}" opacity=".7"/>
+      <ellipse cx="62" cy="70" rx="12" ry="6" fill="#fff" opacity=".18" transform="rotate(-30 62 70)"/>`
+  }),
+  quad: c => ({
+    arc:[76,100,40,24], top:[116,66], w:10, eyes:[[124,80]], er:5.5, wing:[76,84], tail:[20,70], mouth:[134,97,4],
+    body:`<rect x="56" y="110" width="11" height="30" rx="5" fill="${c.b}"/><rect x="100" y="110" width="11" height="30" rx="5" fill="${c.b}"/>
+      <path d="M40 96 Q22 92 20 68 Q34 80 46 88 Z" fill="${c.a}"/>
+      <ellipse cx="76" cy="100" rx="40" ry="24" fill="${c.a}"/>
+      <ellipse cx="76" cy="111" rx="30" ry="12" fill="${c.c}" opacity=".7"/>
+      <rect x="44" y="112" width="12" height="28" rx="5.5" fill="${c.a}"/><rect x="90" y="112" width="12" height="28" rx="5.5" fill="${c.a}"/>
+      <ellipse cx="50" cy="140" rx="9" ry="4" fill="${c.b}"/><ellipse cx="96" cy="140" rx="9" ry="4" fill="${c.b}"/>
+      <circle cx="118" cy="84" r="20" fill="${c.a}"/>
+      <ellipse cx="134" cy="91" rx="12" ry="9" fill="${c.c}"/>
+      <circle cx="141" cy="88" r="2.6" fill="${c.b}"/>`
+  }),
+  serpent: c => ({
+    arc:[118,60,18,14], top:[118,48], w:10, eyes:[[112,56],[126,56]], er:4.5, wing:[86,98],
+    body:`<path d="M26 134 C26 104 84 124 84 98 C84 74 116 94 116 66" fill="none" stroke="${c.b}" stroke-width="28" stroke-linecap="round"/>
+      <path d="M26 134 C26 104 84 124 84 98 C84 74 116 94 116 66" fill="none" stroke="${c.a}" stroke-width="22" stroke-linecap="round"/>
+      <path d="M26 134 C26 104 84 124 84 98 C84 74 116 94 116 66" fill="none" stroke="${c.c}" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 11" opacity=".8"/>
+      <ellipse cx="118" cy="60" rx="19" ry="15" fill="${c.a}"/>`
+  }),
+  flyer: c => ({
+    arc:[80,96,22,30], top:[80,48], w:12, eyes:[[73,62],[87,62]], er:4.5,
+    body:`<path d="M62 84 C6 34 0 116 48 128 C60 118 62 104 62 84Z" fill="${c.b}"/><path d="M98 84 C154 34 160 116 112 128 C100 118 98 104 98 84Z" fill="${c.b}"/>
+      <circle cx="30" cy="88" r="9" fill="${c.d}" opacity=".9"/><circle cx="130" cy="88" r="9" fill="${c.d}" opacity=".9"/>
+      <circle cx="30" cy="88" r="4" fill="${c.b}"/><circle cx="130" cy="88" r="4" fill="${c.b}"/>
+      <ellipse cx="80" cy="96" rx="22" ry="30" fill="${c.a}"/><ellipse cx="80" cy="104" rx="13" ry="20" fill="${c.c}" opacity=".6"/>
+      <circle cx="80" cy="64" r="16" fill="${c.a}"/>`
+  }),
+  kraken: c => ({
+    arc:[80,70,40,34], top:[80,38], w:26, eyes:[[64,72],[96,72]], er:7, mouth:[80,90,8], smile:true, wing:[80,82],
+    body:`<g fill="none" stroke="${c.b}" stroke-width="12" stroke-linecap="round">
+      <path d="M46 98C26 112 54 126 32 146"/><path d="M63 102C48 118 76 128 58 148"/><path d="M80 104C70 122 92 130 80 148"/><path d="M97 102C88 118 112 128 102 148"/><path d="M114 98C94 112 128 126 128 146"/></g>
+      <g fill="none" stroke="${c.a}" stroke-width="6" stroke-linecap="round" opacity=".9">
+      <path d="M46 98C26 112 54 126 32 146"/><path d="M63 102C48 118 76 128 58 148"/><path d="M80 104C70 122 92 130 80 148"/><path d="M97 102C88 118 112 128 102 148"/><path d="M114 98C94 112 128 126 128 146"/></g>
+      <ellipse cx="80" cy="70" rx="40" ry="34" fill="${c.a}"/>
+      <ellipse cx="62" cy="52" rx="11" ry="6" fill="#fff" opacity=".22" transform="rotate(-25 62 52)"/>`
+  })
+};
+function spikes(A, c, n, h, span) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? 0 : -span + 2 * span * i / (n - 1);
+    const x = A.arc[0] + t * A.arc[2], y = A.arc[1] - A.arc[3] * Math.sqrt(1 - t * t);
+    s += `<polygon points="${(x-5).toFixed(1)},${(y+5).toFixed(1)} ${(x+5).toFixed(1)},${(y+5).toFixed(1)} ${(x+t*9).toFixed(1)},${(y-h).toFixed(1)}" fill="${c.b}"/>`;
+  }
+  return s;
+}
+function flame(x, y, k, c) {
+  return `<path d="M${x} ${y-32*k} C${x+15*k} ${y-14*k} ${x+12*k} ${y+2*k} ${x} ${y+4*k} C${x-12*k} ${y+2*k} ${x-15*k} ${y-14*k} ${x} ${y-32*k}Z" fill="${c.d}"/>
+    <path d="M${x} ${y-16*k} C${x+7*k} ${y-6*k} ${x+6*k} ${y+2*k} ${x} ${y+3*k} C${x-6*k} ${y+2*k} ${x-7*k} ${y-6*k} ${x} ${y-16*k}Z" fill="${c.c}"/>`;
+}
+function feat(n, A, c) {
+  const [tx, ty] = A.top, w = A.w;
+  switch (n) {
+    case 'leaf': return {f:`<ellipse cx="${tx-9}" cy="${ty-6}" rx="11" ry="5.5" fill="${c.c}" transform="rotate(-35 ${tx-9} ${ty-6})"/><ellipse cx="${tx+9}" cy="${ty-6}" rx="11" ry="5.5" fill="${c.c}" transform="rotate(35 ${tx+9} ${ty-6})"/><ellipse cx="${tx}" cy="${ty-14}" rx="9" ry="5" fill="${c.d}" transform="rotate(90 ${tx} ${ty-14})"/>`};
+    case 'flame': return {f:flame(tx, ty, 1, c)};
+    case 'ears': return {f:`<polygon points="${tx-w},${ty+10} ${tx-w-4},${ty-16} ${tx-w+12},${ty+4}" fill="${c.a}"/><polygon points="${tx+w},${ty+10} ${tx+w+4},${ty-16} ${tx+w-12},${ty+4}" fill="${c.a}"/><polygon points="${tx-w-1},${ty+2} ${tx-w-2},${ty-9} ${tx-w+5},${ty}" fill="${c.c}" opacity=".8"/><polygon points="${tx+w+1},${ty+2} ${tx+w+2},${ty-9} ${tx+w-5},${ty}" fill="${c.c}" opacity=".8"/>`};
+    case 'horns': return {f:`<polygon points="${tx-w+2},${ty+8} ${tx-w-8},${ty-22} ${tx-w+10},${ty+2}" fill="${c.c}" stroke="${c.b}" stroke-width="1.5"/><polygon points="${tx+w-2},${ty+8} ${tx+w+8},${ty-22} ${tx+w-10},${ty+2}" fill="${c.c}" stroke="${c.b}" stroke-width="1.5"/>`};
+    case 'antlers': { let s = ''; [-1, 1].forEach(k => { s += `<path d="M${tx+k*4} ${ty+4} L${tx+k*14} ${ty-20} M${tx+k*10} ${ty-10} L${tx+k*26} ${ty-16} M${tx+k*14} ${ty-20} L${tx+k*12} ${ty-34}" fill="none" stroke="${c.b}" stroke-width="4" stroke-linecap="round"/><circle cx="${tx+k*26}" cy="${ty-16}" r="3" fill="${c.d}"/><circle cx="${tx+k*12}" cy="${ty-34}" r="3" fill="${c.d}"/>`; }); return {f:s}; }
+    case 'antenna': { let s = ''; [-1, 1].forEach(k => { s += `<path d="M${tx+k*6} ${ty+4} Q${tx+k*10} ${ty-16} ${tx+k*24} ${ty-24}" fill="none" stroke="${c.b}" stroke-width="3" stroke-linecap="round"/><circle cx="${tx+k*24}" cy="${ty-24}" r="4" fill="${c.d}"/>`; }); return {f:s}; }
+    case 'spikes': return {f:spikes(A, c, 5, 13, .62)};
+    case 'crest': return {f:spikes(A, c, 3, 20, .35)};
+    case 'shell': { let s = ''; [-.5, 0, .5].forEach(t => { const x = A.arc[0] + t * A.arc[2], y = A.arc[1] - A.arc[3] * Math.sqrt(1 - t * t) * .7; s += `<ellipse cx="${x}" cy="${y}" rx="13" ry="9" fill="${c.b}" stroke="${c.c}" stroke-width="2"/>`; }); return {f:s}; }
+    case 'wings': { const [bx, by] = A.wing; return {b:`<path d="M${bx-8} ${by} C${bx-70} ${by-58} ${bx-74} ${by+6} ${bx-22} ${by+16}Z" fill="${c.b}"/><path d="M${bx+8} ${by} C${bx+70} ${by-58} ${bx+74} ${by+6} ${bx+22} ${by+16}Z" fill="${c.b}"/>`}; }
+    case 'glowtail': { const [gx, gy] = A.tail; return {f:`<circle cx="${gx}" cy="${gy}" r="14" fill="${c.d}" opacity=".28"/><circle cx="${gx}" cy="${gy}" r="7" fill="${c.d}"/><circle cx="${gx}" cy="${gy}" r="3.5" fill="#fff" opacity=".85"/>`}; }
+    case 'flametail': { const [gx, gy] = A.tail; return {f:flame(gx, gy + 6, .7, c)}; }
+    case 'fins': return {b:`<path d="M38 98Q12 84 18 114Q30 110 40 110Z" fill="${c.b}"/><path d="M122 98Q148 84 142 114Q130 110 120 110Z" fill="${c.b}"/>`};
+    case 'lure': return {f:`<path d="M${tx} ${ty+2} Q${tx+4} ${ty-26} ${tx+26} ${ty-30}" fill="none" stroke="${c.b}" stroke-width="3" stroke-linecap="round"/><circle cx="${tx+26}" cy="${ty-30}" r="12" fill="${c.d}" opacity=".3"/><circle cx="${tx+26}" cy="${ty-30}" r="6" fill="${c.d}"/>`};
+    case 'fangs': { const [mx, my, sp] = A.mouth; const g = sp > 6 ? 8 : 4; return {f:`<polygon points="${mx-g-3},${my} ${mx-g+3},${my} ${mx-g},${my+8}" fill="#fff"/><polygon points="${mx+g-3},${my} ${mx+g+3},${my} ${mx+g},${my+8}" fill="#fff"/>`}; }
+  }
+  return {};
+}
+function monInner(sp, form) {
+  const c = EL[sp.el], A = ARCH[sp.art.b](c);
+  let bh = '', fr = '';
+  sp.art.f.forEach(n => { const r = feat(n, A, c); bh += r.b || ''; fr += r.f || ''; });
+  const pupil = form === 'alpha' ? '#E5484D' : form === 'corrupted' ? '#FF3EA5' : (sp.el === 'Dark' ? c.d : '#14212A');
+  const eyes = A.eyes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${A.er}" fill="#fff"/><circle cx="${x+1}" cy="${y+.5}" r="${(A.er*.54).toFixed(1)}" fill="${pupil}"/><circle cx="${x+2.2}" cy="${y-1.4}" r="${(A.er*.2).toFixed(1)}" fill="#fff"/>`).join('');
+  const smile = A.smile ? `<path d="M${A.mouth[0]-A.mouth[2]} ${A.mouth[1]} Q${A.mouth[0]} ${A.mouth[1]+7} ${A.mouth[0]+A.mouth[2]} ${A.mouth[1]}" fill="none" stroke="${c.b}" stroke-width="3" stroke-linecap="round"/>` : '';
+  const core = `<ellipse cx="80" cy="146" rx="42" ry="6" fill="#000" opacity=".22"/>${bh}${A.body}${smile}${fr}${eyes}`;
+  const [ax, ay] = A.arc;
+  const filt = {normal:'', ancient:'grayscale(.5) sepia(.35)', corrupted:'hue-rotate(-70deg) saturate(1.5) contrast(1.1)', alpha:'saturate(1.25) contrast(1.05)', shiny:'hue-rotate(115deg) saturate(1.25) brightness(1.1)'}[form];
+  let out = `<g${filt ? ` style="filter:${filt}"` : ''}>${core}</g>`;
+  if (form === 'corrupted') {
+    const id = 'cg' + (++uid);
+    out += `<clipPath id="${id}"><rect x="0" y="38" width="160" height="14"/><rect x="0" y="90" width="160" height="10"/><rect x="0" y="120" width="160" height="7"/></clipPath><g style="filter:hue-rotate(170deg) saturate(2.4)" opacity=".6" transform="translate(6 -3)" clip-path="url(#${id})">${core}</g>`;
+  }
+  if (form === 'ancient') {
+    out += `<g stroke="#F6D77A" stroke-width="2.4" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 3px #F6D77A)"><path d="M${ax-14} ${ay-6} v12 m-5 -6 h10"/><circle cx="${ax}" cy="${ay}" r="5"/><path d="M${ax+12} ${ay+6} l6 -12 l6 12z"/></g>`;
+  }
+  if (form === 'alpha') {
+    out += `<path d="M${ax-16} ${ay-16} L${ax+4} ${ay+6} M${ax-12} ${ay-14} l4 -4 M${ax-6} ${ay-7} l5 -4 M${ax} ${ay-1} l5 -4" fill="none" stroke="#2A1420" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
+    out = `<g transform="translate(80 146) scale(1.1) translate(-80 -146)">${out}</g>`;
+  }
+  if (form === 'shiny') {
+    const star = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
+    out += star(24, 40, 1.1, 0) + star(138, 34, .8, .6) + star(142, 104, 1, 1.1) + star(18, 112, .7, .3);
+  }
+  return out;
+}
+/* ---------- image assets (optional, falls back to the drawn art) ---------- */
+const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.jpg'};
+const HAVE = {mon:{}, loc:{}, lab:false};
+const GLYPHS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true"><g stroke="#F6D77A" stroke-width="2.4" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 3px #F6D77A)"><path d="M22 30v12m-5-6h10"/><circle cx="138" cy="34" r="5"/><path d="M130 130l6-12l6 12z"/></g></svg>`;
+const STAR = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
+const SPARKS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true">${STAR(24, 40, 1.1, 0)}${STAR(138, 34, .8, .6)}${STAR(142, 104, 1, 1.1)}${STAR(18, 112, .7, .3)}</svg>`;
+function monImg(sp, form, extra) {
+  const src = ASSET.mon + sp.id + ASSET.monExt;
+  const ghost = form === 'corrupted' ? `<img class="ghost" src="${src}" alt="" draggable="false">` : '';
+  const fx = form === 'ancient' ? GLYPHS : form === 'shiny' ? SPARKS : '';
+  return `<div class="mon img f-${form} ${extra || ''}" role="img" aria-label="${esc(formName(sp, form))}"><img class="base" src="${src}" alt="" draggable="false">${ghost}${fx}</div>`;
+}
+const plateBg = (locId) => HAVE.loc[locId] ? `<img class="pbg" src="${ASSET.loc}${locId}${ASSET.locExt}" alt="" draggable="false">` : '';
+const monSVG = (sp, form, extra) => HAVE.mon[sp.id] ? monImg(sp, form, extra) : monSVG_draw(sp, form, extra);
+const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBox="0 0 160 160" role="img" aria-label="${esc(formName(sp, form))}" focusable="false">${monInner(sp, form)}</svg>`;
+
+/* ---------- state ---------- */
+const LS_KEY = 'monster-researcher-proto-v1';
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, scans:0, trips:0, last:null});
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign({scanner:0,lab:0,radar:0}, o.tech); return s; }
+  } catch (e) {}
+  return def();
+}
+let S = load();
+function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+const ui = {screen:'home', loc:'forest', enc:null, filter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0};
+
+/* ---------- helpers ---------- */
+const app = document.getElementById('app');
+function esc(s) { return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+const num = (v) => Math.round(v).toLocaleString('en-US');
+const discovered = () => Object.keys(S.sp).length;
+const totalPct = () => Object.values(S.sp).reduce((a, r) => a + r.prog, 0) / (SPECIES.length * 100) * 100;
+const bar = (p, sm) => `<div class="bar${sm ? ' sm' : ''}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><i style="width:${p}%"></i>${[20,40,60,80].map(t => `<b style="left:${t}%"></b>`).join('')}</div>`;
+const rarTag = (r) => `<span class="tag"><i style="background:${RAR[r].c}"></i>${RAR[r].n}</span>`;
+const elTag = (el) => `<span class="tag"><i style="background:${EL[el].a}"></i>${el}</span>`;
+let toastT;
+function toast(m) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = m; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2300);
+}
+function affordable() {
+  return Object.keys(TECH).some(k => { const n = TECH[k].lv[S.tech[k]]; return n && S.dp >= n.c; });
+}
+function topbar(title, backAct, backTo) {
+  return `<header class="top"><button class="back" data-act="${backAct}" data-to="${backTo || ''}" aria-label="Back">${ic('back')}</button><h2>${title}</h2>
+    <div class="res"><span class="pill"><i class="dot coin"></i>${num(S.coins)}</span><span class="pill"><i class="dot dp"></i>${num(S.dp)}</span></div></header>`;
+}
+
+/* ---------- views ---------- */
+function labArt() {
+  if (HAVE.lab) return `<img class="labimg" src="${ASSET.lab}" alt="" draggable="false">`;
+  let mascot = '';
+  const ids = Object.keys(S.sp);
+  let sp = null;
+  if (S.last && S.sp[S.last]) sp = SP(S.last);
+  if (sp) mascot = `<svg x="232" y="30" width="92" height="92" viewBox="0 0 160 160" style="overflow:visible">${monInner(sp, 'normal')}</svg>`;
+  else mascot = `<svg x="232" y="30" width="92" height="92" viewBox="0 0 160 160" class="sil" style="overflow:visible">${monInner(SP('mossling'), 'normal')}</svg>`;
+  return `<svg class="labart" viewBox="0 0 360 150" aria-hidden="true" role="presentation">
+    <rect x="0" y="120" width="360" height="30" style="fill:var(--surface2)"/>
+    <rect x="76" y="66" width="132" height="56" rx="10" style="fill:var(--ink)"/>
+    <path d="M68 68Q142 20 216 68Z" style="fill:var(--moss)"/>
+    <rect x="94" y="84" width="26" height="22" rx="6" style="fill:var(--lamp)"/><rect x="130" y="84" width="26" height="22" rx="6" style="fill:var(--lamp)"/>
+    <rect x="168" y="92" width="24" height="30" rx="6" style="fill:var(--surface)"/>
+    <g class="dish"><path d="M142 44V30" stroke-width="3" style="stroke:var(--ink)"/><path d="M124 26Q142 48 160 26" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--lamp)"/></g>
+    <path class="sig" d="M168 20q10 6 10 16" fill="none" stroke-width="3" stroke-linecap="round" style="stroke:var(--lamp)"/>
+    <path class="sig sig2" d="M176 12q16 10 16 26" fill="none" stroke-width="3" stroke-linecap="round" style="stroke:var(--lamp)"/>
+    ${mascot}
+  </svg>`;
+}
+function viewHome() {
+  const disc = discovered(), pct = totalPct();
+  const tOwned = Object.values(S.tech).reduce((a, b) => a + b, 0);
+  const rows = [
+    {to:'explore', k:'explore', t:'Explore', s:`${S.locs.length} of ${LOCS.length} areas open`, bg:'#3F8A62'},
+    {to:'db', k:'db', t:'Monster Database', s:`${disc} of ${SPECIES.length} logged`, bg:'#4E7FC4'},
+    {to:'research', k:'research', t:'Research', s: affordable() ? 'An upgrade is ready' : `${tOwned} of ${TECH_TOTAL} upgrades`, bg:'#8B5CF6', badge: affordable()},
+    {to:'lab', k:'lab', t:'Laboratory', s:'Area permits and field kit', bg:'#C77A1E'}
+  ];
+  return `<div class="hero"><h1>Monster Research Lab</h1><p>Scan monsters and complete their data.</p></div>
+    ${labArt()}
+    <section class="stats" aria-label="Progress">
+      <div class="big"><span class="n">${disc}</span><span class="of">/ ${SPECIES.length}</span><span class="lb">Discovered</span></div>
+      <div class="rs"><div class="rt"><span>Research</span><b>${pct > 0 && pct < 1 ? '<1' : Math.round(pct)}%</b></div>${bar(pct, true)}
+        <div class="mini-res"><span class="pill"><i class="dot coin"></i>${num(S.coins)} coins</span><span class="pill"><i class="dot dp"></i>${num(S.dp)} data</span></div></div>
+    </section>
+    <nav class="menu" aria-label="Lab menu">${rows.map(r => `<button class="mrow" data-act="go" data-to="${r.to}"><span class="mi" style="background:${r.bg}">${ic(r.k)}</span><span><span class="mt">${r.t}</span><br><span class="ms">${r.s}</span></span>${r.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : ''}</button>`).join('')}</nav>`;
+}
+
+function viewExplore() {
+  if (ui.enc) return viewEncounter();
+  const L = LOC(ui.loc), open = S.locs.includes(L.id);
+  const tiles = LOCS.map(l => {
+    const o = S.locs.includes(l.id), sel = ui.loc === l.id;
+    return `<button class="loc${sel ? ' sel' : ''}${o ? '' : ' locked'}" style="--tint:${l.tint}" data-act="pickloc" data-id="${l.id}" aria-pressed="${sel}">
+      ${HAVE.loc[l.id] ? `<span class="lban${o ? '' : ' off'}" style="background-image:url('${ASSET.loc}${l.id}${ASSET.locExt}')">${o ? '' : ic('lock')}</span>` : `<span class="lic">${o ? ic(l.id) : ic('lock')}</span>`}<span class="ln">${l.n}</span>
+      <span class="lb">${o ? l.blurb : `Locked. Permit costs ${num(l.cost)} coins.`}</span></button>`;
+  }).join('');
+  return `${topbar('Explore', 'go', 'home')}
+    <p class="count">Choose an area, then send the scanner out.</p>
+    <div class="locs">${tiles}</div>
+    <div class="dock"><button class="cta" data-act="explore" aria-disabled="${!open}">${open ? `Explore ${L.n}` : `${L.n} is locked`}</button></div>`;
+}
+
+function viewEncounter() {
+  const e = ui.enc, L = LOC(e.loc);
+  const chargesLeft = e.charges;
+  let plate = '', status = '', controls = '';
+  if (e.phase === 'searching') {
+    plate = `<div class="plate searching">${plateBg(e.loc)}<div class="sweep"></div></div>`;
+    status = `<h3>Scanning the area</h3><p>Sweeping the ${L.n.toLowerCase()} for signals.</p>`;
+  } else if (e.phase === 'nothing') {
+    plate = `<div class="plate">${plateBg(e.loc)}<div class="sweep"></div></div>`;
+    status = `<h3>Only static</h3><p>No signal this time. Try again.</p>`;
+    controls = `<div class="dock"><button class="cta" data-act="explore">Explore ${L.n} again</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
+  } else {
+    const sp = e.sp;
+    plate = `<div class="plate${e.phase === 'done' ? ' lost' : ''}">${plateBg(e.loc)}${e.phase === 'found' ? '<div class="sweep"></div>' : ''}${monSVG(sp, e.form)}</div>`;
+    if (e.known) {
+      status = `<h3>${esc(formName(sp, e.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">Lv. ${e.lv}</span></div>`;
+    } else {
+      status = `<h3>A monster has been detected!</h3><p>Unidentified creature. Scan it to learn more.</p>`;
+    }
+    const pips = `<div class="pips" aria-label="${chargesLeft} scans left">${[0, 1, 2].map(i => `<span class="${i < chargesLeft ? 'on' : ''}"></span>`).join('')}</div>`;
+    if (e.phase === 'found') {
+      const z = e.zone, pl = (z.c - z.w * .2) * 100, pw = z.w * .4 * 100;
+      controls = `${pips}<p class="pipcap">${chargesLeft} ${chargesLeft === 1 ? 'scan' : 'scans'} left before the signal fades</p>
+        <div class="gauge" aria-hidden="true"><div class="z" style="--l:${((z.c - z.w / 2) * 100).toFixed(1)}%;--w:${(z.w * 100).toFixed(1)}%"></div><div class="z p" style="--l:${pl.toFixed(1)}%;--w:${pw.toFixed(1)}%"></div><div class="needle" id="needle"></div></div>
+        <button class="cta" data-act="scan">Scan</button><button class="linkbtn" data-act="leave">Leave</button>`;
+    } else {
+      controls = `<p class="hint">Signal lost. The monster slipped away.</p>
+        <div class="dock"><button class="cta" data-act="explore">Explore ${L.n} again</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
+    }
+  }
+  let result = '';
+  if (e.last) {
+    const r = e.last, sp = e.sp;
+    const chips = [`<li>Coins +${num(r.coins)}</li>`, `<li>Data +${num(r.dp)}</li>`];
+    if (r.drop) chips.push(`<li>${r.drop.isNew ? 'New drop' : 'Drop'}: ${esc(r.drop.name)}</li>`);
+    if (r.first) chips.push(`<li class="hl">New discovery</li>`);
+    if (r.newForm) chips.push(`<li class="hl">New form logged: ${esc(formName(sp, e.form))}</li>`);
+    r.facets.forEach(f => { if (!(r.first && f === 'Appearance')) chips.push(`<li>${f} data unlocked</li>`); });
+    if (r.mastered) chips.push(`<li class="hl">Research complete</li>`);
+    result = `<section class="result" aria-live="polite"><h3>${r.title}</h3>
+      <div class="rl"><span>Research data +${r.gain}%</span><span>${esc(sp.name)} ${Math.round(r.prog)}%</span></div>${bar(r.prog)}<ul class="chips">${chips.join('')}</ul></section>`;
+  }
+  return `${topbar(L.n, 'leave')}<div class="status">${status}</div>${plate.includes('plate') ? '' : ''}`
+    .replace('<div class="status">', plate + '<div class="status">') + `${controls}${result}`;
+}
+
+function viewDb() {
+  const chips = [{id:'all', n:'All'}].concat(LOCS.map(l => ({id:l.id, n:l.n}))).map(c => `<button class="fc${ui.filter === c.id ? ' on' : ''}" data-act="filter" data-id="${c.id}">${c.n}</button>`).join('');
+  const list = SPECIES.filter(s => ui.filter === 'all' || s.loc === ui.filter);
+  const tiles = list.map(s => {
+    const rec = S.sp[s.id];
+    if (!rec) return `<button class="tile unk" data-act="open" data-id="${s.id}"><div class="mini">${monSVG(s, 'normal', 'sil')}</div><div class="tn">Unknown</div><div class="tr">Not discovered yet</div>${bar(0, true)}</button>`;
+    return `<button class="tile" data-act="open" data-id="${s.id}"><div class="mini">${monSVG(s, 'normal')}</div><div class="tn">${esc(s.name)}</div><div class="tr"><i style="background:${RAR[s.r].c}"></i>${RAR[s.r].n}</div>${bar(rec.prog, true)}</button>`;
+  }).join('');
+  return `${topbar('Monster Database', 'go', 'home')}
+    <p class="count">${discovered()} of ${SPECIES.length} discovered. Full research: ${Object.values(S.sp).filter(r => r.prog >= 100).length}.</p>
+    <div class="chipbar">${chips}</div><div class="grid2">${tiles}</div>`;
+}
+
+function facetText(sp, k) {
+  switch (k) {
+    case 'Appearance': return sp.ap;
+    case 'Habitat': return `${LOC(sp.loc).n}. ${LOC(sp.loc).blurb}`;
+    case 'Behavior': return sp.be;
+    case 'Weakness': return `Weak to ${EL[sp.el].w}.`;
+    case 'Origin': return sp.or;
+    case 'Evolution': return sp.ev;
+  }
+  return '';
+}
+function viewDetail() {
+  const sp = SP(ui.detail), rec = S.sp[sp.id];
+  if (!rec.forms.includes(ui.form)) ui.form = rec.forms[0] || 'normal';
+  const forms = FORM_KEYS.map(f => rec.forms.includes(f)
+    ? `<button class="form${ui.form === f ? ' on' : ''}" data-act="form" data-id="${f}">${FORMS[f].n}</button>`
+    : `<span class="form unk" aria-label="Undiscovered form">???</span>`).join('');
+  const facets = FACETS.map(([k, t]) => {
+    const ok = rec.prog >= t;
+    return `<div class="frow"><div class="fl${ok ? ' ok' : ''}"><i></i>${k}</div><div>${ok ? facetText(sp, k) : `<div class="redact"></div><div class="redcap">Unlocks at ${t}% research</div>`}</div></div>`;
+  }).join('');
+  const drops = sp.dr.map(d => rec.drops.includes(d) ? `<li>${esc(d)}</li>` : `<li style="opacity:.55">???</li>`).join('');
+  const lvl = rec.lvMin === rec.lvMax ? `Lv. ${rec.lvMin}` : `Lv. ${rec.lvMin} to ${rec.lvMax}`;
+  return `${topbar(esc(sp.name), 'go', 'db')}
+    <div class="plate">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
+    <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
+      <div class="forms">${forms}</div></div>
+    <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
+    <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
+    <p class="hint">${rec.scans} ${rec.scans === 1 ? 'scan' : 'scans'} logged. Hidden forms need Radar upgrades.</p>`;
+}
+
+function viewResearch() {
+  const col = (k) => {
+    const T = TECH[k];
+    const nodes = T.lv.map((n, i) => {
+      const owned = S.tech[k] > i, next = S.tech[k] === i, can = next && S.dp >= n.c;
+      const cls = owned ? 'owned' : next ? `next${can ? ' can' : ''}` : 'lock';
+      return `<button class="node ${cls}" data-act="buytech" data-k="${k}" data-i="${i}" ${owned ? 'aria-label="' + n.n + ', researched"' : ''}>
+        <span class="nt">${n.n}</span><span class="nd">${n.d}</span><span class="nc">${owned ? 'Researched' : num(n.c) + ' data'}</span></button>`;
+    }).join('');
+    return `<div class="branch"><div class="bh"><b>${T.n}</b><span>${T.sub}</span></div>${nodes}</div>`;
+  };
+  return `${topbar('Research', 'go', 'home')}
+    <div class="root"><b>Monster Research</b><span>${num(S.dp)} data to spend</span></div>
+    <div class="fork" aria-hidden="true"><s style="left:50%;top:0;width:2px;height:12px;margin-left:-1px"></s><s style="left:16.66%;right:16.66%;top:11px;height:2px"></s>
+      <s style="left:16.66%;top:11px;width:2px;height:13px;margin-left:-1px"></s><s style="left:50%;top:11px;width:2px;height:13px;margin-left:-1px"></s><s style="left:83.33%;top:11px;width:2px;height:13px;margin-left:-1px"></s></div>
+    <div class="tree">${col('scanner')}${col('lab')}${col('radar')}</div>
+    <p class="hint">Every scan earns data. Rarer monsters and new forms pay more.</p>`;
+}
+
+function viewLab() {
+  const pending = LOCS.filter(l => !S.locs.includes(l.id));
+  const permits = pending.length ? pending.map(l => `<div class="row"><div class="rb"><b>${l.n}</b><span>${l.blurb}</span></div>
+      <button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button></div>`).join('') : `<p class="note">Every area is open.</p>`;
+  const kitNext = KIT_COST[S.kit];
+  const forms = Object.values(S.sp).reduce((a, r) => a + r.forms.length, 0);
+  return `${topbar('Laboratory', 'go', 'home')}
+    <section class="sec" style="margin-top:6px"><h3>Lab record</h3><div class="kv">
+      <div><b>${num(S.scans)}</b><span>Scans made</span></div><div><b>${num(S.trips)}</b><span>Expeditions</span></div>
+      <div><b>${forms}</b><span>Forms logged</span></div><div><b>${Object.values(S.sp).filter(r => r.prog >= 100).length}</b><span>Fully researched</span></div></div></section>
+    <section class="sec"><h3>Area permits</h3>${permits}</section>
+    <section class="sec"><h3>Field kit</h3>
+      <div class="row"><div class="rb"><b>Field kit level ${S.kit} of ${KIT_COST.length}</b><span>Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}% now${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span></div>
+      ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<span class="pill">Maxed</span>`}</div></section>
+    <section class="sec"><h3>Save data</h3><p class="note">Progress is saved in this browser.</p>
+      <button class="danger${ui.reset ? ' arm' : ''}" data-act="${ui.reset ? 'resetdo' : 'resetarm'}">${ui.reset ? 'Tap again to erase everything' : 'Reset progress'}</button></section>`;
+}
+
+function render() {
+  let h = '';
+  switch (ui.screen) {
+    case 'home': h = viewHome(); break;
+    case 'explore': h = viewExplore(); break;
+    case 'db': h = ui.detail ? viewDetail() : viewDb(); break;
+    case 'research': h = viewResearch(); break;
+    case 'lab': h = viewLab(); break;
+  }
+  app.innerHTML = h;
+}
+function go(to) {
+  stopGauge(); clearTimeout(ui.timer);
+  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to;
+  render(); window.scrollTo(0, 0);
+}
+
+/* ---------- encounter logic ---------- */
+function pickSpecies(locId) {
+  const pool = SPECIES.filter(s => s.loc === locId), sc = S.tech.scanner, base = [55, 28, 12, 4, 1.4, .5];
+  const w = pool.map(s => base[s.r] * (s.r >= 2 ? 1 + .4 * sc : 1));
+  let x = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) return pool[i]; }
+  return pool[pool.length - 1];
+}
+function rollForm() {
+  const r = S.tech.radar, t = [];
+  if (r >= 1) t.push(['ancient', .06]);
+  if (r >= 2) { t.push(['alpha', .04]); t.push(['corrupted', .04]); }
+  if (r >= 3) t.push(['shiny', .02]);
+  let x = Math.random();
+  for (const [f, p] of t) { if (x < p) return f; x -= p; }
+  return 'normal';
+}
+function newZone(sp) {
+  const w = Math.max(.16, .30 - sp.r * .03 + S.tech.scanner * .03);
+  return {w, c: w / 2 + .05 + Math.random() * (.9 - w)};
+}
+function startExplore() {
+  if (!S.locs.includes(ui.loc)) { toast(`Buy the ${LOC(ui.loc).n} permit in the Laboratory`); return; }
+  stopGauge(); clearTimeout(ui.timer);
+  S.trips++; save();
+  ui.enc = {loc: ui.loc, phase: 'searching', charges: 3, last: null, known: false, pos: 0};
+  render();
+  ui.timer = setTimeout(() => {
+    const e = ui.enc; if (!e) return;
+    if (Math.random() < .12) { e.phase = 'nothing'; render(); return; }
+    const sp = pickSpecies(e.loc), form = rollForm();
+    e.sp = sp; e.form = form; e.known = !!S.sp[sp.id];
+    e.lv = Math.round((sp.lv[0] + Math.random() * (sp.lv[1] - sp.lv[0])) * FORMS[form].lv);
+    e.zone = newZone(sp); e.phase = 'found';
+    render(); startGauge();
+  }, 1400);
+}
+function startGauge() {
+  stopGauge();
+  const e = ui.enc; if (!e || !e.sp) return;
+  const t0 = performance.now(), speed = .9 + e.sp.r * .18;
+  const tick = (now) => {
+    const ph = (Math.max(0, now - t0) / 1000 * speed) % 2, p = ph > 1 ? 2 - ph : ph;
+    e.pos = p;
+    const el = document.getElementById('needle'); if (el) el.style.left = (p * 100) + '%';
+    ui.raf = requestAnimationFrame(tick);
+  };
+  ui.raf = requestAnimationFrame(tick);
+}
+function stopGauge() { if (ui.raf) { cancelAnimationFrame(ui.raf); ui.raf = 0; } }
+function resolveScan(e, q) {
+  const sp = e.sp, f = e.form, F = FORMS[f];
+  const Q = {weak:{g:8, m:.6, t:'Weak scan'}, good:{g:15, m:1, t:'Good scan'}, perfect:{g:22, m:1.5, t:'Perfect scan'}}[q];
+  let rec = S.sp[sp.id]; const first = !rec;
+  if (first) rec = S.sp[sp.id] = {prog:0, forms:[], drops:[], lvMin:e.lv, lvMax:e.lv, scans:0, mastered:false};
+  const before = rec.prog;
+  const raw = Math.round(Q.g * LAB_MULT[S.tech.lab] * (f === 'normal' ? 1 : 1.5));
+  const gain = Math.min(100 - before, raw);
+  rec.prog = before + gain;
+  const facets = FACETS.filter(([n, t]) => rec.prog >= t && (first || before < t)).map(x => x[0]);
+  rec.scans++; S.scans++;
+  rec.lvMin = Math.min(rec.lvMin, e.lv); rec.lvMax = Math.max(rec.lvMax, e.lv);
+  const newForm = !rec.forms.includes(f); if (newForm) rec.forms.push(f);
+  let dp = Math.round(BASE_DP[sp.r] * Q.m * F.mult);
+  let coins = Math.round(BASE_COIN[sp.r] * Q.m * F.mult * KIT[S.kit]);
+  if (first) dp += 10;
+  if (newForm && f !== 'normal') dp += 40;
+  let drop = null;
+  if (Math.random() < .55) {
+    const name = sp.dr[Math.floor(Math.random() * sp.dr.length)], isNew = !rec.drops.includes(name);
+    if (isNew) rec.drops.push(name);
+    drop = {name, isNew}; coins += Math.round(BASE_COIN[sp.r] * .5 * KIT[S.kit]);
+  }
+  let mastered = false;
+  if (rec.prog >= 100 && !rec.mastered) { rec.mastered = true; mastered = true; dp += 50; coins += BASE_COIN[sp.r] * 10; }
+  S.dp += dp; S.coins += coins; S.last = sp.id; save();
+  return {q, title:Q.t, gain, prog:rec.prog, coins, dp, drop, first, newForm:newForm && f !== 'normal', facets, mastered};
+}
+function doScan() {
+  const e = ui.enc; if (!e || e.phase !== 'found' || e.charges <= 0) return;
+  const d = Math.abs(e.pos - e.zone.c);
+  const q = d <= e.zone.w * .2 ? 'perfect' : d <= e.zone.w * .5 ? 'good' : 'weak';
+  e.last = resolveScan(e, q); e.known = true; e.charges--;
+  if (e.charges > 0) e.zone = newZone(e.sp); else { e.phase = 'done'; stopGauge(); }
+  render();
+  if (e.charges > 0) startGauge();
+}
+
+/* ---------- actions ---------- */
+function buyTech(k, i) {
+  const T = TECH[k];
+  if (S.tech[k] > i) { toast('Already researched'); return; }
+  if (S.tech[k] < i) { toast('Research the previous level first'); return; }
+  const c = T.lv[i].c;
+  if (S.dp < c) { toast(`Need ${num(c - S.dp)} more data`); return; }
+  S.dp -= c; S.tech[k]++; save(); render(); toast(`${T.lv[i].n} researched`);
+}
+function preloadAssets() {
+  let t = 0;
+  const got = (bucket, key) => { bucket[key] = true; clearTimeout(t); t = setTimeout(() => { if (!ui.enc) render(); }, 150); };
+  const probe = (url, ok) => { const im = new Image(); im.onload = ok; im.src = url; };
+  SPECIES.forEach(s => probe(ASSET.mon + s.id + ASSET.monExt, () => got(HAVE.mon, s.id)));
+  LOCS.forEach(l => probe(ASSET.loc + l.id + ASSET.locExt, () => got(HAVE.loc, l.id)));
+  probe(ASSET.lab, () => got(HAVE, 'lab'));
+}
+app.addEventListener('click', (ev) => {
+  const t = ev.target.closest('[data-act]'); if (!t) return;
+  const d = t.dataset;
+  switch (d.act) {
+    case 'go': go(d.to); break;
+    case 'pickloc': ui.loc = d.id; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
+    case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(`Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
+    case 'scan': doScan(); break;
+    case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
+    case 'filter': ui.filter = d.id; render(); break;
+    case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
+    case 'form': ui.form = d.id; render(); break;
+    case 'buytech': buyTech(d.k, +d.i); break;
+    case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); render(); toast(`${l.n} is open`); break; }
+    case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
+    case 'resetarm': ui.reset = true; render(); break;
+    case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
+  }
+});
+render();
+preloadAssets();
+})();
+</script>
+</body>
+</html>
