@@ -497,7 +497,7 @@ function monInner(sp, form) {
   return out;
 }
 /* ---------- image assets (optional, falls back to the drawn art) ---------- */
-const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.jpg'};
+const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.webp'};
 const HAVE = {mon:{}, loc:{}, lab:false};
 const GLYPHS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true"><g stroke="#F6D77A" stroke-width="2.4" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 3px #F6D77A)"><path d="M22 30v12m-5-6h10"/><circle cx="138" cy="34" r="5"/><path d="M130 130l6-12l6 12z"/></g></svg>`;
 const STAR = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
