@@ -438,7 +438,10 @@ const EL = {
   Earth: {a:'#B8843F',b:'#7C5527',c:'#E6C88F',d:'#D95D39',w:'Water'},
   Ice:   {a:'#7FC8E8',b:'#4A8FB5',c:'#E6F7FF',d:'#B9A6FF',w:'Fire'},
   Light: {a:'#F2C14E',b:'#C58B1E',c:'#FFF3C4',d:'#FF8FA3',w:'Dark'},
-  Dark:  {a:'#5B4B8A',b:'#34285A',c:'#9C8AD1',d:'#F25C7A',w:'Light'}
+  Dark:  {a:'#5B4B8A',b:'#34285A',c:'#9C8AD1',d:'#F25C7A',w:'Light'},
+  Poison:{a:'#6B8E3A',b:'#3F5B22',c:'#B7D66B',d:'#C9F24C',w:'Earth'},
+  Wind:  {a:'#BFD9EA',b:'#7FA8C2',c:'#EAF6FB',d:'#FFFFFF',w:'Ice'},
+  Lightning:{a:'#4A4E5C',b:'#2B2E38',c:'#FFD93D',d:'#FFF066',w:'Earth'}
 };
 const RAR = [
   {n:'Common',c:'#7A8B94'},{n:'Uncommon',c:'#3E9E6B'},{n:'Rare',c:'#3B82D6'},
@@ -457,6 +460,8 @@ const ICON = {
   volcano:'<path d="M3 21l6-12h6l6 12z"/><path d="M10 6c0-2 2-2 2-4M14 6c0-2 2-2 2-4"/>',
   ocean:'<path d="M2 9c3-3 5 3 8 0s5 3 8 0 3 0 4 0M2 15c3-3 5 3 8 0s5 3 8 0 3 0 4 0"/>',
   dark:'<path d="M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z"/>',
+  swamp:'<path d="M4 19c3-2 5-2 8 0s5 2 8 0"/><path d="M8 19V7M16 19V10"/>',
+  storm:'<path d="M6 16a4 4 0 0 1 .3-8 5 5 0 0 1 9.8-1A4.5 4.5 0 0 1 18 16z"/><path d="M13 16l-2 4h3l-2 4"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>',
   flask:'<path d="M9 3h6M10 3v6l-6 10a1.5 1.5 0 0 0 1.3 2.3h13.4A1.5 1.5 0 0 0 20 19L14 9V3"/><path d="M7.5 15h9"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4.2 5-6 8-6s6.5 1.8 8 6"/>'
@@ -469,7 +474,10 @@ const EL_ICON = {
   Earth:'<path d="M3 19l6-11 4 6.5 3-4L21 19z"/>',
   Ice:'<path d="M12 3v18M5 6.5l14 11M19 6.5L5 17.5"/>',
   Light:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
-  Dark:'<path d="M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z"/>'
+  Dark:'<path d="M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z"/>',
+  Poison:'<path d="M12 3c4 5 7 8.5 7 12a7 7 0 0 1-14 0c0-3.5 3-7 7-12z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
+  Wind:'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h8a3 3 0 1 1-3 3"/>',
+  Lightning:'<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>'
 };
 const elIc = (el) => `<svg viewBox="0 0 24 24" fill="none" stroke="${EL[el].b}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${EL_ICON[el] || ''}</svg>`;
 
@@ -479,7 +487,9 @@ const LOCS = [
   {id:'frozen',n:'Frozen Land',cost:150,tint:'#4E9CC4',blurb:'Glaciers and howling snow.'},
   {id:'volcano',n:'Volcano',cost:300,tint:'#D4553A',blurb:'Lava flows and hot ash.'},
   {id:'ocean',n:'Deep Ocean',cost:600,tint:'#2D78B4',blurb:'Sunless trenches, glowing life.'},
-  {id:'dark',n:'Dark Zone',cost:1200,tint:'#6B57A6',blurb:'Where even light gets lost.'}
+  {id:'dark',n:'Dark Zone',cost:1200,tint:'#6B57A6',blurb:'Where even light gets lost.'},
+  {id:'swamp',n:'Swamp',cost:1800,tint:'#5C7A3D',blurb:'Fetid mist and glowing bogs.'},
+  {id:'storm',n:'Storm Realm',cost:2500,tint:'#5A6B8C',blurb:'Endless clouds crackling with lightning.'}
 ];
 const LOC = (id) => LOCS.find(l => l.id === id);
 
@@ -546,7 +556,96 @@ const SPECIES = [
    or:'First seen where a star went out.',ev:'Old moths open a third pair of wings made of pure void.',dr:['Void wing','Star dust','Dark silk']},
   {id:'eclipsedragon',name:'Eclipse Dragon',el:'Dark',r:5,loc:'dark',lv:[55,80],art:{b:'quad',f:['horns','wings','spikes','glowtail']},
    ap:'A dragon ringed by a corona of pale light.',be:'Appears only when day and night seem to hesitate.',
-   or:'Said to hatch once every eclipse from a ring of light.',ev:'Rumoured to swallow the sun once it reaches full power.',dr:['Eclipse scale','Corona gem','Umbral horn']}
+   or:'Said to hatch once every eclipse from a ring of light.',ev:'Rumoured to swallow the sun once it reaches full power.',dr:['Eclipse scale','Corona gem','Umbral horn']},
+
+  /* ---- expansion: evolve-pair species. An entry named "<id>_evo" is the
+     evolved form of "<id>" and is auto-linked by that suffix (see evolve()).
+     Evolved forms are marked hidden:true so they never spawn in the wild —
+     they can only be unlocked via the Evolve action once the base form is
+     fully researched (100%). ---- */
+  {id:'glimmerfawn',name:'Glimmerfawn',el:'Nature',r:2,loc:'forest',lv:[24,34],art:{b:'quad',f:['ears','antlers']},
+   ap:'A slender young deer with budding antler nubs wrapped in glowing vine.',be:'Freezes mid-step at the first sign of eyes, blending into dappled light.',
+   or:'Said to be born under an elder tree during a rare golden bloom night.',ev:'With enough seasons behind it, it sheds its dappled coat and becomes a Starlit Elk.',dr:['Budding vine','Dew petal','Antler velvet']},
+  {id:'glimmerfawn_evo',name:'Starlit Elk',el:'Nature',r:2,loc:'forest',lv:[34,50],hidden:true,art:{b:'quad',f:['antlers','glowtail']},
+   ap:'A majestic elk whose wide antlers hold glowing vines and tiny star-shaped blossoms.',be:'Walks moonlit clearings at night, leaving a trail of drifting light motes.',
+   or:'Grown from a Glimmerfawn that survived many blooming seasons.',ev:'Fully grown, it never sheds its antlers again.',dr:['Starlit bloom','Glowing sap','Elder antler']},
+
+  {id:'cactling',name:'Cactling',el:'Earth',r:0,loc:'desert',lv:[3,10],art:{b:'blob',f:['spikes']},
+   ap:'A small round cactus creature with a single desert-flower bloom on its head.',be:'Curls into a tight ball and waits out sandstorms without moving.',
+   or:'Sprouted from a seed pod buried under centuries of sand.',ev:'Given enough sun, its spines thicken into stone-hard plating and it becomes a Spinehide Golem.',dr:['Cactus needle','Sand-dry bloom','Dew sap']},
+  {id:'cactling_evo',name:'Spinehide Golem',el:'Earth',r:0,loc:'desert',lv:[10,22],hidden:true,art:{b:'blob',f:['spikes','shell']},
+   ap:'A hulking golem of armored cactus-stone plates lined with defensive spines.',be:'Stands motionless for days, then charges when its territory is disturbed.',
+   or:'A Cactling that fused with the sun-baked stone around its roots.',ev:'Its flowers bloom once a year, marking the peak of its strength.',dr:['Stone spine','Golden sap core','Cracked plate']},
+
+  {id:'frostmoth',name:'Frostmoth',el:'Ice',r:1,loc:'frozen',lv:[12,20],art:{b:'flyer',f:['antenna']},
+   ap:'A moth with pale icy-blue wings patterned like frost crystals.',be:'Flutters low over snowfields, leaving a faint trail of frost dust.',
+   or:'Hatches from ice cocoons hidden in glacier crevices.',ev:'After enough winters, its wings widen into full snowstorm patterns and it becomes a Blizzard Moth.',dr:['Frost scale','Snow dust','Crystal antenna']},
+  {id:'frostmoth_evo',name:'Blizzard Moth',el:'Ice',r:1,loc:'frozen',lv:[20,34],hidden:true,art:{b:'flyer',f:['antenna','crest']},
+   ap:'A larger moth whose wide wings swirl like a miniature snowstorm.',be:'Stirs up whiteout squalls with a single beat of its wings.',
+   or:'A Frostmoth that absorbed the heart of a small blizzard.',ev:'Its wingtips never stop trailing frost mist.',dr:['Blizzard dust','Glacier shard','Storm wing']},
+
+  {id:'sparkrat',name:'Sparkrat',el:'Fire',r:0,loc:'volcano',lv:[4,10],art:{b:'quad',f:['ears','flame']},
+   ap:'A small rodent with a spiky mane of tiny flickering flames.',be:'Darts between hot rocks, leaving tiny scorch marks in its path.',
+   or:'Born in ash nests warmed by cooling lava flows.',ev:'As its flame mane grows fuller it becomes a fierce Ember Ravager.',dr:['Ember tuft','Ash pebble','Warm coal']},
+  {id:'sparkrat_evo',name:'Ember Ravager',el:'Fire',r:0,loc:'volcano',lv:[10,22],hidden:true,art:{b:'quad',f:['ears','flametail']},
+   ap:'A fierce rodent-wolf hybrid with a full mane of roaring flame and molten claws.',be:'Hunts in packs, chasing prey across cooling lava fields.',
+   or:'A Sparkrat that survived a direct eruption and never lost the fire.',ev:'Its claws stay molten hot long after it stops moving.',dr:['Molten claw','Obsidian shard','Ember mane']},
+
+  {id:'tidepebble',name:'Tidepebble',el:'Water',r:0,loc:'ocean',lv:[3,10],art:{b:'blob',f:['fins']},
+   ap:'A small round smooth-shelled creature resembling a polished sea stone.',be:'Rolls along the seafloor with the current, playing dead when startled.',
+   or:'Formed from stones worn smooth by centuries of tide.',ev:'Given enough years in deep water, it grows a coral crown and becomes a Coral Guardian.',dr:['Polished pebble','Tide film','Sea glass']},
+  {id:'tidepebble_evo',name:'Coral Guardian',el:'Water',r:0,loc:'ocean',lv:[10,22],hidden:true,art:{b:'blob',f:['fins','shell']},
+   ap:'A sturdy turtle-like creature with a shell overgrown with branching coral and glowing anemones.',be:'Guards coral nurseries and lets small fish shelter beneath its shell.',
+   or:'A Tidepebble that settled on a reef for so long the coral claimed it.',ev:'Its coral crown keeps growing for as long as it lives.',dr:['Living coral','Anemone bud','Reef plate']},
+
+  {id:'wispling',name:'Wispling',el:'Dark',r:0,loc:'dark',lv:[4,10],art:{b:'blob',f:['horns']},
+   ap:'A tiny floating orb wrapped in thin wisps of shadow.',be:'Drifts silently and hides the moment a light is pointed its way.',
+   or:'Left behind wherever a shadow lingers too long after dusk.',ev:'When it gathers enough darkness, it grows into a towering Nightmare Reaper.',dr:['Shadow wisp','Dim ember','Night thread']},
+  {id:'wispling_evo',name:'Nightmare Reaper',el:'Dark',r:0,loc:'dark',lv:[10,24],hidden:true,art:{b:'blob',f:['horns','wings']},
+   ap:'A tall cloaked shadow creature with a hood of living smoke and long clawed arms.',be:'Looms at the edge of lantern light but never quite steps into it.',
+   or:'A Wispling that fed on darkness for so long it took on a shape of its own.',ev:'Its cloak grows heavier and darker with each passing year.',dr:['Woven shadow','Void claw','Smoke veil']},
+
+  {id:'bogtoad',name:'Bogtoad',el:'Poison',r:0,loc:'swamp',lv:[3,10],art:{b:'blob',f:['spikes']},
+   ap:'A squat toad with bumpy warty skin and glowing poison sacs on its back.',be:'Sits motionless in murky shallows, waiting for something to wander close.',
+   or:'Hatched in stagnant pools thick with old magic.',ev:"As its poison sacs swell, it becomes a much larger Venomaw Toad.",dr:['Toad wart','Bog slime','Poison sac']},
+  {id:'bogtoad_evo',name:'Venomaw Toad',el:'Poison',r:0,loc:'swamp',lv:[10,22],hidden:true,art:{b:'blob',f:['spikes','fangs']},
+   ap:'A large bloated toad with thick armored warts and a long barbed tongue.',be:'Lashes out with its tongue the instant something ripples the water.',
+   or:"A Bogtoad that gorged on the swamp's deepest toxins.",ev:'Venom drips constantly from its jaw, staining the ground it rests on.',dr:['Barbed tongue','Venom gland','Armored wart']},
+
+  {id:'marshcrawler',name:'Marshcrawler',el:'Poison',r:1,loc:'swamp',lv:[12,20],art:{b:'blob',f:['antenna','shell']},
+   ap:'A many-legged insectoid creature with a segmented mossy-green shell.',be:'Scuttles low through reeds, sensing movement through twitching antennae.',
+   or:'Descended from swamp beetles that never stopped growing.',ev:'Given time, it sheds its shell entirely and grows extra heads as a Pestilence Hydra.',dr:['Shell fragment','Bog chitin','Toxin gland']},
+  {id:'marshcrawler_evo',name:'Pestilence Hydra',el:'Poison',r:1,loc:'swamp',lv:[20,34],hidden:true,art:{b:'serpent',f:['crest']},
+   ap:'A fearsome three-headed serpent-insect hybrid with an armored, mist-dripping body.',be:'Each head hunts independently, converging only to strike together.',
+   or:"A Marshcrawler that absorbed the swamp's oldest toxins over many molts.",ev:'A new head is rumoured to sprout after every decade it survives.',dr:['Hydra fang','Toxic mist vial','Segmented plate']},
+
+  {id:'fenwisp',name:'Fenwisp',el:'Poison',r:2,loc:'swamp',lv:[22,32],art:{b:'flyer',f:['antenna']},
+   ap:'A slender floating jellyfish-like creature with translucent glowing tendrils.',be:'Drifts silently through fog banks, barely disturbing the mist.',
+   or:'Formed where swamp gas gathers and never quite disperses.',ev:'Given enough fog to feed on, it grows into a drifting Miasma Wraith.',dr:['Glowing tendril','Fen mist vial','Translucent membrane']},
+  {id:'fenwisp_evo',name:'Miasma Wraith',el:'Poison',r:2,loc:'swamp',lv:[32,46],hidden:true,art:{b:'blob',f:['horns','wings']},
+   ap:'A tall drifting phantom wrapped in swirling toxic fog with a faint glowing core.',be:'Follows lost travellers through the fog without ever getting closer.',
+   or:"A Fenwisp that merged with the swamp's oldest, thickest fog bank.",ev:'The fog around it never fully clears, even on calm days.',dr:['Miasma core','Phantom shroud','Toxic fog vial']},
+
+  {id:'skypup',name:'Skypup',el:'Wind',r:0,loc:'storm',lv:[3,10],art:{b:'quad',f:['ears']},
+   ap:'A fluffy small creature with cloud-like puffy fur and tiny feathered wing-ears.',be:'Bounces along wind currents, chasing loose clouds for fun.',
+   or:'Said to be born from the first cloud to drift above the mountains.',ev:'As its wings strengthen, it becomes a swift Galebeak Falcon.',dr:['Cloud fluff','Wind feather','Soft down']},
+  {id:'skypup_evo',name:'Galebeak Falcon',el:'Wind',r:0,loc:'storm',lv:[10,22],hidden:true,art:{b:'flyer',f:['crest']},
+   ap:'A sleek falcon with sharp wind-swept feathers and glowing wind trails.',be:'Dives through cloud banks at speeds nothing else in the sky can match.',
+   or:'A Skypup that finally learned to ride the fastest currents.',ev:'Its wingtips leave faint blue trails long after it has passed.',dr:['Wind feather','Falcon talon','Gale crystal']},
+
+  {id:'stormquill',name:'Stormquill',el:'Lightning',r:1,loc:'storm',lv:[12,20],art:{b:'quad',f:['spikes']},
+   ap:'A small porcupine-like creature whose quills crackle with tiny sparks.',be:'Bristles up at the first rumble of thunder, sparking with static.',
+   or:'Nests in treetops that get struck by lightning again and again.',ev:'As the static builds, it grows into a towering Thunder Roc.',dr:['Charged quill','Static dust','Spark shard']},
+  {id:'stormquill_evo',name:'Thunder Roc',el:'Lightning',r:1,loc:'storm',lv:[20,34],hidden:true,art:{b:'flyer',f:['crest','glowtail']},
+   ap:'A massive bird whose feathers crackle with visible arcs of lightning.',be:'Rides the heart of a thunderstorm, calling down bolts as it flies.',
+   or:'A Stormquill that absorbed a direct lightning strike and lived.',ev:'Every storm it flies through leaves it a little brighter.',dr:['Thunder feather','Lightning core','Storm crest']},
+
+  {id:'cloudjelly',name:'Cloudjelly',el:'Wind',r:2,loc:'storm',lv:[22,32],art:{b:'blob',f:['fins']},
+   ap:'A soft floating jellyfish-like creature made of translucent cloud-like material.',be:'Drifts silently above the cloud line, rarely noticed until it is close.',
+   or:'Formed where moisture gathers at the very top of a storm.',ev:'Given enough charge from passing storms, it coils into a Tempest Serpent.',dr:['Cloud wisp','Static droplet','Mist core']},
+  {id:'cloudjelly_evo',name:'Tempest Serpent',el:'Lightning',r:2,loc:'storm',lv:[32,46],hidden:true,art:{b:'serpent',f:['crest','spikes']},
+   ap:'A long serpentine dragon made of swirling storm clouds with glowing lightning veins.',be:'Coils through the eye of a storm, calm at its centre while chaos rages around it.',
+   or:'A Cloudjelly that fused with the storm it drifted through for years.',ev:'It is said to be reborn each time a great storm dissipates.',dr:['Storm scale','Tempest core','Lightning vein']}
 ];
 const SP = (id) => SPECIES.find(s => s.id === id);
 const FORMS = {
@@ -953,7 +1052,7 @@ function viewEncounter() {
 
 function viewDb() {
   const chips = [{id:'all', n:'All'}].concat(LOCS.map(l => ({id:l.id, n:l.n}))).map(c => `<button class="fc${ui.filter === c.id ? ' on' : ''}" data-act="filter" data-id="${c.id}">${c.n}</button>`).join('');
-  const list = SPECIES.filter(s => ui.filter === 'all' || s.loc === ui.filter);
+  const list = SPECIES.filter(s => (ui.filter === 'all' || s.loc === ui.filter) && (!s.hidden || S.sp[s.id]));
   const tiles = list.map(s => {
     const rec = S.sp[s.id];
     if (!rec) return `<button class="tile unk" data-act="open" data-id="${s.id}"><div class="mini">${monSVG(s, 'normal', 'sil')}</div><div class="tn">Unknown</div><div class="tr">Not discovered yet</div>${bar(0, true)}</button>`;
@@ -988,6 +1087,19 @@ function viewDetail() {
   const drops = sp.dr.map(d => rec.drops.includes(d) ? `<li>${esc(d)}</li>` : `<li style="opacity:.55">???</li>`).join('');
   const lvl = rec.lvMin === rec.lvMax ? `Lv. ${rec.lvMin}` : `Lv. ${rec.lvMin} to ${rec.lvMax}`;
   const isPartner = S.partner === sp.id;
+  const evoSp = !sp.hidden ? SP(sp.id + '_evo') : null;
+  const baseSp = sp.hidden ? SP(sp.id.replace(/_evo$/, '')) : null;
+  let evoPanel = '';
+  if (evoSp) {
+    const has = !!S.sp[evoSp.id], cost = BASE_COIN[sp.r] * 6;
+    evoPanel = `<section class="panel"><h3>Evolution</h3>${
+      has ? `<p class="note">Evolved into ${esc(evoSp.name)}.</p><button class="cta sm" data-act="open" data-id="${evoSp.id}">View ${esc(evoSp.name)}</button>`
+      : rec.mastered ? `<p class="note">Ready to evolve into ${esc(evoSp.name)} for ${num(cost)} coins.</p><button class="cta sm" data-act="evolve" data-id="${sp.id}" aria-disabled="${S.coins < cost}">Evolve (${num(cost)} coins)</button>`
+      : `<p class="note">Reach 100% research to unlock evolution into ${esc(evoSp.name)}.</p>`
+    }</section>`;
+  } else if (baseSp) {
+    evoPanel = `<section class="panel"><h3>Evolution</h3><p class="note">Evolved form of ${esc(baseSp.name)}.</p></section>`;
+  }
   return `${topbar(esc(sp.name), 'go', 'db')}
     <div class="plate">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
     <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
@@ -995,7 +1107,22 @@ function viewDetail() {
       <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:12px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
     <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
     <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
+    ${evoPanel}
     <p class="hint">${rec.scans} ${rec.scans === 1 ? 'scan' : 'scans'} logged. Hidden forms need Radar upgrades.</p>`;
+}
+function evolve(id) {
+  const sp = SP(id), rec = sp && S.sp[id], evoSp = sp && SP(sp.id + '_evo');
+  if (!sp || !rec || !evoSp) return;
+  if (!rec.mastered) { toast('Fully research this monster (100%) first.'); return; }
+  if (S.sp[evoSp.id]) { toast(`${evoSp.name} is already unlocked.`); return; }
+  const cost = BASE_COIN[sp.r] * 6;
+  if (S.coins < cost) { toast(`Need ${num(cost - S.coins)} more coins`); return; }
+  S.coins -= cost;
+  S.sp[evoSp.id] = {prog:100, forms:['normal'], drops:[], lvMin:rec.lvMax, lvMax:rec.lvMax, scans:0, mastered:true};
+  S.dp += 50; save();
+  ui.detail = evoSp.id; ui.form = 'normal';
+  render(); window.scrollTo(0, 0);
+  toast(`${sp.name} evolved into ${evoSp.name}!`);
 }
 
 function viewResearch() {
@@ -1077,7 +1204,7 @@ function go(to) {
 
 /* ---------- encounter logic ---------- */
 function pickSpecies(locId) {
-  const pool = SPECIES.filter(s => s.loc === locId), sc = S.tech.scanner, base = [55, 28, 12, 4, 1.4, .5];
+  const pool = SPECIES.filter(s => s.loc === locId && !s.hidden), sc = S.tech.scanner, base = [55, 28, 12, 4, 1.4, .5];
   const w = pool.map(s => base[s.r] * (s.r >= 2 ? 1 + .4 * sc : 1));
   let x = Math.random() * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) return pool[i]; }
@@ -1200,6 +1327,7 @@ app.addEventListener('click', (ev) => {
     case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
     case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
     case 'setpartner': { if (!S.sp[d.id]) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
+    case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } evolve(d.id); break;
     case 'resetarm': ui.reset = true; render(); break;
     case 'setbg': { if (!BG_OPTS[d.id]) break; S.bg = d.id; save(); render(); toast(`${BG_OPTS[d.id].n} applied`); break; }
     case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
