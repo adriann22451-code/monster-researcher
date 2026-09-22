@@ -208,8 +208,8 @@ svg{display:block}
 
 /* explore */
 .locs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.loc{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--surface);
-  border:1px solid var(--line);min-height:118px}
+.loc{position:relative;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--surface);
+  border:1px solid var(--line);min-height:118px;overflow:hidden}
 .loc.sel{border-color:var(--lamp);box-shadow:0 0 0 1px var(--lamp),0 0 16px color-mix(in srgb,var(--lamp) 30%,transparent)}
 .loc .lic{width:36px;height:36px;border-radius:10px;background:var(--tint);color:#fff;display:grid;place-items:center;
   box-shadow:inset 0 -2px 5px rgba(0,0,0,.3),inset 0 2px 2px rgba(255,255,255,.25)}
@@ -260,7 +260,8 @@ svg{display:block}
 .status p{color:var(--ink2);margin-top:3px}
 .meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
 .tag{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:3px 10px 3px 8px;background:var(--surface);
-  border:1px solid var(--line);font-size:13px;font-weight:600}
+  border:1px solid color-mix(in srgb,var(--gc,var(--line)) 45%,var(--line));font-size:13px;font-weight:600;
+  box-shadow:0 0 8px color-mix(in srgb,var(--gc,transparent) 35%,transparent)}
 .tag i{width:15px;height:15px;border-radius:50%;display:grid;place-items:center;flex:none}
 .tag i svg{width:10px;height:10px}
 .pips{display:flex;justify-content:center;gap:8px;margin:2px 0 6px}
@@ -271,12 +272,17 @@ svg{display:block}
 .gauge .z{position:absolute;top:0;bottom:0;left:var(--l);width:var(--w);background:color-mix(in srgb,var(--moss) 60%,transparent)}
 .gauge .z.p{background:var(--lamp)}
 .needle{position:absolute;top:-2px;bottom:-2px;left:0;width:5px;margin-left:-2.5px;border-radius:3px;background:var(--ink)}
-.result{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:14px;animation:rise .3s ease-out}
+.result{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:14px;animation:rise .3s ease-out;overflow:hidden}
+.result::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
 .result h3{font:700 18px/1.15 var(--display)}
+.result.miss{border-color:color-mix(in srgb,var(--signal) 55%,var(--line))}
+.result.miss::before{background:linear-gradient(90deg,transparent,var(--signal),transparent)}
+.result.miss h3{color:var(--signal)}
+.result.miss .note{color:var(--ink2);margin-top:4px}
 .result .rl{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:10px 0 0}
 .chips li{background:var(--surface2);border-radius:99px;padding:4px 11px;font-size:13px;font-weight:600}
-.chips li.hl{background:var(--lamp);color:var(--lampink)}
+.chips li.hl{background:var(--lamp);color:var(--lampink);box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 55%,transparent)}
 .hint{color:var(--ink2);font-size:14px;text-align:center;margin-top:10px}
 
 /* database */
@@ -285,7 +291,7 @@ svg{display:block}
 .fc{flex:0 0 auto;padding:7px 13px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:13.5px;border:1px solid transparent}
 .fc.on{background:var(--lamp);color:var(--lampink)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.tile{position:relative;display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
 .tile .mini{position:relative;flex:none;width:100%;height:0;padding-bottom:100%;border-radius:50%;background:var(--plate);
   overflow:hidden;margin-bottom:2px;border:2px solid var(--plateline)}
 .tile .mini .mon{position:absolute;left:10%;top:10%;width:80%;height:80%}
@@ -302,7 +308,8 @@ svg{display:block}
 .form{padding:5px 12px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:13.5px}
 .form.on{background:var(--lamp);color:var(--lampink)}
 .form.unk{background:transparent;border:1px dashed var(--line);color:var(--ink2)}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 16px 10px;margin-top:14px}
+.panel{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 16px 10px;margin-top:14px;overflow:hidden}
+.panel::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
 .panel h3{font:700 17px/1 var(--display);padding:12px 0 4px}
 .frow{display:grid;grid-template-columns:112px 1fr;gap:8px;padding:11px 0;border-top:1px solid var(--line);align-items:start}
 .frow:first-of-type{border-top:0}
@@ -313,30 +320,56 @@ svg{display:block}
 .redcap{font-size:13px;color:var(--ink2);margin-top:5px}
 
 /* research tree */
-.root{margin:2px auto 0;width:fit-content;background:var(--surface);color:var(--ink);border:1px solid var(--line);
-  border-radius:14px;padding:10px 18px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-.root b{display:block;font:700 17px/1.1 var(--display);color:var(--lamp)}
-.root span{font-size:13.5px;color:var(--ink2)}
-.fork{position:relative;height:24px}
-.fork s{position:absolute;background:var(--line);text-decoration:none}
-.tree{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.branch{display:flex;flex-direction:column;gap:12px}
-.bh{text-align:center;padding:2px 2px 0}
-.bh b{display:block;font:700 17px/1.1 var(--display)}
-.bh span{font-size:12px;color:var(--ink2);line-height:1.25;display:block;margin-top:2px}
-.node{position:relative;display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:12px;background:var(--surface);
-  border:2px solid var(--line);min-height:112px}
-.node::before{content:"";position:absolute;left:50%;top:-14px;height:12px;width:2px;margin-left:-1px;background:var(--line)}
-.node .nt{font:700 14px/1.15 var(--display)}
-.node .nd{font-size:12px;line-height:1.3;color:var(--ink2);flex:1}
-.node .nc{font-weight:700;font-size:12.5px}
-.node.owned{background:var(--moss);border-color:var(--moss);color:#fff}
-.node.owned .nd{color:rgba(255,255,255,.9)}
-.node.next{border-color:var(--lamp)}
-.node.next.can{background:color-mix(in srgb,var(--lamp) 20%,var(--surface))}
-.node.lock{opacity:.6;border-style:dashed}
-:root[data-theme="dark"] .node.owned,:root:not([data-theme="light"]) .node.owned{color:#08210F}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .node.owned{color:#fff}}
+.root{position:relative;margin:2px auto 0;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);border-radius:16px;padding:12px 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden}
+.root::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
+.rooticon{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--lamp);
+  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 55%,var(--surface2)),var(--surface2) 70%);
+  border:2px solid var(--lamp);box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 45%,transparent)}
+.rooticon svg{width:20px;height:20px}
+.rootmeta{flex:1;min-width:0;text-align:left}
+.rootmeta b{display:block;font:700 20px/1.1 var(--display);color:var(--lamp)}
+.rootmeta b small{font-size:11px;font-weight:600;color:var(--ink2);margin-left:4px;letter-spacing:.03em}
+.rootmeta span{font-size:12.5px;color:var(--ink2)}
+.fork{position:relative;height:24px;margin:2px 0 0}
+.fork s{position:absolute;text-decoration:none;opacity:.85;border-radius:2px}
+.tree{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.branch{display:flex;flex-direction:column;gap:10px}
+.bh{text-align:center;padding:0 2px 2px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bhicon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--tint,var(--lamp));
+  background:color-mix(in srgb,var(--tint,var(--lamp)) 18%,var(--surface));border:1px solid color-mix(in srgb,var(--tint,var(--lamp)) 45%,var(--line))}
+.bhicon svg{width:16px;height:16px}
+.bh b{display:block;font:700 13.5px/1.1 var(--display)}
+.bh span{font-size:10px;color:var(--ink2);line-height:1.25;display:block}
+.node{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px 10px;border-radius:14px;
+  background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface2) 55%,var(--surface)));
+  border:2px solid var(--line);min-height:130px;text-align:center;isolation:isolate;overflow:hidden}
+.node::before{content:"";position:absolute;left:50%;top:-13px;height:11px;width:2px;margin-left:-1px;background:var(--line);z-index:-1}
+.node::after{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;pointer-events:none;
+  background:radial-gradient(circle at 50% -10%,color-mix(in srgb,var(--tint,var(--lamp)) 35%,transparent),transparent 70%)}
+.node .ntier{position:absolute;left:8px;top:7px;font:700 9px var(--display);color:var(--ink2);opacity:.65;letter-spacing:.04em}
+.node .nicon{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);color:var(--ink2);
+  border:2px solid var(--line);margin-top:3px}
+.node .nicon svg{width:16px;height:16px}
+.node .nt{font:700 12.5px/1.18 var(--display)}
+.node .nd{font-size:10.5px;line-height:1.3;color:var(--ink2);flex:1}
+.node .nc{font-weight:700;font-size:10.5px;padding:3px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--line)}
+.node.owned{border-color:var(--tint,var(--moss));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--tint,var(--moss)) 32%,var(--surface)),color-mix(in srgb,var(--tint,var(--moss)) 10%,var(--surface)))}
+.node.owned::after{opacity:1}
+.node.owned .nicon{background:var(--tint,var(--moss));color:var(--lampink);border-color:var(--tint,var(--moss));
+  box-shadow:0 0 10px color-mix(in srgb,var(--tint,var(--moss)) 65%,transparent)}
+.node.owned .nd{color:var(--ink)}
+.node.owned .nc{background:color-mix(in srgb,var(--tint,var(--moss)) 28%,var(--surface));
+  border-color:color-mix(in srgb,var(--tint,var(--moss)) 55%,var(--line));color:var(--tint,var(--moss))}
+.node.next .nicon{color:var(--tint,var(--lamp));border-color:color-mix(in srgb,var(--tint,var(--lamp)) 60%,var(--line))}
+.node.next{border-color:color-mix(in srgb,var(--tint,var(--lamp)) 55%,var(--line))}
+.node.next.can{box-shadow:0 0 0 1px color-mix(in srgb,var(--tint,var(--lamp)) 55%,transparent),0 0 16px color-mix(in srgb,var(--tint,var(--lamp)) 45%,transparent);
+  animation:nodefloat 2.4s ease-in-out infinite}
+.node.next.can .nc{background:var(--tint,var(--lamp));color:var(--lampink);border-color:var(--tint,var(--lamp))}
+@keyframes nodefloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.node.lock{opacity:.5;border-style:dashed}
+.node.lock .nicon{opacity:.7}
 
 /* laboratory */
 .sec{margin-top:18px}
@@ -386,6 +419,24 @@ svg{display:block}
 .lban svg{width:22px;height:22px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .lban.off{filter:grayscale(1) brightness(.7)}
 .labimg{width:100%;aspect-ratio:12/5;object-fit:cover;display:block}
+/* RPG polish: frame accents, button shine, avatar aura, hud grid */
+.panel::after,.specCard::after,.loc::after,.tile::after,.result::after{
+  content:"";position:absolute;width:12px;height:12px;right:5px;bottom:5px;pointer-events:none;opacity:.5;border-radius:0 0 4px 0;
+  border-right:2px solid color-mix(in srgb,var(--lamp) 50%,transparent);border-bottom:2px solid color-mix(in srgb,var(--lamp) 50%,transparent)}
+.cta{position:relative;isolation:isolate}
+.cta::after{content:"";position:absolute;top:0;left:-60%;width:36%;height:100%;pointer-events:none;
+  background:linear-gradient(115deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);
+  animation:ctashine 5s ease-in-out infinite}
+.cta.ghost::after{display:none}
+@keyframes ctashine{0%,22%{left:-60%}55%,100%{left:130%}}
+.av{position:relative;isolation:isolate}
+.av::before{content:"";position:absolute;inset:-4px;border-radius:50%;z-index:-1;
+  background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--lamp) 70%,transparent),transparent 60%);
+  animation:spin 3s linear infinite}
+body{background-image:
+  radial-gradient(ellipse 140% 55% at 50% -12%,color-mix(in srgb,var(--lamp) 16%,transparent),transparent 62%),
+  repeating-linear-gradient(0deg,transparent 0 38px,color-mix(in srgb,var(--lamp) 3%,transparent) 38px 39px),
+  repeating-linear-gradient(90deg,transparent 0 38px,color-mix(in srgb,var(--lamp) 3%,transparent) 38px 39px)}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}.sweep{animation:none!important}}
 
 /* loading screen */
@@ -510,7 +561,10 @@ const ICON = {
   storm:'<path d="M6 16a4 4 0 0 1 .3-8 5 5 0 0 1 9.8-1A4.5 4.5 0 0 1 18 16z"/><path d="M13 16l-2 4h3l-2 4"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>',
   flask:'<path d="M9 3h6M10 3v6l-6 10a1.5 1.5 0 0 0 1.3 2.3h13.4A1.5 1.5 0 0 0 20 19L14 9V3"/><path d="M7.5 15h9"/>',
-  user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4.2 5-6 8-6s6.5 1.8 8 6"/>'
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4.2 5-6 8-6s6.5 1.8 8 6"/>',
+  scanner:'<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  radar:'<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12l6-5"/><path d="M12 4a8 8 0 0 1 8 8"/><path d="M12 1a11 11 0 0 1 11 11"/>',
+  check:'<path d="M4 12.5l5 5L20 6"/>'
 };
 const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 const EL_ICON = {
@@ -986,8 +1040,8 @@ const num = (v) => Math.round(v).toLocaleString('en-US');
 const discovered = () => Object.keys(S.sp).length;
 const totalPct = () => Object.values(S.sp).reduce((a, r) => a + r.prog, 0) / (SPECIES.length * 100) * 100;
 const bar = (p, sm) => `<div class="bar${sm ? ' sm' : ''}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><i style="width:${p}%"></i>${[20,40,60,80].map(t => `<b style="left:${t}%"></b>`).join('')}</div>`;
-const rarTag = (r) => `<span class="tag"><i style="background:${RAR[r].c}"></i>${RAR[r].n}</span>`;
-const elTag = (el) => `<span class="tag"><i style="background:${EL[el].a}">${elIc(el)}</i>${el}</span>`;
+const rarTag = (r) => `<span class="tag" style="--gc:${RAR[r].c}"><i style="background:${RAR[r].c}"></i>${RAR[r].n}</span>`;
+const elTag = (el) => `<span class="tag" style="--gc:${EL[el].a}"><i style="background:${EL[el].a}">${elIc(el)}</i>${el}</span>`;
 let toastT;
 function toast(m) {
   let t = document.getElementById('toast');
@@ -1147,12 +1201,15 @@ function viewEncounter() {
         <div class="gauge" aria-hidden="true"><div class="z" style="--l:${((z.c - z.w / 2) * 100).toFixed(1)}%;--w:${(z.w * 100).toFixed(1)}%"></div><div class="z p" style="--l:${pl.toFixed(1)}%;--w:${pw.toFixed(1)}%"></div><div class="needle" id="needle"></div></div>
         <button class="cta" data-act="scan">Scan</button><button class="linkbtn" data-act="leave">Leave</button>`;
     } else {
-      controls = `<p class="hint">Signal lost. The monster slipped away.</p>
+      controls = `<p class="hint">${e.fled ? 'The reading spiked, then vanished — it bolted!' : 'Signal lost. The monster slipped away.'}</p>
         <div class="dock"><button class="cta" data-act="explore">Explore ${L.n} again</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
     }
   }
   let result = '';
-  if (e.last) {
+  if (e.last && e.last.miss) {
+    result = `<section class="result miss" aria-live="polite"><h3>${e.last.title}</h3>
+      <p class="note">The needle swung wide — no data captured. ${e.phase === 'found' ? 'It got jumpier; time it better.' : ''}</p></section>`;
+  } else if (e.last) {
     const r = e.last, sp = e.sp;
     const chips = [`<li>Coins +${num(r.coins)}</li>`, `<li>Data +${num(r.dp)}</li>`];
     if (r.drop) chips.push(`<li>${r.drop.isNew ? 'New drop' : 'Drop'}: ${esc(r.drop.name)}</li>`);
@@ -1242,21 +1299,32 @@ function evolve(id) {
   toast(`${sp.name} evolved into ${evoSp.name}!`);
 }
 
+const BRANCH_TINT = {scanner:'#37C6F4', lab:'#F0A22E', radar:'#8B5CF6'};
+const BRANCH_ICON = {scanner:'scanner', lab:'flask', radar:'radar'};
 function viewResearch() {
+  const owned = Object.values(S.tech).reduce((a, b) => a + b, 0);
+  const pct = Math.round(owned / TECH_TOTAL * 100);
   const col = (k) => {
-    const T = TECH[k];
+    const T = TECH[k], tint = BRANCH_TINT[k];
     const nodes = T.lv.map((n, i) => {
-      const owned = S.tech[k] > i, next = S.tech[k] === i, can = next && S.dp >= n.c;
-      const cls = owned ? 'owned' : next ? `next${can ? ' can' : ''}` : 'lock';
-      return `<button class="node ${cls}" data-act="buytech" data-k="${k}" data-i="${i}" ${owned ? 'aria-label="' + n.n + ', researched"' : ''}>
-        <span class="nt">${n.n}</span><span class="nd">${n.d}</span><span class="nc">${owned ? 'Researched' : num(n.c) + ' data'}</span></button>`;
+      const isOwned = S.tech[k] > i, next = S.tech[k] === i, can = next && S.dp >= n.c;
+      const cls = isOwned ? 'owned' : next ? `next${can ? ' can' : ''}` : 'lock';
+      const badge = isOwned ? ic('check') : !next ? ic('lock') : ic(BRANCH_ICON[k]);
+      return `<button class="node ${cls}" style="--tint:${tint}" data-act="buytech" data-k="${k}" data-i="${i}" ${isOwned ? 'aria-label="' + n.n + ', researched"' : ''}>
+        <span class="ntier">Tier ${i + 1}</span><span class="nicon">${badge}</span>
+        <span class="nt">${n.n}</span><span class="nd">${n.d}</span>
+        <span class="nc">${isOwned ? 'Researched' : num(n.c) + ' data'}</span></button>`;
     }).join('');
-    return `<div class="branch"><div class="bh"><b>${T.n}</b><span>${T.sub}</span></div>${nodes}</div>`;
+    return `<div class="branch" style="--tint:${tint}"><div class="bh"><span class="bhicon">${ic(BRANCH_ICON[k])}</span><b>${T.n}</b><span>${T.sub}</span></div>${nodes}</div>`;
   };
   return `${topbar('Research', 'go', 'home')}
-    <div class="root"><b>Monster Research</b><span>${num(S.dp)} data to spend</span></div>
-    <div class="fork" aria-hidden="true"><s style="left:50%;top:0;width:2px;height:12px;margin-left:-1px"></s><s style="left:16.66%;right:16.66%;top:11px;height:2px"></s>
-      <s style="left:16.66%;top:11px;width:2px;height:13px;margin-left:-1px"></s><s style="left:50%;top:11px;width:2px;height:13px;margin-left:-1px"></s><s style="left:83.33%;top:11px;width:2px;height:13px;margin-left:-1px"></s></div>
+    <div class="root"><div class="rooticon">${ic('flask')}</div><div class="rootmeta"><b>${num(S.dp)}<small>data</small></b><span>${owned} of ${TECH_TOTAL} technologies unlocked</span></div></div>
+    ${bar(pct)}
+    <div class="fork" aria-hidden="true"><s style="left:50%;top:0;width:2px;height:12px;margin-left:-1px;background:var(--line)"></s>
+      <s style="left:16.66%;right:16.66%;top:11px;height:2px;background:linear-gradient(90deg,${BRANCH_TINT.scanner},${BRANCH_TINT.lab},${BRANCH_TINT.radar})"></s>
+      <s style="left:16.66%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.scanner}"></s>
+      <s style="left:50%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.lab}"></s>
+      <s style="left:83.33%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.radar}"></s></div>
     <div class="tree">${col('scanner')}${col('lab')}${col('radar')}</div>
     <p class="hint">Every scan earns data. Rarer monsters and new forms pay more.</p>`;
 }
@@ -1337,7 +1405,7 @@ function rollForm() {
   return 'normal';
 }
 function newZone(sp) {
-  const w = Math.max(.16, .30 - sp.r * .03 + S.tech.scanner * .03);
+  const w = Math.max(.085, .19 - sp.r * .022 + S.tech.scanner * .034);
   return {w, c: w / 2 + .05 + Math.random() * (.9 - w)};
 }
 function startExplore() {
@@ -1348,18 +1416,19 @@ function startExplore() {
   render();
   ui.timer = setTimeout(() => {
     const e = ui.enc; if (!e) return;
-    if (Math.random() < .12) { e.phase = 'nothing'; render(); return; }
+    const nothingChance = Math.max(.09, .22 - S.tech.radar * .035);
+    if (Math.random() < nothingChance) { e.phase = 'nothing'; render(); return; }
     const sp = pickSpecies(e.loc), form = rollForm();
     e.sp = sp; e.form = form; e.known = !!S.sp[sp.id];
     e.lv = Math.round((sp.lv[0] + Math.random() * (sp.lv[1] - sp.lv[0])) * FORMS[form].lv);
-    e.zone = newZone(sp); e.phase = 'found';
+    e.zone = newZone(sp); e.phase = 'found'; e.misses = 0;
     render(); startGauge();
   }, 1400);
 }
 function startGauge() {
   stopGauge();
   const e = ui.enc; if (!e || !e.sp) return;
-  const t0 = performance.now(), speed = .9 + e.sp.r * .18;
+  const t0 = performance.now(), speed = Math.max(.95, 1.35 + e.sp.r * .2 - S.tech.scanner * .11);
   const tick = (now) => {
     const ph = (Math.max(0, now - t0) / 1000 * speed) % 2, p = ph > 1 ? 2 - ph : ph;
     e.pos = p;
@@ -1403,8 +1472,16 @@ function resolveScan(e, q) {
 function doScan() {
   const e = ui.enc; if (!e || e.phase !== 'found' || e.charges <= 0) return;
   const d = Math.abs(e.pos - e.zone.c);
-  const q = d <= e.zone.w * .2 ? 'perfect' : d <= e.zone.w * .5 ? 'good' : 'weak';
-  e.last = resolveScan(e, q); e.known = true; e.charges--;
+  const q = d <= e.zone.w * .16 ? 'perfect' : d <= e.zone.w * .38 ? 'good' : d <= e.zone.w * .62 ? 'weak' : 'miss';
+  e.known = true; e.charges--;
+  if (q === 'miss') {
+    e.misses = (e.misses || 0) + 1;
+    e.last = {miss: true, title: 'Miss!'};
+    const fleeChance = .3 + e.misses * .2;
+    if (e.charges <= 0 || Math.random() < fleeChance) { e.phase = 'done'; e.fled = true; stopGauge(); render(); return; }
+    e.zone = newZone(e.sp); render(); startGauge(); return;
+  }
+  e.last = resolveScan(e, q);
   if (e.charges > 0) e.zone = newZone(e.sp); else { e.phase = 'done'; stopGauge(); }
   render();
   if (e.charges > 0) startGauge();
