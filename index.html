@@ -37,6 +37,13 @@ body{margin:0;min-height:100%;color:var(--ink);font:400 16px/1.45 var(--body);-w
   background:
     radial-gradient(ellipse 140% 55% at 50% -12%,color-mix(in srgb,var(--lamp) 16%,transparent),transparent 62%),
     var(--bg)}
+body.bg-home{
+  background:
+    linear-gradient(180deg,rgba(6,11,24,.35),rgba(6,11,24,.7) 55%,var(--bg) 92%),
+    url('assets/backgrounds/home.jpg');
+  background-size:100% auto,cover;
+  background-position:top,center top;
+  background-repeat:no-repeat,no-repeat}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
 button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
 h1,h2,h3,p{margin:0}
@@ -83,8 +90,7 @@ svg{display:block}
 .questchip i{width:6px;height:6px;border-radius:50%;background:var(--lamp);box-shadow:0 0 6px var(--lamp)}
 .questchip.ready{background:color-mix(in srgb,var(--lamp) 20%,var(--surface));color:var(--lamp);border-color:var(--lamp)}
 .tube{position:relative;margin:0 0 10px;padding-top:64%;border-radius:24px;overflow:hidden;
-  background-image:linear-gradient(180deg,rgba(6,11,24,.18),rgba(6,11,24,.6) 82%),url('assets/backgrounds/home.jpg');
-  background-size:cover,cover;background-position:center,center top;background-repeat:no-repeat,no-repeat;
+  background:radial-gradient(ellipse 90% 70% at 50% 100%,color-mix(in srgb,var(--lamp) 14%,var(--surface)),var(--bg) 78%),var(--surface);
   border:1px solid var(--line);box-shadow:inset 0 0 30px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35)}
 .tubein{position:absolute;inset:0;display:grid;place-items:center}
 .cyl{position:relative;width:64%;height:92%;border-radius:40% 40% 46% 46%/16% 16% 22% 22%;
@@ -976,6 +982,7 @@ function viewSettings() {
 
 function render() {
   let h = '';
+  document.body.classList.toggle('bg-home', ui.screen === 'home');
   switch (ui.screen) {
     case 'home': h = viewHome(); break;
     case 'explore': h = viewExplore(); break;
