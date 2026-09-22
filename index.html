@@ -734,10 +734,10 @@ function labArt() {
 function statusBar() {
   const plv = 1 + Math.floor(S.scans / 6), pcur = S.scans % 6, pneed = 6;
   return `<header class="statusbar">
-    <div class="avwrap"><span class="av">${ic('user')}</span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></div>
-    <span class="pill"><i class="dot dp"></i>${num(S.dp)}<span class="plusbtn" data-act="go" data-to="research" aria-label="Add research data">+</span></span>
-    <span class="pill"><i class="dot coin"></i>${num(S.coins)}<span class="plusbtn" data-act="go" data-to="lab" aria-label="Add coins">+</span></span>
-    <button class="gear" data-act="go" data-to="lab" aria-label="Laboratory settings">${ic('gear')}</button></header>`;
+    <button class="avwrap" data-act="go" data-to="profile" aria-label="View profile"><span class="av">${ic('user')}</span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></button>
+    <span class="pill"><i class="dot dp"></i>${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
+    <span class="pill"><i class="dot coin"></i>${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
+    <button class="gear" data-act="go" data-to="settings" aria-label="Settings">${ic('gear')}</button></header>`;
 }
 function tubeArt() {
   let sp = null;
@@ -945,20 +945,31 @@ function viewLab() {
   const permits = pending.length ? pending.map(l => `<div class="row"><div class="rb"><b>${l.n}</b><span>${l.blurb}</span></div>
       <button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button></div>`).join('') : `<p class="note">Every area is open.</p>`;
   const kitNext = KIT_COST[S.kit];
+  return `${topbar('Laboratory', 'go', 'home')}
+    <section class="sec" style="margin-top:6px"><h3>Area permits</h3>${permits}</section>
+    <section class="sec"><h3>Field kit</h3>
+      <div class="row"><div class="rb"><b>Field kit level ${S.kit} of ${KIT_COST.length}</b><span>Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}% now${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span></div>
+      ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<span class="pill">Maxed</span>`}</div></section>`;
+}
+
+function viewProfile() {
   const forms = Object.values(S.sp).reduce((a, r) => a + r.forms.length, 0);
   const disc = discovered(), rk = rankFor(disc), rkIdx = RANKS.findIndex(r => r.n === rk.n), rkNext = RANKS[rkIdx + 1];
   const rkPct = rkNext ? Math.min(100, (disc - rk.min) / (rkNext.min - rk.min) * 100) : 100;
-  return `${topbar('Laboratory', 'go', 'home')}
-    <section class="sec" style="margin-top:6px"><h3>Researcher rank</h3>
+  const plv = 1 + Math.floor(S.scans / 6), pcur = S.scans % 6, pneed = 6;
+  return `${topbar('Profile', 'go', 'home')}
+    <section class="sec" style="margin-top:6px"><h3>Researcher level</h3>
+      <div class="row"><div class="rb"><b>Level ${plv}</b><span>${pcur}/${pneed} scans to next level</span></div></div>${bar(pcur / pneed * 100)}</section>
+    <section class="sec"><h3>Researcher rank</h3>
       <div class="row"><div class="rb"><b>${rk.n}</b><span>${rkNext ? `${disc}/${rkNext.min} species to ${rkNext.n}` : 'Maximum rank reached'}</span></div></div>${bar(rkPct)}</section>
     <section class="sec"><h3>Lab record</h3><div class="kv">
       <div><b>${num(S.scans)}</b><span>Scans made</span></div><div><b>${num(S.trips)}</b><span>Expeditions</span></div>
-      <div><b>${forms}</b><span>Forms logged</span></div><div><b>${Object.values(S.sp).filter(r => r.prog >= 100).length}</b><span>Fully researched</span></div></div></section>
-    <section class="sec"><h3>Area permits</h3>${permits}</section>
-    <section class="sec"><h3>Field kit</h3>
-      <div class="row"><div class="rb"><b>Field kit level ${S.kit} of ${KIT_COST.length}</b><span>Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}% now${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span></div>
-      ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<span class="pill">Maxed</span>`}</div></section>
-    <section class="sec"><h3>Save data</h3><p class="note">Progress is saved in this browser.</p>
+      <div><b>${forms}</b><span>Forms logged</span></div><div><b>${Object.values(S.sp).filter(r => r.prog >= 100).length}</b><span>Fully researched</span></div></div></section>`;
+}
+
+function viewSettings() {
+  return `${topbar('Settings', 'go', 'home')}
+    <section class="sec" style="margin-top:6px"><h3>Save data</h3><p class="note">Progress is saved in this browser.</p>
       <button class="danger${ui.reset ? ' arm' : ''}" data-act="${ui.reset ? 'resetdo' : 'resetarm'}">${ui.reset ? 'Tap again to erase everything' : 'Reset progress'}</button></section>`;
 }
 
@@ -970,6 +981,8 @@ function render() {
     case 'db': h = ui.detail ? viewDetail() : viewDb(); break;
     case 'research': h = viewResearch(); break;
     case 'lab': h = viewLab(); break;
+    case 'profile': h = viewProfile(); break;
+    case 'settings': h = viewSettings(); break;
     case 'quests': h = viewQuests(); break;
   }
   app.innerHTML = h;
