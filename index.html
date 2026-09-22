@@ -910,12 +910,13 @@ const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/resea
 const BG_OPTS = {bright:{n:'Bright Lab', f:'bg-bright.jpg'}, dark:{n:'Dark Lab', f:'bg-dark.jpg'}};
 function monImg(sp, form, extra) {
   const src = ASSET.mon + sp.id + ASSET.monExt;
-  const ghost = form === 'corrupted' ? `<img class="ghost" src="${src}" alt="" draggable="false">` : '';
+  const ghost = form === 'corrupted' ? `<img class="ghost" src="${src}" alt="" draggable="false" loading="lazy" decoding="async">` : '';
   const fx = form === 'ancient' ? GLYPHS : form === 'shiny' ? SPARKS : '';
-  return `<div class="mon img f-${form} ${extra || ''}" role="img" aria-label="${esc(formName(sp, form))}"><img class="base" src="${src}" alt="" draggable="false">${ghost}${fx}</div>`;
+  const fallback = monSVG_draw(sp, form, extra).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return `<div class="mon img f-${form} ${extra || ''}" role="img" aria-label="${esc(formName(sp, form))}"><img class="base" src="${src}" alt="" draggable="false" loading="lazy" decoding="async" data-fb="${fallback}" onerror="this.onerror=null;this.closest('.mon').outerHTML=this.dataset.fb">${ghost}${fx}</div>`;
 }
-const plateBg = (locId) => HAVE.loc[locId] ? `<img class="pbg" src="${ASSET.loc}${locId}${ASSET.locExt}" alt="" draggable="false">` : '';
-const monSVG = (sp, form, extra) => HAVE.mon[sp.id] ? monImg(sp, form, extra) : monSVG_draw(sp, form, extra);
+const plateBg = (locId) => HAVE.loc[locId] ? `<img class="pbg" src="${ASSET.loc}${locId}${ASSET.locExt}" alt="" draggable="false" loading="lazy" decoding="async">` : '';
+const monSVG = (sp, form, extra) => monImg(sp, form, extra);
 const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBox="0 0 160 160" role="img" aria-label="${esc(formName(sp, form))}" focusable="false">${monInner(sp, form)}</svg>`;
 
 /* ---------- state ---------- */
@@ -1376,7 +1377,6 @@ function preloadAssets() {
   let t = 0;
   const got = (bucket, key) => { bucket[key] = true; clearTimeout(t); t = setTimeout(() => { if (!ui.enc) render(); }, 150); };
   const probe = (url, ok) => { const im = new Image(); im.onload = ok; im.src = url; };
-  SPECIES.forEach(s => probe(ASSET.mon + s.id + ASSET.monExt, () => got(HAVE.mon, s.id)));
   LOCS.forEach(l => probe(ASSET.loc + l.id + ASSET.locExt, () => got(HAVE.loc, l.id)));
   probe(ASSET.lab, () => got(HAVE, 'lab'));
 }
