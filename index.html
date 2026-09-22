@@ -3,6 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* Some mobile browsers' "Desktop site" mode ignores width=device-width and
+   substitutes a wide virtual viewport (e.g. ~980px), which shrinks this
+   mobile-first layout. Force the viewport back to the real screen width. */
+(function(){
+  try{
+    var realWidth = window.screen && window.screen.width;
+    if (realWidth && realWidth > 0 && realWidth < 600) {
+      var vp = document.querySelector('meta[name="viewport"]');
+      if (vp) vp.setAttribute('content', 'width=' + realWidth + ', initial-scale=1, viewport-fit=cover');
+    }
+  }catch(e){}
+})();
+</script>
 <title>Monster Research Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
