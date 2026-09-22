@@ -82,16 +82,16 @@ svg{display:block}
   border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:700;flex:none}
 .questchip i{width:6px;height:6px;border-radius:50%;background:var(--lamp);box-shadow:0 0 6px var(--lamp)}
 .questchip.ready{background:color-mix(in srgb,var(--lamp) 20%,var(--surface));color:var(--lamp);border-color:var(--lamp)}
-.tube{position:relative;margin:0 0 8px;padding-top:23%;border-radius:18px;overflow:hidden;
+.tube{position:relative;margin:0 0 10px;padding-top:64%;border-radius:24px;overflow:hidden;
   background:radial-gradient(ellipse 90% 70% at 50% 100%,color-mix(in srgb,var(--lamp) 14%,var(--surface)),var(--bg) 78%),var(--surface);
   border:1px solid var(--line);box-shadow:inset 0 0 30px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35)}
 .tubein{position:absolute;inset:0;display:grid;place-items:center}
-.cyl{position:relative;width:44%;height:82%;border-radius:40% 40% 46% 46%/16% 16% 22% 22%;
+.cyl{position:relative;width:64%;height:92%;border-radius:40% 40% 46% 46%/16% 16% 22% 22%;
   background:linear-gradient(180deg,color-mix(in srgb,var(--lamp) 22%,transparent),color-mix(in srgb,var(--lamp) 8%,transparent) 70%,transparent);
   border:2px solid color-mix(in srgb,var(--lamp) 65%,transparent);box-shadow:0 0 30px color-mix(in srgb,var(--lamp) 55%,transparent),inset 0 0 30px color-mix(in srgb,var(--lamp) 25%,transparent)}
 .cyl::before{content:"";position:absolute;inset:0;border-radius:inherit;
   background:repeating-linear-gradient(0deg,transparent 0 7px,color-mix(in srgb,var(--lamp) 10%,transparent) 7px 8px);opacity:.5}
-.cyl .mon,.cyl .mon.img{position:absolute;left:8%;top:10%;width:84%;height:84%;z-index:2;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--lamp) 60%,transparent))}
+.cyl .mon,.cyl .mon.img{position:absolute;left:3%;top:4%;width:94%;height:94%;z-index:2;filter:drop-shadow(0 0 16px color-mix(in srgb,var(--lamp) 65%,transparent))}
 .cylbase{position:absolute;left:50%;bottom:6%;width:56%;height:10%;transform:translateX(-50%);border-radius:50%;
   background:var(--plate);border:2px solid var(--plateline);box-shadow:0 0 20px color-mix(in srgb,var(--lamp) 40%,transparent)}
 .tubetag{position:absolute;left:10px;top:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;
@@ -113,6 +113,33 @@ svg{display:block}
 .icel{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink2)}
 .icel i{width:8px;height:8px;border-radius:50%}
 .iclvl{font:600 11px var(--display);color:var(--ink2);margin-top:7px}
+.homeAction{display:block;margin:0 0 10px}
+.specCard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px 14px 14px;overflow:hidden}
+.specCard::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
+.scTop{display:flex;gap:12px;align-items:center}
+.scThumb{position:relative;flex:none;width:60px;height:60px;border-radius:14px;overflow:hidden;
+  background:radial-gradient(ellipse 90% 70% at 50% 100%,color-mix(in srgb,var(--lamp) 22%,var(--surface2)),var(--bg) 78%);
+  border:2px solid color-mix(in srgb,var(--lamp) 55%,var(--line));box-shadow:0 0 14px color-mix(in srgb,var(--lamp) 30%,transparent)}
+.scThumb .mon,.scThumb .mon.img{position:absolute;left:4%;top:6%;width:92%;height:92%}
+.scMeta{flex:1;min-width:0}
+.scNameRow{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.scName{font:700 18px/1.15 var(--display);letter-spacing:.01em}
+.scBadges{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.scRes{display:flex;align-items:center;gap:8px;margin-top:8px}
+.scRes span{font:600 11px var(--display);color:var(--ink2);flex:none}
+.scRes .bar{flex:1;margin:0}
+.scDiv{height:1px;background:var(--line);margin:12px 0 10px}
+.scBottom{display:flex;gap:10px;align-items:stretch}
+.scStats{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.scStats .statrow{padding:3px 0;font-size:12px;border-top:0}
+.scStats .statrow .si{width:13px;height:13px}
+.scExplore{flex:none;width:106px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  font:800 13.5px/1.1 var(--display);letter-spacing:.02em;
+  background:linear-gradient(180deg,var(--gold-hi) 0%,var(--lamp) 55%,color-mix(in srgb,var(--lamp) 72%,black) 100%);
+  color:var(--lampink);border:1px solid color-mix(in srgb,var(--lamp) 55%,black);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 0 color-mix(in srgb,var(--lamp) 45%,black),0 8px 16px rgba(0,0,0,.3)}
+.scExplore svg{width:22px;height:22px}
+.scExplore:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 color-mix(in srgb,var(--lamp) 45%,black),0 3px 8px rgba(0,0,0,.25)}
 .stats{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;overflow:hidden}
 .stats::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
@@ -128,7 +155,7 @@ svg{display:block}
 .statrow .sl{flex:1;color:var(--ink2);font-weight:600}
 .statrow .sv{font-weight:700}
 .cta.sm{min-height:40px;font-size:13px}
-.menu{margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.menu{margin-top:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .gcard{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line);
   text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .gbanner{height:40px;display:grid;place-items:center;color:#fff;position:relative}
@@ -718,7 +745,7 @@ function tubeArt() {
   return `<div class="tube"><div class="tubetag"><i></i>${tag}</div>
     <div class="tubein"><div class="cyl">${inner}</div><div class="cylbase"></div></div></div>`;
 }
-function infoCard() {
+function specCard() {
   let sp = null, rec = null;
   if (S.partner && S.sp[S.partner]) { sp = SP(S.partner); rec = S.sp[S.partner]; }
   else if (S.last && S.sp[S.last]) { sp = SP(S.last); rec = S.sp[S.last]; }
@@ -726,15 +753,25 @@ function infoCard() {
   const rsPct = Math.round((LAB_MULT[S.tech.lab] - 1) * 100);
   const maxLv = sp ? sp.lv[1] : '—';
   const pp = partnerPct();
-  return `<section class="infocard" aria-label="Latest specimen">
-    <div class="ictop"><div><div class="icname">${sp ? esc(sp.name) : 'No Specimen Logged'}</div>
-      <div class="icbadges">${sp ? `<span class="icrar">${RAR[sp.r].n}</span>${elTag(sp.el)}` : `<span class="ms" style="color:var(--ink2)">Explore an area to detect one</span>`}</div></div></div>
-    ${sp ? `<div class="iclvl">Research ${Math.round(rec.prog)}%</div>${bar(rec.prog)}` : ''}
-    <div style="margin-top:12px">
-      <div class="statrow"><span class="si">${ic('research')}</span><span class="sl">Research Speed</span><span class="sv">+${rsPct}%</span></div>
-      <div class="statrow"><span class="si">${ic('explore')}</span><span class="sl">Capture Chance</span><span class="sv">+${rfPct}%</span></div>
-      <div class="statrow"><span class="si">${ic('db')}</span><span class="sl">Max Level</span><span class="sv">${maxLv}</span></div>
-      ${S.partner ? `<div class="statrow"><span class="si">${ic('user')}</span><span class="sl">Partner Bonus</span><span class="sv">+${pp}%</span></div>` : ''}
+  const thumb = sp ? monSVG(sp, 'normal') : `<svg class="mon sil" viewBox="0 0 160 160">${monInner(SP('mossling'), 'normal')}</svg>`;
+  return `<section class="specCard" aria-label="Latest specimen">
+    <div class="scTop">
+      <div class="scThumb">${thumb}</div>
+      <div class="scMeta">
+        <div class="scNameRow"><span class="scName">${sp ? esc(sp.name) : 'No Specimen'}</span>${sp ? elTag(sp.el) : ''}</div>
+        <div class="scBadges">${sp ? `<span class="icrar">${RAR[sp.r].n}</span>` : `<span class="ms" style="color:var(--ink2);font-size:12.5px">Explore an area to detect one</span>`}</div>
+        ${sp ? `<div class="scRes"><span>Research</span>${bar(rec.prog)}<span>${Math.round(rec.prog)}%</span></div>` : ''}
+      </div>
+    </div>
+    <div class="scDiv"></div>
+    <div class="scBottom">
+      <div class="scStats">
+        <div class="statrow"><span class="si">${ic('research')}</span><span class="sl">Research Speed</span><span class="sv">+${rsPct}%</span></div>
+        <div class="statrow"><span class="si">${ic('explore')}</span><span class="sl">Capture Chance</span><span class="sv">+${rfPct}%</span></div>
+        <div class="statrow"><span class="si">${ic('db')}</span><span class="sl">Max Level</span><span class="sv">${maxLv}</span></div>
+        ${S.partner ? `<div class="statrow"><span class="si">${ic('user')}</span><span class="sl">Partner Bonus</span><span class="sv">+${pp}%</span></div>` : ''}
+      </div>
+      <button class="scExplore" data-act="go" data-to="explore">${ic('explore')}<span>Explore</span></button>
     </div>
   </section>`;
 }
@@ -769,8 +806,7 @@ function viewHome() {
   return `${statusBar()}
     ${heroRow()}
     ${tubeArt()}
-    ${infoCard()}
-    <div class="dock" style="margin:8px -16px 0;padding:8px 16px 4px"><button class="cta sm" data-act="go" data-to="explore">Explore</button></div>
+    <div class="homeAction">${specCard()}</div>
     <nav class="menu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav>`;
 }
 
