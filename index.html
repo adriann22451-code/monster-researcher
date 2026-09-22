@@ -63,13 +63,10 @@ svg{display:block}
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:99px;
   padding:5px 11px 5px 8px;font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-.dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 5px 0 currentColor}
-.dot.coin{background:var(--lamp);color:var(--lamp)}
-.dot.dp{background:var(--moss);color:var(--moss);border-radius:3px;transform:rotate(45deg) scale(.82)}
+.dot{width:16px;height:16px;flex:none;object-fit:contain;filter:drop-shadow(0 0 4px currentColor)}
 
 /* status bar (home) */
-.statusbar{display:flex;align-items:center;gap:6px;padding:8px 0 2px;position:sticky;top:env(safe-area-inset-top,0px);
-  background:linear-gradient(var(--bg) 82%,transparent);z-index:5}
+.statusbar{display:flex;align-items:center;gap:6px;padding:8px 0 2px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 .avwrap{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:99px;
   padding:4px 10px 4px 4px;flex:1;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .av{width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 55%,var(--surface2)),var(--surface2) 70%);
@@ -726,7 +723,7 @@ function affordable() {
 }
 function topbar(title, backAct, backTo) {
   return `<header class="top"><button class="back" data-act="${backAct}" data-to="${backTo || ''}" aria-label="Back">${ic('back')}</button><h2>${title}</h2>
-    <div class="res"><span class="pill"><i class="dot coin"></i>${num(S.coins)}</span><span class="pill"><i class="dot dp"></i>${num(S.dp)}</span></div></header>`;
+    <div class="res"><span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}</span><span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}</span></div></header>`;
 }
 
 /* ---------- views ---------- */
@@ -754,8 +751,8 @@ function statusBar() {
   const plv = 1 + Math.floor(S.scans / 6), pcur = S.scans % 6, pneed = 6;
   return `<header class="statusbar">
     <button class="avwrap" data-act="go" data-to="profile" aria-label="View profile"><span class="av">${ic('user')}</span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></button>
-    <span class="pill"><i class="dot dp"></i>${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
-    <span class="pill"><i class="dot coin"></i>${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
+    <span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
+    <span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
     <button class="gear" data-act="go" data-to="settings" aria-label="Settings">${ic('gear')}</button></header>`;
 }
 function tubeArt() {
