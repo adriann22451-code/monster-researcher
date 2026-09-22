@@ -40,7 +40,7 @@ body{margin:0;min-height:100%;color:var(--ink);font:400 16px/1.45 var(--body);-w
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
 button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
 h1,h2,h3,p{margin:0}
-.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 28px}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 14px}
 @media (min-width:520px){.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 svg{display:block}
 
@@ -60,30 +60,31 @@ svg{display:block}
 .dot.dp{background:var(--moss);color:var(--moss);border-radius:3px;transform:rotate(45deg) scale(.82)}
 
 /* status bar (home) */
-.statusbar{display:flex;align-items:center;gap:8px;padding:14px 0 4px;position:sticky;top:env(safe-area-inset-top,0px);
+.statusbar{display:flex;align-items:center;gap:6px;padding:10px 0 2px;position:sticky;top:env(safe-area-inset-top,0px);
   background:linear-gradient(var(--bg) 82%,transparent);z-index:5}
-.avwrap{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:99px;
-  padding:5px 12px 5px 5px;flex:1;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-.av{width:34px;height:34px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 55%,var(--surface2)),var(--surface2) 70%);
-  border:2px solid var(--lamp);display:grid;place-items:center;color:var(--lamp);box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 45%,transparent)}
-.av svg{width:18px;height:18px}
+.avwrap{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:99px;
+  padding:4px 10px 4px 4px;flex:1;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.av{width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 55%,var(--surface2)),var(--surface2) 70%);
+  border:2px solid var(--lamp);display:grid;place-items:center;color:var(--lamp);box-shadow:0 0 8px color-mix(in srgb,var(--lamp) 45%,transparent)}
+.av svg{width:14px;height:14px}
 .avmeta{min-width:0;flex:1}
-.avmeta b{display:block;font:700 13px/1.1 var(--display);letter-spacing:.02em}
-.statusbar .pill{background:var(--surface2)}
-.plusbtn{width:22px;height:22px;border-radius:50%;background:var(--lamp);color:var(--lampink);display:grid;place-items:center;
-  font:800 15px/1 var(--display);flex:none;margin-left:2px;box-shadow:0 0 8px color-mix(in srgb,var(--lamp) 55%,transparent)}
-.gear{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
-.gear svg{width:19px;height:19px;color:var(--ink2)}
+.avmeta b{display:block;font:700 11.5px/1.1 var(--display);letter-spacing:.02em}
+.statusbar .pill{background:var(--surface2);padding:4px 9px 4px 6px;font-size:12px}
+.plusbtn{width:18px;height:18px;border-radius:50%;background:var(--lamp);color:var(--lampink);display:grid;place-items:center;
+  font:800 13px/1 var(--display);flex:none;margin-left:2px;box-shadow:0 0 8px color-mix(in srgb,var(--lamp) 55%,transparent)}
+.gear{width:30px;height:30px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.gear svg{width:15px;height:15px;color:var(--ink2)}
 
 /* home */
-.hero h1{font:700 clamp(20px,6vw,26px)/1.15 var(--display);letter-spacing:.02em;margin:18px 0 6px}
-.hero p{color:var(--ink2)}
-.rule{display:flex;align-items:center;gap:10px;margin:14px 0 2px;opacity:.9}
-.rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line) 50%,transparent)}
-.rule i{width:6px;height:6px;background:var(--lamp);transform:rotate(45deg);flex:none;box-shadow:0 0 6px color-mix(in srgb,var(--lamp) 70%,transparent)}
-.tube{position:relative;margin:14px 0 10px;padding-top:34%;border-radius:22px;overflow:hidden;
+.heroRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0 8px}
+.rankline{color:var(--lamp);font-weight:600;font-size:12px}
+.questchip{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--line);
+  border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:700;flex:none}
+.questchip i{width:6px;height:6px;border-radius:50%;background:var(--lamp);box-shadow:0 0 6px var(--lamp)}
+.questchip.ready{background:color-mix(in srgb,var(--lamp) 20%,var(--surface));color:var(--lamp);border-color:var(--lamp)}
+.tube{position:relative;margin:0 0 8px;padding-top:23%;border-radius:18px;overflow:hidden;
   background:radial-gradient(ellipse 90% 70% at 50% 100%,color-mix(in srgb,var(--lamp) 14%,var(--surface)),var(--bg) 78%),var(--surface);
-  border:1px solid var(--line);box-shadow:inset 0 0 40px rgba(0,0,0,.5),0 10px 26px rgba(0,0,0,.4)}
+  border:1px solid var(--line);box-shadow:inset 0 0 30px rgba(0,0,0,.5),0 6px 16px rgba(0,0,0,.35)}
 .tubein{position:absolute;inset:0;display:grid;place-items:center}
 .cyl{position:relative;width:44%;height:82%;border-radius:40% 40% 46% 46%/16% 16% 22% 22%;
   background:linear-gradient(180deg,color-mix(in srgb,var(--lamp) 22%,transparent),color-mix(in srgb,var(--lamp) 8%,transparent) 70%,transparent);
@@ -93,25 +94,25 @@ svg{display:block}
 .cyl .mon,.cyl .mon.img{position:absolute;left:8%;top:10%;width:84%;height:84%;z-index:2;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--lamp) 60%,transparent))}
 .cylbase{position:absolute;left:50%;bottom:6%;width:56%;height:10%;transform:translateX(-50%);border-radius:50%;
   background:var(--plate);border:2px solid var(--plateline);box-shadow:0 0 20px color-mix(in srgb,var(--lamp) 40%,transparent)}
-.tubetag{position:absolute;left:12px;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;
-  padding:6px 10px;font-size:11.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:6px}
-.tubetag i{width:6px;height:6px;border-radius:50%;background:var(--lamp);box-shadow:0 0 6px var(--lamp)}
+.tubetag{position:absolute;left:10px;top:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:4px 8px;font-size:10px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.tubetag i{width:5px;height:5px;border-radius:50%;background:var(--lamp);box-shadow:0 0 6px var(--lamp)}
 .labart{height:auto;background:var(--surface)}
 .labart .dish{transform-origin:142px 42px;animation:sway 6s ease-in-out infinite}
 .labart .sig{animation:pulse 2.4s ease-out infinite;opacity:0}
 .labart .sig2{animation-delay:.8s}
 @keyframes sway{50%{transform:rotate(14deg)}}
 @keyframes pulse{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
-.infocard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;overflow:hidden}
+.infocard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:11px 14px;overflow:hidden}
 .infocard::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
 .ictop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.icname{font:700 22px/1.15 var(--display);letter-spacing:.01em}
-.icbadges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-.icrar{font:600 12px var(--body);padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--lamp) 22%,var(--surface2));color:var(--lamp);font-weight:700}
-.icel{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.icname{font:700 16px/1.15 var(--display);letter-spacing:.01em}
+.icbadges{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+.icrar{font:700 10.5px var(--body);padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--lamp) 22%,var(--surface2));color:var(--lamp)}
+.icel{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink2)}
 .icel i{width:8px;height:8px;border-radius:50%}
-.iclvl{font:600 13px var(--display);color:var(--ink2);margin-top:10px}
+.iclvl{font:600 11px var(--display);color:var(--ink2);margin-top:7px}
 .stats{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;overflow:hidden}
 .stats::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--lamp),transparent)}
@@ -121,23 +122,30 @@ svg{display:block}
 .rs .rt{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
 .rs .rt b{font:700 18px var(--display);color:var(--lamp)}
 .mini-res{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.statrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.statrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:12px}
 .statrow:first-of-type{border-top:0}
-.statrow .si{color:var(--lamp);flex:none;width:18px;height:18px}
+.statrow .si{color:var(--lamp);flex:none;width:14px;height:14px}
 .statrow .sl{flex:1;color:var(--ink2);font-weight:600}
 .statrow .sv{font-weight:700}
-.cta.sm{min-height:46px;font-size:14.5px}
-.menu{margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.gcard{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--line);
-  text-align:left;position:relative;box-shadow:0 6px 16px rgba(0,0,0,.28)}
-.gbanner{height:64px;display:grid;place-items:center;color:#fff;position:relative}
-.gbanner svg{width:26px;height:26px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
-.gbody{padding:9px 10px 11px}
-.gt{font:700 12.5px/1.15 var(--display);letter-spacing:.02em}
-.gs{font-size:10.5px;color:var(--ink2);margin-top:3px;line-height:1.25}
+.cta.sm{min-height:40px;font-size:13px}
+.menu{margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.gcard{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line);
+  text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.gbanner{height:40px;display:grid;place-items:center;color:#fff;position:relative}
+.gbanner svg{width:19px;height:19px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.gbody{padding:6px 8px 8px}
+.gt{font:700 10.5px/1.15 var(--display);letter-spacing:.02em}
+.gs{font-size:9.5px;color:var(--ink2);margin-top:2px;line-height:1.2}
 .gcard .chev{position:absolute;right:9px;bottom:9px;color:var(--ink2);opacity:.7}
 .gcard .badge{position:absolute;right:9px;top:9px;width:9px;height:9px;border-radius:50%;background:var(--lamp);
   box-shadow:0 0 0 4px color-mix(in srgb,var(--lamp) 28%,transparent)}
+.questpanel{margin-top:16px}
+.questpanel h3{font:700 15.5px/1 var(--display);padding:2px 0 10px}
+.qrow{padding:10px 0;border-top:1px solid var(--line)}
+.qrow:first-of-type{border-top:0}
+.qtop{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:600;margin-bottom:5px}
+.qtop .qr{color:var(--lamp);flex:none}
+.qclaim{margin-top:7px;background:var(--lamp);color:var(--lampink);font-weight:700;padding:7px 14px;border-radius:99px;font-size:12.5px}
 
 /* bars */
 .bar{position:relative;height:9px;border-radius:99px;background:var(--surface2);margin:8px 0;
@@ -467,6 +475,48 @@ const KIT = [1,1.25,1.5,1.75];
 const KIT_COST = [200,500,1000];
 const LAB_MULT = [1,1.3,1.6];
 
+/* ---------- rank ---------- */
+const RANKS = [
+  {n:'Trainee Researcher', min:0},
+  {n:'Junior Researcher', min:5},
+  {n:'Field Researcher', min:15},
+  {n:'Senior Researcher', min:30},
+  {n:'Master Researcher', min:SPECIES.length}
+];
+function rankFor(disc) { let cur = RANKS[0]; for (const r of RANKS) { if (disc >= r.min) cur = r; } return cur; }
+
+/* ---------- daily quests ---------- */
+const QUEST_POOL = [
+  {id:'scan5', desc:'Perform 5 scans', goal:5, key:'scans', reward:{coins:40, dp:15}},
+  {id:'scan15', desc:'Perform 15 scans', goal:15, key:'scans', reward:{coins:120, dp:40}},
+  {id:'perfect3', desc:'Land 3 perfect scans', goal:3, key:'perfect', reward:{coins:60, dp:25}},
+  {id:'trips3', desc:'Explore 3 times', goal:3, key:'trips', reward:{coins:50, dp:10}},
+  {id:'coins150', desc:'Earn 150 coins', goal:150, key:'coins', reward:{coins:0, dp:40}},
+  {id:'newsp', desc:'Discover 1 new species', goal:1, key:'newsp', reward:{coins:100, dp:30}}
+];
+function todayStr() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function pickQuests(seedStr) {
+  let seed = 0; for (const c of seedStr) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967295; };
+  const pool = QUEST_POOL.slice();
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1));[pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return pool.slice(0, 3).map(q => ({id: q.id, claimed: false}));
+}
+function ensureDaily() {
+  const t = todayStr();
+  if (!S.daily || S.daily.date !== t) {
+    S.daily = {date: t, scans: 0, perfect: 0, trips: 0, coins: 0, newsp: 0};
+    S.quests = {date: t, list: pickQuests(t)};
+    save();
+  }
+}
+function questProgress(qid) { const Q = QUEST_POOL.find(x => x.id === qid); return {Q, val: Math.min(S.daily[Q.key] || 0, Q.goal)}; }
+function partnerPct() {
+  if (!S.partner || !S.sp[S.partner]) return 0;
+  const sp = SP(S.partner), rec = S.sp[S.partner];
+  return Math.round((sp.r + 1) * 3 * (rec.mastered ? 1.5 : 1));
+}
+
 /* ---------- monster art ---------- */
 let uid = 0;
 const ARCH = {
@@ -594,7 +644,7 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, scans:0, trips:0, last:null});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, scans:0, trips:0, last:null, partner:null});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -661,17 +711,21 @@ function statusBar() {
 }
 function tubeArt() {
   let sp = null;
-  if (S.last && S.sp[S.last]) sp = SP(S.last);
+  if (S.partner && S.sp[S.partner]) sp = SP(S.partner);
+  else if (S.last && S.sp[S.last]) sp = SP(S.last);
   const inner = sp ? monSVG(sp, 'normal') : `<svg class="mon sil" viewBox="0 0 160 160">${monInner(SP('mossling'), 'normal')}</svg>`;
-  return `<div class="tube"><div class="tubetag"><i></i>${sp ? 'SIGNAL LOCKED' : 'NO SIGNAL'}</div>
+  const tag = sp && S.partner === sp.id ? 'ACTIVE PARTNER' : sp ? 'SIGNAL LOCKED' : 'NO SIGNAL';
+  return `<div class="tube"><div class="tubetag"><i></i>${tag}</div>
     <div class="tubein"><div class="cyl">${inner}</div><div class="cylbase"></div></div></div>`;
 }
 function infoCard() {
   let sp = null, rec = null;
-  if (S.last && S.sp[S.last]) { sp = SP(S.last); rec = S.sp[S.last]; }
+  if (S.partner && S.sp[S.partner]) { sp = SP(S.partner); rec = S.sp[S.partner]; }
+  else if (S.last && S.sp[S.last]) { sp = SP(S.last); rec = S.sp[S.last]; }
   const rfPct = [0, 40, 80, 120][S.tech.scanner];
   const rsPct = Math.round((LAB_MULT[S.tech.lab] - 1) * 100);
   const maxLv = sp ? sp.lv[1] : '—';
+  const pp = partnerPct();
   return `<section class="infocard" aria-label="Latest specimen">
     <div class="ictop"><div><div class="icname">${sp ? esc(sp.name) : 'No Specimen Logged'}</div>
       <div class="icbadges">${sp ? `<span class="icrar">${RAR[sp.r].n}</span>${elTag(sp.el)}` : `<span class="ms" style="color:var(--ink2)">Explore an area to detect one</span>`}</div></div></div>
@@ -680,9 +734,30 @@ function infoCard() {
       <div class="statrow"><span class="si">${ic('research')}</span><span class="sl">Research Speed</span><span class="sv">+${rsPct}%</span></div>
       <div class="statrow"><span class="si">${ic('explore')}</span><span class="sl">Capture Chance</span><span class="sv">+${rfPct}%</span></div>
       <div class="statrow"><span class="si">${ic('db')}</span><span class="sl">Max Level</span><span class="sv">${maxLv}</span></div>
+      ${S.partner ? `<div class="statrow"><span class="si">${ic('user')}</span><span class="sl">Partner Bonus</span><span class="sv">+${pp}%</span></div>` : ''}
     </div>
   </section>`;
 }
+function questsReadyCount() {
+  ensureDaily();
+  return S.quests.list.filter(e => !e.claimed && questProgress(e.id).val >= questProgress(e.id).Q.goal).length;
+}
+function heroRow() {
+  const disc = discovered(), r = rankFor(disc), ready = questsReadyCount();
+  return `<div class="heroRow"><p class="rankline">${r.n} · ${disc}/${SPECIES.length}</p>
+    <button class="questchip${ready ? ' ready' : ''}" data-act="go" data-to="quests"><i></i>${ready ? `${ready} ready` : 'Quests'}</button></div>`;
+}
+function questsPanel() {
+  ensureDaily();
+  const rows = S.quests.list.map(entry => {
+    const {Q, val} = questProgress(entry.id), done = val >= Q.goal, pct = Math.min(100, val / Q.goal * 100);
+    const rewardTxt = [Q.reward.coins ? `${num(Q.reward.coins)} coins` : '', Q.reward.dp ? `${num(Q.reward.dp)} data` : ''].filter(Boolean).join(' + ');
+    return `<div class="qrow"><div class="qtop"><span class="ql">${Q.desc}</span><span class="qr">${entry.claimed ? 'Claimed' : done ? 'Ready' : `${val}/${Q.goal}`}</span></div>
+      ${bar(pct, true)}${done && !entry.claimed ? `<button class="qclaim" data-act="claimquest" data-id="${entry.id}">Claim +${rewardTxt}</button>` : ''}</div>`;
+  }).join('');
+  return `<section class="panel questpanel"><h3>Daily Quests</h3>${rows}</section>`;
+}
+function viewQuests() { return `${topbar('Daily Quests', 'go', 'home')}${questsPanel()}`; }
 function viewHome() {
   const disc = discovered();
   const tOwned = Object.values(S.tech).reduce((a, b) => a + b, 0);
@@ -692,10 +767,10 @@ function viewHome() {
     {to:'lab', k:'lab', t:'Lab', s:'Permits & kit', grad:'#047857,#34D399'}
   ];
   return `${statusBar()}
-    <div class="hero"><h1>Monster Research Lab</h1></div>
+    ${heroRow()}
     ${tubeArt()}
     ${infoCard()}
-    <div class="dock" style="margin-top:14px"><button class="cta" data-act="go" data-to="explore">Explore</button></div>
+    <div class="dock" style="margin:8px -16px 0;padding:8px 16px 4px"><button class="cta sm" data-act="go" data-to="explore">Explore</button></div>
     <nav class="menu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav>`;
 }
 
@@ -796,10 +871,12 @@ function viewDetail() {
   }).join('');
   const drops = sp.dr.map(d => rec.drops.includes(d) ? `<li>${esc(d)}</li>` : `<li style="opacity:.55">???</li>`).join('');
   const lvl = rec.lvMin === rec.lvMax ? `Lv. ${rec.lvMin}` : `Lv. ${rec.lvMin} to ${rec.lvMax}`;
+  const isPartner = S.partner === sp.id;
   return `${topbar(esc(sp.name), 'go', 'db')}
     <div class="plate">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
     <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
-      <div class="forms">${forms}</div></div>
+      <div class="forms">${forms}</div>
+      <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:12px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
     <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
     <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
     <p class="hint">${rec.scans} ${rec.scans === 1 ? 'scan' : 'scans'} logged. Hidden forms need Radar upgrades.</p>`;
@@ -830,8 +907,12 @@ function viewLab() {
       <button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button></div>`).join('') : `<p class="note">Every area is open.</p>`;
   const kitNext = KIT_COST[S.kit];
   const forms = Object.values(S.sp).reduce((a, r) => a + r.forms.length, 0);
+  const disc = discovered(), rk = rankFor(disc), rkIdx = RANKS.findIndex(r => r.n === rk.n), rkNext = RANKS[rkIdx + 1];
+  const rkPct = rkNext ? Math.min(100, (disc - rk.min) / (rkNext.min - rk.min) * 100) : 100;
   return `${topbar('Laboratory', 'go', 'home')}
-    <section class="sec" style="margin-top:6px"><h3>Lab record</h3><div class="kv">
+    <section class="sec" style="margin-top:6px"><h3>Researcher rank</h3>
+      <div class="row"><div class="rb"><b>${rk.n}</b><span>${rkNext ? `${disc}/${rkNext.min} species to ${rkNext.n}` : 'Maximum rank reached'}</span></div></div>${bar(rkPct)}</section>
+    <section class="sec"><h3>Lab record</h3><div class="kv">
       <div><b>${num(S.scans)}</b><span>Scans made</span></div><div><b>${num(S.trips)}</b><span>Expeditions</span></div>
       <div><b>${forms}</b><span>Forms logged</span></div><div><b>${Object.values(S.sp).filter(r => r.prog >= 100).length}</b><span>Fully researched</span></div></div></section>
     <section class="sec"><h3>Area permits</h3>${permits}</section>
@@ -850,6 +931,7 @@ function render() {
     case 'db': h = ui.detail ? viewDetail() : viewDb(); break;
     case 'research': h = viewResearch(); break;
     case 'lab': h = viewLab(); break;
+    case 'quests': h = viewQuests(); break;
   }
   app.innerHTML = h;
 }
@@ -883,7 +965,7 @@ function newZone(sp) {
 function startExplore() {
   if (!S.locs.includes(ui.loc)) { toast(`Buy the ${LOC(ui.loc).n} permit in the Laboratory`); return; }
   stopGauge(); clearTimeout(ui.timer);
-  S.trips++; save();
+  ensureDaily(); S.trips++; S.daily.trips++; save();
   ui.enc = {loc: ui.loc, phase: 'searching', charges: 3, last: null, known: false, pos: 0};
   render();
   ui.timer = setTimeout(() => {
@@ -911,6 +993,7 @@ function startGauge() {
 function stopGauge() { if (ui.raf) { cancelAnimationFrame(ui.raf); ui.raf = 0; } }
 function resolveScan(e, q) {
   const sp = e.sp, f = e.form, F = FORMS[f];
+  ensureDaily();
   const Q = {weak:{g:8, m:.6, t:'Weak scan'}, good:{g:15, m:1, t:'Good scan'}, perfect:{g:22, m:1.5, t:'Perfect scan'}}[q];
   let rec = S.sp[sp.id]; const first = !rec;
   if (first) rec = S.sp[sp.id] = {prog:0, forms:[], drops:[], lvMin:e.lv, lvMax:e.lv, scans:0, mastered:false};
@@ -919,7 +1002,7 @@ function resolveScan(e, q) {
   const gain = Math.min(100 - before, raw);
   rec.prog = before + gain;
   const facets = FACETS.filter(([n, t]) => rec.prog >= t && (first || before < t)).map(x => x[0]);
-  rec.scans++; S.scans++;
+  rec.scans++; S.scans++; S.daily.scans++; if (q === 'perfect') S.daily.perfect++;
   rec.lvMin = Math.min(rec.lvMin, e.lv); rec.lvMax = Math.max(rec.lvMax, e.lv);
   const newForm = !rec.forms.includes(f); if (newForm) rec.forms.push(f);
   let dp = Math.round(BASE_DP[sp.r] * Q.m * F.mult);
@@ -934,7 +1017,9 @@ function resolveScan(e, q) {
   }
   let mastered = false;
   if (rec.prog >= 100 && !rec.mastered) { rec.mastered = true; mastered = true; dp += 50; coins += BASE_COIN[sp.r] * 10; }
-  S.dp += dp; S.coins += coins; S.last = sp.id; save();
+  const pp = partnerPct();
+  if (pp) { dp = Math.round(dp * (1 + pp / 100)); coins = Math.round(coins * (1 + pp / 100)); }
+  S.dp += dp; S.coins += coins; S.last = sp.id; S.daily.coins += coins; if (first) S.daily.newsp++; save();
   return {q, title:Q.t, gain, prog:rec.prog, coins, dp, drop, first, newForm:newForm && f !== 'normal', facets, mastered};
 }
 function doScan() {
@@ -979,6 +1064,8 @@ app.addEventListener('click', (ev) => {
     case 'buytech': buyTech(d.k, +d.i); break;
     case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); render(); toast(`${l.n} is open`); break; }
     case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
+    case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
+    case 'setpartner': { if (!S.sp[d.id]) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
     case 'resetarm': ui.reset = true; render(); break;
     case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
   }
