@@ -158,8 +158,9 @@ svg{display:block}
 .menu{margin-top:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .gcard{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line);
   text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-.gbanner{height:40px;display:grid;place-items:center;color:#fff;position:relative}
+.gbanner{height:74px;display:grid;place-items:center;color:#fff;position:relative;overflow:hidden}
 .gbanner svg{width:19px;height:19px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.gbanner img{width:92%;height:92%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
 .gbody{padding:6px 8px 8px}
 .gt{font:700 10.5px/1.15 var(--display);letter-spacing:.02em}
 .gs{font-size:9.5px;color:var(--ink2);margin-top:2px;line-height:1.2}
@@ -659,6 +660,7 @@ const GLYPHS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true"><g stro
 const STAR = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
 const SPARKS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true">${STAR(24, 40, 1.1, 0)}${STAR(138, 34, .8, .6)}${STAR(142, 104, 1, 1.1)}${STAR(18, 112, .7, .3)}</svg>`;
 const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.webp'};
+const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/research.webp', lab:'assets/icons/lab.webp'};
 function monImg(sp, form, extra) {
   const src = ASSET.mon + sp.id + ASSET.monExt;
   const ghost = form === 'corrupted' ? `<img class="ghost" src="${src}" alt="" draggable="false">` : '';
@@ -807,7 +809,7 @@ function viewHome() {
     ${heroRow()}
     ${tubeArt()}
     <div class="homeAction">${specCard()}</div>
-    <nav class="menu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav>`;
+    <nav class="menu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${CARD_ICON[c.k] ? `<img src="${CARD_ICON[c.k]}" alt="" draggable="false">` : ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav>`;
 }
 
 function viewExplore() {
