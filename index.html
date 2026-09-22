@@ -62,8 +62,7 @@ body.bg-home .app{
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
 button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
 h1,h2,h3,p{margin:0}
-#scaleWrap{width:100%}
-.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 14px;transform-origin:top center;transform:scale(var(--ui-scale,1))}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 14px;zoom:var(--ui-scale,1)}
 @media (min-width:520px){.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 svg{display:block}
 
@@ -389,22 +388,24 @@ svg{display:block}
 </style>
 </head>
 <body>
-<div id="scaleWrap"><div class="app" id="app"></div></div>
+<div class="app" id="app"></div>
 <script>
 /* Fills whatever layout viewport width the browser reports — including a
-   "fake" wide one from a mobile browser's Desktop Site mode — by scaling
-   the #app box up via CSS transform to exactly match window.innerWidth.
-   The browser then auto-zooms the whole page back down to fit the real
-   screen, and since our box now fills the (fake) layout viewport
-   edge-to-edge, that auto-zoom lands it back at the correct real-world
-   size. This works regardless of what width the browser fakes, and
-   doesn't rely on screen.width (some browsers fake that too).
+   "fake" wide one from a mobile browser's Desktop Site mode — by zooming
+   the #app box up to exactly match window.innerWidth. The browser then
+   auto-zooms the whole page back down to fit the real screen, and since
+   our box now fills the (fake) layout viewport edge-to-edge, that
+   auto-zoom lands it back at the correct real-world size. This works
+   regardless of what width the browser fakes, and doesn't rely on
+   screen.width (some browsers fake that too).
+   Uses CSS zoom rather than transform:scale() — zoom actually affects
+   layout size (so no manual height bookkeeping is needed) and, unlike
+   transform, it doesn't break position:sticky/fixed on children.
    On a real desktop with a mouse, this is a no-op: pointer:coarse is
    false there, so the normal responsive max-width:480px card layout is
    left alone. */
 (function(){
   if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
-  var wrap = document.getElementById('scaleWrap');
   var appEl = document.getElementById('app');
   function applyScale(){
     appEl.style.setProperty('--ui-scale', 1);
@@ -414,9 +415,6 @@ svg{display:block}
     if(!isFinite(scale) || scale <= 0) scale = 1;
     scale = Math.max(0.5, Math.min(scale, 3));
     appEl.style.setProperty('--ui-scale', scale);
-    requestAnimationFrame(function(){
-      wrap.style.height = appEl.getBoundingClientRect().height + 'px';
-    });
   }
   applyScale();
   window.addEventListener('resize', applyScale);
