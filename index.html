@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <script>
 /* Some mobile browsers' "Desktop site" mode ignores width=device-width and
    substitutes a wide virtual viewport (e.g. ~980px), which shrinks this
@@ -12,7 +12,7 @@
     var realWidth = window.screen && window.screen.width;
     if (realWidth && realWidth > 0 && realWidth < 600) {
       var vp = document.querySelector('meta[name="viewport"]');
-      if (vp) vp.setAttribute('content', 'width=' + realWidth + ', initial-scale=1, viewport-fit=cover');
+      if (vp) vp.setAttribute('content', 'width=' + realWidth + ', initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover');
     }
   }catch(e){}
 })();
@@ -47,7 +47,7 @@
   --plate:#040914; --plateline:#2D4A78; --gold-hi:#9FE8FF;
 }
 *{box-sizing:border-box}
-html{height:100%;-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+html{height:100%;-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px);touch-action:pan-x pan-y}
 body{margin:0;min-height:100%;color:var(--ink);font:400 16px/1.45 var(--body);-webkit-tap-highlight-color:transparent;
   background:
     radial-gradient(ellipse 140% 55% at 50% -12%,color-mix(in srgb,var(--lamp) 16%,transparent),transparent 62%),
