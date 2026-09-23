@@ -262,6 +262,8 @@ svg{display:block}
 .sweep{z-index:1}
 .pbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4;z-index:0;filter:saturate(.8) brightness(.7) sepia(.15)}
 .plate.lost .mon{opacity:.35;transition:opacity .8s}
+.plate.sm{width:min(40vw,150px);margin:4px auto 8px;border-width:3px}
+.plate.sm .mon{width:66%;height:66%}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pop{from{transform:scale(.35);opacity:0}}
 @keyframes rise{from{transform:translateY(8px);opacity:0}}
@@ -354,8 +356,8 @@ svg{display:block}
 
 /* detail */
 .dhead{text-align:center}
-.dhead h3{font:700 26px/1.1 var(--display);letter-spacing:.01em}
-.forms{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 4px}
+.dhead h3{font:700 19px/1.15 var(--display);letter-spacing:.01em}
+.forms{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:9px 0 4px}
 .form{padding:5px 12px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:13.5px}
 .form.on{background:var(--lamp);color:var(--lampink)}
 .form.unk{background:transparent;border:1px dashed var(--line);color:var(--ink2)}
@@ -369,6 +371,12 @@ svg{display:block}
 .fl.ok i{background:var(--moss);border-color:var(--moss)}
 .redact{height:14px;border-radius:5px;margin-top:3px;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--line) 6px 12px)}
 .redcap{font-size:13px;color:var(--ink2);margin-top:5px}
+.statgrid{display:flex;flex-direction:column;gap:8px;padding:10px 0 12px}
+.statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
+.statln .sk{font:800 11px/1 var(--display);color:var(--sc);letter-spacing:.03em}
+.statln .sv{font:700 13px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
+.sbar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;border:1px solid var(--line)}
+.sbar i{display:block;height:100%;border-radius:inherit;background:var(--sc);box-shadow:0 0 8px color-mix(in srgb,var(--sc) 55%,transparent)}
 
 /* research tree */
 .root{position:relative;margin:2px auto 0;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--ink);
@@ -1146,6 +1154,29 @@ const totalPct = () => Object.values(S.sp).reduce((a, r) => a + r.prog, 0) / (SP
 const bar = (p, sm) => `<div class="bar${sm ? ' sm' : ''}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><i style="width:${p}%"></i>${[20,40,60,80].map(t => `<b style="left:${t}%"></b>`).join('')}</div>`;
 const rarTag = (r) => `<span class="tag" style="--gc:${RAR[r].c}"><i style="background:${RAR[r].c}"></i>${RAR[r].n}</span>`;
 const elTag = (el) => `<span class="tag" style="--gc:${EL[el].a}"><i style="background:${EL[el].a}">${elIc(el)}</i>${el}</span>`;
+
+/* ---------- battle stats (derived from rarity + element, seeded per species) ---------- */
+const STAT_BIAS = {
+  Fire:{hp:0,atk:2,def:0,spd:1}, Water:{hp:1,atk:0,def:1,spd:1}, Nature:{hp:2,atk:0,def:1,spd:-1},
+  Earth:{hp:1,atk:0,def:2,spd:-1}, Ice:{hp:1,atk:0,def:2,spd:-1}, Light:{hp:0,atk:1,def:0,spd:2},
+  Dark:{hp:0,atk:2,def:-1,spd:1}, Poison:{hp:1,atk:1,def:0,spd:0}, Wind:{hp:-1,atk:0,def:-1,spd:3},
+  Lightning:{hp:-1,atk:2,def:-1,spd:2}
+};
+const STAT_MAX = {hp:300,atk:120,def:120,spd:115};
+const STAT_COLOR = {hp:'#FF5C7A',atk:'#F0A22E',def:'#3B82D6',spd:'#3E9E6B'};
+function seedOf(id) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0; return Math.abs(h); }
+function monStats(sp) {
+  const base = 30 + sp.r * 22, h = seedOf(sp.id), bias = STAT_BIAS[sp.el] || {hp:0,atk:0,def:0,spd:0};
+  const jit = (n) => (h >> n) & 7;
+  return {
+    hp: Math.round(base * 1.8 + bias.hp * 14 + jit(0) * 4),
+    atk: Math.round(base * .55 + bias.atk * 10 + jit(3) * 3),
+    def: Math.round(base * .5 + bias.def * 10 + jit(6) * 3),
+    spd: Math.round(base * .45 + bias.spd * 9 + jit(9) * 3)
+  };
+}
+const statRow = (k, v) => `<div class="statln" style="--sc:${STAT_COLOR[k]}"><span class="sk">${k.toUpperCase()}</span>
+  <div class="sbar"><i style="width:${Math.max(4, Math.min(100, Math.round(v / STAT_MAX[k] * 100)))}%"></i></div><span class="sv">${v}</span></div>`;
 let toastT;
 function toast(m) {
   let t = document.getElementById('toast');
@@ -1356,6 +1387,7 @@ function facetText(sp, k) {
 }
 function viewDetail() {
   const sp = SP(ui.detail), rec = S.sp[sp.id];
+  const st = monStats(sp);
   if (!rec.forms.includes(ui.form)) ui.form = rec.forms[0] || 'normal';
   const forms = FORM_KEYS.map(f => rec.forms.includes(f)
     ? `<button class="form${ui.form === f ? ' on' : ''}" data-act="form" data-id="${f}">${FORMS[f].n}</button>`
@@ -1384,10 +1416,11 @@ function viewDetail() {
     evoPanel = `<section class="panel"><h3>Evolution</h3><p class="note">Evolved form of ${esc(baseSp.name)}.</p></section>`;
   }
   return `${topbar(esc(sp.name), 'go', 'db')}
-    <div class="plate">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
+    <div class="plate sm">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
     <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
       <div class="forms">${forms}</div>
-      <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:12px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
+      <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:9px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
+    <section class="panel"><h3>Battle Stats</h3><div class="statgrid">${statRow('hp', st.hp)}${statRow('atk', st.atk)}${statRow('def', st.def)}${statRow('spd', st.spd)}</div></section>
     <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
     <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
     ${evoPanel}
