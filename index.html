@@ -336,6 +336,29 @@ svg{display:block}
 .chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:10px 0 0}
 .chips li{background:var(--surface2);border-radius:99px;padding:4px 11px;font-size:13px;font-weight:600}
 .chips li.hl{background:var(--lamp);color:var(--lampink);box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 55%,transparent)}
+.result.win{text-align:center;padding:22px 16px 18px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--gold-hi) 16%,var(--surface)),var(--surface));
+  border-color:color-mix(in srgb,var(--gold-hi) 55%,var(--line));
+  box-shadow:0 0 28px color-mix(in srgb,var(--gold-hi) 28%,transparent),inset 0 1px 0 rgba(255,255,255,.06)}
+.result.win::before{background:linear-gradient(90deg,transparent,var(--gold-hi),transparent)}
+.resultBurst{position:absolute;inset:-30% -20% auto -20%;height:180%;pointer-events:none;z-index:0;
+  background:conic-gradient(from 0deg,color-mix(in srgb,var(--gold-hi) 18%,transparent) 0deg 6deg,transparent 6deg 22deg);
+  opacity:.6;animation:burstSpin 10s linear infinite}
+@keyframes burstSpin{to{transform:rotate(360deg)}}
+.resultSpark{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.resultTitle{position:relative;z-index:1;font:800 27px/1.1 var(--display);letter-spacing:.02em;
+  background:linear-gradient(180deg,#FFF6C2,var(--gold-hi));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--gold-hi) 50%,transparent));
+  animation:titlePop .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes titlePop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.16);opacity:1}100%{transform:scale(1)}}
+.resultSub{position:relative;z-index:1;color:var(--ink2);font-weight:600;font-size:13px;margin-top:3px}
+.rewardRow{position:relative;z-index:1;display:flex;justify-content:center;gap:10px;margin-top:16px}
+.rewardChip{display:flex;align-items:center;gap:6px;background:var(--surface2);
+  border:1px solid color-mix(in srgb,var(--gold-hi) 40%,var(--line));border-radius:99px;padding:7px 16px 7px 12px;
+  font:800 16px/1 var(--display);font-variant-numeric:tabular-nums;animation:chipPop .4s cubic-bezier(.2,1.6,.4,1) both}
+.rewardChip:nth-child(2){animation-delay:.12s}
+.rewardChip img{width:19px;height:19px;filter:drop-shadow(0 0 4px currentColor)}
+@keyframes chipPop{0%{transform:scale(.5) translateY(6px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 .hint{color:var(--ink2);font-size:14px;text-align:center;margin-top:10px}
 
 /* database */
@@ -1536,10 +1559,20 @@ function viewBattleFight() {
   } else if (b.busy) flagTxt = 'Battling\u2026';
   let controls;
   if (b.over) {
-    const title = b.over === 'win' ? 'Victory!' : b.over === 'draw' ? 'Draw' : 'Defeated';
-    controls = `<div class="result${b.over !== 'win' ? ' miss' : ''}"><h3>${title}</h3>
-      ${b.reward ? `<ul class="chips"><li>Coins +${num(b.reward.coins)}</li><li>Data +${num(b.reward.dp)}</li></ul>` : '<p class="note">This one got away. Heal up and try again.</p>'}</div>
-      <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
+    if (b.over === 'win' && b.reward) {
+      const spark = `<svg class="fx resultSpark" viewBox="0 0 300 160" aria-hidden="true">${STAR(28,22,.9,0)}${STAR(270,26,.7,.4)}${STAR(18,118,.8,.8)}${STAR(282,112,1,.2)}${STAR(150,8,.6,.5)}${STAR(60,140,.6,1)}${STAR(240,142,.7,.7)}</svg>`;
+      controls = `<div class="result win"><div class="resultBurst"></div>${spark}
+        <h3 class="resultTitle">Victory!</h3><p class="resultSub">${esc(esp.name)} was defeated</p>
+        <div class="rewardRow">
+          <div class="rewardChip"><img src="assets/icons/coin.webp" alt="">+<b data-count="${b.reward.coins}">0</b></div>
+          <div class="rewardChip"><img src="assets/icons/diamond.webp" alt="">+<b data-count="${b.reward.dp}">0</b></div>
+        </div></div>
+        <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
+    } else {
+      const title = b.over === 'draw' ? 'Draw' : 'Defeated';
+      controls = `<div class="result miss"><h3>${title}</h3><p class="note">This one got away. Heal up and try again.</p></div>
+        <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
+    }
   } else {
     const dis = b.busy ? ' disabled' : '';
     controls = `<span class="turnFlag">${flagTxt}</span>
@@ -1890,6 +1923,17 @@ function viewInventory() {
     <div class="chipbar">${chips}</div>
     ${body}`;
 }
+function animateRewardCounts() {
+  document.querySelectorAll('.rewardChip b[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count, 10) || 0, dur = 700, start = performance.now();
+    function step(t) {
+      const p = Math.min(1, (t - start) / dur), eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = num(target * eased);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
 function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
@@ -1908,6 +1952,7 @@ function render() {
     case 'battle': h = viewBattle(); break;
   }
   app.innerHTML = h;
+  if (ui.screen === 'battle' && ui.battle && ui.battle.over === 'win') animateRewardCounts();
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
