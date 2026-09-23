@@ -514,6 +514,19 @@ svg{display:block}
 .moveBtn.noSta .moveCost{color:var(--signal);border-color:color-mix(in srgb,var(--signal) 55%,var(--line))}
 .bmoves.busy .moveBtn{opacity:.5}
 .moveBtn:disabled{pointer-events:none}
+body.bg-fight .app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+body.bg-fight .top{flex:none}
+.fightBody{display:flex;flex-direction:column;flex:1;min-height:0}
+.fightBody .hprow{flex:none}
+.fightBody .arena{flex:1;min-height:150px;height:auto;margin:10px 0 4px}
+.fightBody .arenaLog{max-height:34%}
+.fightBody .turnFlag,.fightBody .bmoves,.fightBody>.linkbtn,.fightBody .result,.fightBody .dock{flex:none}
+.fightBody .moveCircle{width:min(15vw,62px);height:min(15vw,62px)}
+.fightBody .moveCircle svg{width:26px;height:26px}
+@media (max-height:680px){
+  .fightBody .turnFlag{margin-top:4px}
+  .fightBody .bmoves{margin-top:6px}
+}
 .statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
 .statln .sk{font:800 11px/1 var(--display);color:var(--sc);letter-spacing:.03em}
 .statln .sv{font:700 13px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
@@ -1644,6 +1657,7 @@ function viewBattleFight() {
       <button class="linkbtn" data-act="battleleave">Flee</button>`;
   }
   return `${topbar('Battle Arena', 'battleleave')}
+    <div class="fightBody">
     <div class="hprow">${hpCard(b.p, psp, 'me')}${hpCard(b.e, esp, 'foe')}</div>
     <div class="arena">
       <span class="arenaVs">Turn ${Math.min(b.turn, MAX_TURNS)} / ${MAX_TURNS}</span>
@@ -1652,7 +1666,8 @@ function viewBattleFight() {
       <div class="arenaFighter${fighterCls('e', b.e.hp)}">${monSVG(esp, 'normal')}${dmgPop('e')}</div>
       ${log}
     </div>
-    ${controls}`;
+    ${controls}
+    </div>`;
 }
 function viewHome() {
   const disc = discovered();
@@ -1993,6 +2008,7 @@ function animateRewardCounts() {
 function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
+  document.body.classList.toggle('bg-fight', ui.screen === 'battle' && !!ui.battle);
   document.documentElement.style.setProperty('--home-img', `url('assets/backgrounds/${BG_OPTS[S.bg] ? BG_OPTS[S.bg].f : BG_OPTS.bright.f}')`);
   if (ui.evo) { app.innerHTML = viewEvolve(); return; }
   switch (ui.screen) {
