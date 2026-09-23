@@ -413,18 +413,41 @@ svg{display:block}
 .bpick .mon,.bpick .mon.img{position:relative;width:52px;height:52px;margin:0 auto}
 .bpick b{display:block;font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bpick.sel{border-color:var(--lamp);box-shadow:0 0 0 2px color-mix(in srgb,var(--lamp) 45%,transparent),0 0 12px color-mix(in srgb,var(--lamp) 35%,transparent)}
-.vs{display:flex;align-items:flex-start;justify-content:center;gap:8px;margin:6px 0 4px}
-.bfighter{flex:1;min-width:0;text-align:center}
-.bfighter .plate.sm{margin:0 auto 6px}
-.bfighter b{display:block;font:700 13px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bfighter .blv{color:var(--ink2);font-weight:600;font-size:11.5px}
-.bvs{font:800 13px/1 var(--display);color:var(--ink2);flex:none;align-self:center;padding-top:40px}
-.bhpwrap{display:flex;align-items:center;gap:6px;margin-top:6px}
-.bhpbar{flex:1;height:9px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.hprow{display:flex;gap:8px;margin-top:10px}
+.hpcard{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px 9px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.hpcard.foe{text-align:right}
+.hptop{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.hpcard.foe .hptop{flex-direction:row-reverse}
+.hpcard b{font:700 13px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.hpcard .blv{color:var(--ink2);font-weight:600;font-size:11px;flex:none}
+.bhpwrap{margin-top:5px}
+.bhpbar{height:9px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
 .bhpbar i{display:block;height:100%;border-radius:inherit;transition:width .35s}
-.bhptxt{font:700 11px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink2)}
-.blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:14px 0 4px;
-  max-height:150px;overflow-y:auto;font-size:13.5px;line-height:1.6}
+.bhptxt{display:block;margin-top:3px;font:700 11px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink2)}
+.hpcard.foe .bhptxt{text-align:right}
+.arena{position:relative;margin:12px 0 4px;height:min(46vw,220px);border-radius:18px;overflow:hidden;
+  border:1px solid var(--line);
+  background:
+    radial-gradient(ellipse 60% 46% at 18% 88%,color-mix(in srgb,var(--lamp) 22%,transparent),transparent 72%),
+    radial-gradient(ellipse 60% 46% at 82% 88%,color-mix(in srgb,var(--signal) 18%,transparent),transparent 72%),
+    linear-gradient(180deg,var(--surface2),var(--surface) 78%)}
+.arena::before{content:"";position:absolute;left:0;right:0;bottom:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--line),transparent)}
+.arenaGround{position:absolute;bottom:8%;width:36%;height:14px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.4),transparent 72%)}
+.arenaGround.me{left:3%}
+.arenaGround.foe{right:3%}
+.arenaVs{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:800 12px/1 var(--display);
+  color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 10px;z-index:2}
+.arenaFighter{position:absolute;bottom:9%;width:40%;max-width:150px;aspect-ratio:1}
+.arenaFighter.me{left:2%}
+.arenaFighter.foe{right:2%}
+.arenaFighter .mon,.arenaFighter .mon.img{position:absolute;inset:0;width:100%;height:100%;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+.arenaFighter.foe .mon,.arenaFighter.foe .mon.img{transform:scaleX(-1)}
+.arenaFighter.lost .mon{opacity:.3;transition:opacity .8s}
+.blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:10px 0 4px;
+  max-height:120px;overflow-y:auto;font-size:13.5px;line-height:1.6}
 .blog p{margin:2px 0}
 .blog p:last-child{color:var(--ink);font-weight:600}
 .bmoves{display:flex;gap:8px;margin-top:14px}
@@ -1428,9 +1451,10 @@ function viewBattle() {
 }
 function viewBattleFight() {
   const b = ui.battle, psp = SP(b.p.id), esp = SP(b.e.id);
-  const hpRow = (f, sp) => `<div class="bfighter"><div class="plate sm${f.hp <= 0 ? ' lost' : ''}">${monSVG(sp, 'normal')}</div>
-    <b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span>
-    <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div><span class="bhptxt">${f.hp}/${f.maxHp}</span></div></div>`;
+  const hpCard = (f, sp, side) => `<div class="hpcard ${side}">
+    <div class="hptop"><b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span></div>
+    <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div></div>
+    <span class="bhptxt">${f.hp}/${f.maxHp}</span></div>`;
   const log = `<div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
   let controls;
   if (b.over) {
@@ -1442,7 +1466,13 @@ function viewBattleFight() {
       <button class="linkbtn" data-act="battleleave">Flee</button>`;
   }
   return `${topbar('Battle Arena', 'battleleave')}
-    <div class="vs">${hpRow(b.p, psp)}<span class="bvs">VS</span>${hpRow(b.e, esp)}</div>
+    <div class="hprow">${hpCard(b.p, psp, 'me')}${hpCard(b.e, esp, 'foe')}</div>
+    <div class="arena">
+      <span class="arenaVs">VS</span>
+      <div class="arenaGround me"></div><div class="arenaGround foe"></div>
+      <div class="arenaFighter me${b.p.hp <= 0 ? ' lost' : ''}">${monSVG(psp, 'normal')}</div>
+      <div class="arenaFighter foe${b.e.hp <= 0 ? ' lost' : ''}">${monSVG(esp, 'normal')}</div>
+    </div>
     ${log}${controls}`;
 }
 function viewHome() {
