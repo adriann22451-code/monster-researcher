@@ -220,6 +220,13 @@ svg{display:block}
 .loc.locked .lic{background:var(--surface2);color:var(--ink2)}
 .dock{position:sticky;bottom:0;margin:14px -16px 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(to bottom,transparent,var(--bg) 32%)}
+.dockbackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;animation:fadein .18s ease-out}
+.dockpopup{position:fixed;left:0;right:0;bottom:0;z-index:21;margin:0 auto;max-width:480px;
+  padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  background:var(--bg);border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+  animation:sheetup .22s cubic-bezier(.2,1,.3,1)}
+@keyframes fadein{from{opacity:0}}
+@keyframes sheetup{from{transform:translateY(100%)}}
 .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:0 18px;
   border-radius:12px;font:700 17px/1 var(--display);letter-spacing:.02em;text-align:center;
   background:linear-gradient(180deg,var(--gold-hi) 0%,var(--lamp) 55%,color-mix(in srgb,var(--lamp) 72%,black) 100%);
@@ -1053,7 +1060,7 @@ function load() {
 }
 let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
-const ui = {screen:'home', loc:'forest', enc:null, filter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0};
+const ui = {screen:'home', loc:'forest', enc:null, filter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1186,15 +1193,16 @@ function viewExplore() {
   if (ui.enc) return viewEncounter();
   const L = LOC(ui.loc), open = S.locs.includes(L.id);
   const tiles = LOCS.map(l => {
-    const o = S.locs.includes(l.id), sel = ui.loc === l.id;
+    const o = S.locs.includes(l.id), sel = ui.loc === l.id && ui.locPicked;
     return `<button class="loc${sel ? ' sel' : ''}${o ? '' : ' locked'}" style="--tint:${l.tint}" data-act="pickloc" data-id="${l.id}" aria-pressed="${sel}">
       ${HAVE.loc[l.id] ? `<span class="lban${o ? '' : ' off'}" style="background-image:url('${ASSET.loc}${l.id}${ASSET.locExt}')">${o ? '' : ic('lock')}</span>` : `<span class="lic">${o ? ic(l.id) : ic('lock')}</span>`}<span class="ln">${l.n}</span>
       <span class="lb">${o ? l.blurb : `Locked. Permit costs ${num(l.cost)} coins.`}</span></button>`;
   }).join('');
+  const popup = ui.locPicked ? `<div class="dockbackdrop" data-act="closedock"></div>
+    <div class="dockpopup"><button class="cta" data-act="explore" aria-disabled="${!open}">${open ? `Explore ${L.n}` : `${L.n} is locked`}</button></div>` : '';
   return `${topbar('Explore', 'go', 'home')}
-    <p class="count">Choose an area, then send the scanner out.</p>
-    <div class="locs">${tiles}</div>
-    <div class="dock"><button class="cta" data-act="explore" aria-disabled="${!open}">${open ? `Explore ${L.n}` : `${L.n} is locked`}</button></div>`;
+    <p class="count">Tap an area to send the scanner out.</p>
+    <div class="locs">${tiles}</div>${popup}`;
 }
 
 function viewEncounter() {
@@ -1405,7 +1413,7 @@ function render() {
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer);
-  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to;
+  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false;
   render(); window.scrollTo(0, 0);
 }
 
@@ -1585,7 +1593,8 @@ app.addEventListener('click', (ev) => {
   const d = t.dataset;
   switch (d.act) {
     case 'go': go(d.to); break;
-    case 'pickloc': ui.loc = d.id; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
+    case 'pickloc': ui.loc = d.id; ui.locPicked = true; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
+    case 'closedock': ui.locPicked = false; render(); break;
     case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(`Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
     case 'scan': doScan(); break;
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
