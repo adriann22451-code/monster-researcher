@@ -454,6 +454,11 @@ svg{display:block}
 .bhpbar i{display:block;height:100%;border-radius:inherit;transition:width .35s}
 .bhptxt{display:block;margin-top:3px;font:700 11px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink2)}
 .hpcard.foe .bhptxt{text-align:right}
+.bstawrap{margin-top:4px}
+.bstabar{height:6px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.bstabar i{display:block;height:100%;border-radius:inherit;background:#3B82D6;transition:width .35s}
+.bstatxt{display:block;margin-top:2px;font:700 9.5px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink2)}
+.hpcard.foe .bstatxt{text-align:right}
 .arena{position:relative;margin:12px 0 4px;height:clamp(260px,54vh,480px);border-radius:18px;overflow:hidden;
   border:1px solid var(--line);
   background:
@@ -494,19 +499,24 @@ svg{display:block}
 .blog p{margin:2px 0}
 .blog p:last-child{color:var(--ink);font-weight:600}
 .turnFlag{display:block;text-align:center;font:700 12.5px/1 var(--body);color:var(--ink2);margin-top:12px}
-.bmoves{display:flex;gap:8px;margin-top:8px}
-.moveBtn{flex:1;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px 12px;text-align:left;
+.bmoves{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.moveBtn{position:relative;display:flex;align-items:center;gap:9px;min-height:58px;padding:8px 34px 8px 10px;text-align:left;
   background:var(--surface);border:1px solid var(--line);border-radius:14px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s,border-color .12s}
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s,border-color .12s,opacity .12s}
 .moveBtn:active{transform:scale(.96)}
-.moveIcon{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+.moveIcon{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
   background:color-mix(in srgb,var(--elc) 20%,var(--surface2));border:1px solid color-mix(in srgb,var(--elc) 55%,var(--line))}
-.moveIcon svg{width:17px;height:17px;color:var(--elc)}
+.moveIcon svg{width:16px;height:16px;color:var(--elc)}
 .moveInfo{display:flex;flex-direction:column;gap:1px;min-width:0}
-.moveName{font:700 14px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.moveType{font:600 11px/1.2 var(--body);color:var(--ink2)}
+.moveName{font:700 13px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.moveType{font:600 10.5px/1.2 var(--body);color:var(--ink2)}
 .moveBtn.special{border-color:color-mix(in srgb,var(--elc) 55%,var(--line))}
 .moveBtn.special .moveType{color:var(--elc)}
+.moveCost{position:absolute;top:6px;right:8px;font:800 9.5px/1 var(--display);color:#3B82D6;
+  background:color-mix(in srgb,#3B82D6 16%,var(--surface2));border:1px solid color-mix(in srgb,#3B82D6 40%,var(--line));
+  border-radius:99px;padding:3px 6px}
+.moveBtn.noSta{opacity:.45}
+.moveBtn.noSta .moveCost{color:var(--signal);background:color-mix(in srgb,var(--signal) 16%,var(--surface2));border-color:color-mix(in srgb,var(--signal) 40%,var(--line))}
 .bmoves.busy .moveBtn{opacity:.5}
 .moveBtn:disabled{pointer-events:none}
 .statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
@@ -1342,6 +1352,35 @@ const MOVE_SPECIAL = {
   Fire:'Ember Burst', Water:'Tidal Wave', Nature:'Vine Whip', Earth:'Rock Slam', Ice:'Frost Bite',
   Light:'Radiant Beam', Dark:'Shadow Fang', Poison:'Toxic Spit', Wind:'Gale Slash', Lightning:'Volt Strike'
 };
+const MOVE_SPECIAL2 = {
+  Fire:'Inferno Wave', Water:'Maelstrom Surge', Nature:'Thorn Storm', Earth:'Quake Slam', Ice:'Blizzard Fang',
+  Light:'Solar Flare', Dark:'Void Rend', Poison:'Venom Burst', Wind:'Cyclone Cut', Lightning:'Thunder Storm'
+};
+const MOVE_HEAVY = ['Heavy Smash','Crushing Blow','Mega Ram','Brutal Charge','Iron Slam','Colossal Strike','Wrecking Bash','Titan Crush','Savage Slam','Full-Force Tackle'];
+function heavyMoveName(sp) {
+  let h = 0; for (const ch of sp.id) h = (h * 17 + ch.charCodeAt(0)) >>> 0;
+  return MOVE_HEAVY[h % MOVE_HEAVY.length];
+}
+/* ---------- stamina & move config ---------- */
+const STA_MAX = 100;
+const STA_REGEN = 28;
+const MOVES = {
+  attack: {cost:0,  power:1.0,  special:false, label:'Basic Attack'},
+  heavy:  {cost:40, power:1.65, special:false, label:'Heavy Attack'},
+  skill1: {cost:30, power:1.0,  special:true,  label:'Skill 1'},
+  skill2: {cost:55, power:1.35, special:true,  label:'Skill 2'}
+};
+function moveName(f, key) {
+  if (key === 'attack') return f.mvBasic;
+  if (key === 'heavy') return f.mvHeavy;
+  if (key === 'skill1') return f.mvSkill1;
+  return f.mvSkill2;
+}
+function pickEnemyMove(e) {
+  const candidates = ['skill2','heavy','skill1'].filter(k => e.stamina >= MOVES[k].cost);
+  if (candidates.length && Math.random() < .6) return candidates[Math.floor(Math.random() * candidates.length)];
+  return 'attack';
+}
 function typeMult(atkEl, defEl) {
   if (EL[defEl] && EL[defEl].w === atkEl) return 1.4;
   if (EL[atkEl] && EL[atkEl].w === defEl) return 0.7;
@@ -1352,7 +1391,9 @@ function battleFighter(sp, lv) {
   const s = monStats(sp), mult = 1 + (lv - 1) * .035;
   const hp = Math.max(10, Math.round(s.hp * mult));
   return {id: sp.id, el: sp.el, r: sp.r, lv, hp, maxHp: hp, atk: Math.round(s.atk * mult), def: Math.round(s.def * mult), spd: s.spd,
-    mvBasic: basicMoveName(sp), mvSpecial: MOVE_SPECIAL[sp.el] || `${sp.el} Strike`};
+    stamina: STA_MAX, maxStamina: STA_MAX,
+    mvBasic: basicMoveName(sp), mvHeavy: heavyMoveName(sp),
+    mvSkill1: MOVE_SPECIAL[sp.el] || `${sp.el} Strike`, mvSkill2: MOVE_SPECIAL2[sp.el] || `${sp.el} Surge`};
 }
 function pickOpponent(excludeId, lv) {
   const pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden);
@@ -1368,10 +1409,10 @@ function startBattle(id) {
   ui.bPick = null; render(); window.scrollTo(0, 0);
 }
 function battleMoveDmg(atkF, defF, move) {
-  const power = move === 'special' ? .95 : 1.15;
-  const mult = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
+  const cfg = MOVES[move];
+  const mult = cfg.special ? typeMult(atkF.el, defF.el) : 1;
   const variance = .85 + Math.random() * .3;
-  return Math.max(2, Math.round((atkF.atk * power - defF.def * .4) * variance * mult));
+  return Math.max(2, Math.round((atkF.atk * cfg.power - defF.def * .4) * variance * mult));
 }
 function finishBattle(win, timeout) {
   const b = ui.battle;
@@ -1391,8 +1432,10 @@ function finishBattle(win, timeout) {
 function scrollBlog() { const logEl = document.getElementById('blog'); if (logEl) logEl.scrollTop = logEl.scrollHeight; }
 function battleTurn(move) {
   const b = ui.battle; if (!b || b.over || b.busy) return;
+  const cfg = MOVES[move]; if (!cfg) return;
+  if (b.p.stamina < cfg.cost) { toast('Not enough stamina!'); return; }
   const first = b.p.spd >= b.e.spd ? 'p' : 'e';
-  const eMove = Math.random() < .55 ? 'attack' : 'special';
+  const eMove = pickEnemyMove(b.e);
   const order = first === 'p' ? [['p', move], ['e', eMove]] : [['e', eMove], ['p', move]];
   b.busy = true; b.anim = null;
   battleStep(order, 0);
@@ -1406,6 +1449,8 @@ function battleStep(order, i) {
     return;
   }
   if (i >= order.length) {
+    b.p.stamina = Math.min(b.p.maxStamina, b.p.stamina + STA_REGEN);
+    b.e.stamina = Math.min(b.e.maxStamina, b.e.stamina + STA_REGEN);
     if (b.turn >= MAX_TURNS) {
       const pPct = b.p.hp / b.p.maxHp, ePct = b.e.hp / b.e.maxHp;
       if (pPct >= ePct) finishBattle(true, true); else finishBattle(false, true);
@@ -1422,10 +1467,12 @@ function battleStep(order, i) {
     const bb = ui.battle; if (!bb) return;
     const atkF = who === 'p' ? bb.p : bb.e, defF = who === 'p' ? bb.e : bb.p;
     const atkName = SP(atkF.id).name;
+    if (atkF.hp <= 0) { setTimeout(() => battleStep(order, i + 1), 0); return; }
+    atkF.stamina = Math.max(0, atkF.stamina - MOVES[mv].cost);
     const dmg = battleMoveDmg(atkF, defF, mv);
     defF.hp = Math.max(0, defF.hp - dmg);
-    const mvName = mv === 'special' ? atkF.mvSpecial : atkF.mvBasic;
-    const eff = mv === 'special' ? typeMult(atkF.el, defF.el) : 1;
+    const mvName = moveName(atkF, mv);
+    const eff = MOVES[mv].special ? typeMult(atkF.el, defF.el) : 1;
     const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
     bb.log.push(`Turn ${bb.turn}: ${atkName} used ${mvName}: ${dmg} dmg${tag}`);
     if (bb.log.length > 40) bb.log = bb.log.slice(-40);
@@ -1546,7 +1593,9 @@ function viewBattleFight() {
   const hpCard = (f, sp, side) => `<div class="hpcard ${side}">
     <div class="hptop"><b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span></div>
     <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div></div>
-    <span class="bhptxt">${f.hp}/${f.maxHp}</span></div>`;
+    <span class="bhptxt">${f.hp}/${f.maxHp}</span>
+    <div class="bstawrap"><div class="bstabar"><i style="width:${Math.max(0, Math.round(f.stamina / f.maxStamina * 100))}%"></i></div></div>
+    <span class="bstatxt">${f.stamina}/${f.maxStamina} STA</span></div>`;
   const fighterCls = (side, hp) => {
     let cls = side === 'p' ? ' me' : ' foe';
     if (hp <= 0) cls += ' lost';
@@ -1580,17 +1629,22 @@ function viewBattleFight() {
         <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
     }
   } else {
-    const dis = b.busy ? ' disabled' : '';
+    const moveBtn = (key, name, type, elc, iconHtml) => {
+      const cfg = MOVES[key];
+      const short = b.busy || b.p.stamina < cfg.cost;
+      const dis2 = short ? ' disabled' : '';
+      return `<button class="moveBtn${cfg.special ? ' special' : ''}${b.p.stamina < cfg.cost && !b.busy ? ' noSta' : ''}" data-act="bmove" data-id="${key}" style="--elc:${elc}"${dis2}>
+          <span class="moveIcon">${iconHtml}</span>
+          <span class="moveInfo"><span class="moveName">${esc(name)}</span><span class="moveType">${esc(type)}</span></span>
+          <span class="moveCost">${cfg.cost === 0 ? 'Free' : `${cfg.cost} STA`}</span>
+        </button>`;
+    };
     controls = `<span class="turnFlag">${flagTxt}</span>
       <div class="bmoves${b.busy ? ' busy' : ''}">
-        <button class="moveBtn" data-act="bmove" data-id="attack" style="--elc:var(--ink2)"${dis}>
-          <span class="moveIcon">${ic('battle')}</span>
-          <span class="moveInfo"><span class="moveName">${esc(b.p.mvBasic)}</span><span class="moveType">Normal</span></span>
-        </button>
-        <button class="moveBtn special" data-act="bmove" data-id="special" style="--elc:${EL[psp.el].a}"${dis}>
-          <span class="moveIcon">${elIc(psp.el)}</span>
-          <span class="moveInfo"><span class="moveName">${esc(b.p.mvSpecial)}</span><span class="moveType">${esc(psp.el)}</span></span>
-        </button>
+        ${moveBtn('attack', b.p.mvBasic, 'Normal', 'var(--ink2)', ic('battle'))}
+        ${moveBtn('heavy', b.p.mvHeavy, 'Normal', 'var(--ink2)', ic('battle'))}
+        ${moveBtn('skill1', b.p.mvSkill1, psp.el, EL[psp.el].a, elIc(psp.el))}
+        ${moveBtn('skill2', b.p.mvSkill2, psp.el, EL[psp.el].a, elIc(psp.el))}
       </div>
       <button class="linkbtn" data-act="battleleave">Flee</button>`;
   }
