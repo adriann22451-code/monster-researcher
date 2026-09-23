@@ -1337,6 +1337,12 @@ const STAT_BIAS = {
   Lightning:{hp:-1,atk:2,def:-1,spd:2}
 };
 const STAT_MAX = {hp:300,atk:120,def:120,spd:115};
+/* Level scales HP/ATK/DEF (same rule the arena uses). SPD is species-only. */
+const lvMult = (lv) => 1 + (Math.max(1, lv) - 1) * .035;
+function lvStats(sp, lv) {
+  const s = monStats(sp), m = lvMult(lv);
+  return {hp: Math.max(10, Math.round(s.hp * m)), atk: Math.round(s.atk * m), def: Math.round(s.def * m), spd: s.spd, m};
+}
 const STAT_COLOR = {hp:'#FF5C7A',atk:'#F0A22E',def:'#3B82D6',spd:'#3E9E6B'};
 function seedOf(id) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0; return Math.abs(h); }
 function monStats(sp) {
@@ -1349,8 +1355,8 @@ function monStats(sp) {
     spd: Math.round(base * .45 + bias.spd * 9 + jit(9) * 3)
   };
 }
-const statRow = (k, v) => `<div class="statln" style="--sc:${STAT_COLOR[k]}"><span class="sk">${k.toUpperCase()}</span>
-  <div class="sbar"><i style="width:${Math.max(4, Math.min(100, Math.round(v / STAT_MAX[k] * 100)))}%"></i></div><span class="sv">${v}</span></div>`;
+const statRow = (k, v, mx) => `<div class="statln" style="--sc:${STAT_COLOR[k]}"><span class="sk">${k.toUpperCase()}</span>
+  <div class="sbar"><i style="width:${Math.max(4, Math.min(100, Math.round(v / (mx || STAT_MAX[k]) * 100)))}%"></i></div><span class="sv">${v}</span></div>`;
 let toastT;
 function toast(m) {
   let t = document.getElementById('toast');
@@ -1412,7 +1418,7 @@ function typeMult(atkEl, defEl) {
 }
 function battleLv(id, sp) { const rec = S.sp[id]; return rec ? rec.lvMax : sp.lv[1]; }
 function battleFighter(sp, lv) {
-  const s = monStats(sp), mult = 1 + (lv - 1) * .035;
+  const s = monStats(sp), mult = lvMult(lv);
   const hp = Math.max(10, Math.round(s.hp * mult));
   return {id: sp.id, el: sp.el, r: sp.r, lv, hp, maxHp: hp, atk: Math.round(s.atk * mult), def: Math.round(s.def * mult), spd: s.spd,
     stamina: STA_MAX, maxStamina: STA_MAX,
@@ -1733,7 +1739,7 @@ function viewEncounter() {
     const sp = e.sp;
     plate = `<div class="plate${e.phase === 'done' ? ' lost' : ''}">${plateBg(e.loc)}${e.phase === 'found' ? '<div class="sweep"></div>' : ''}${monSVG(sp, e.form)}</div>`;
     if (e.known) {
-      status = `<h3>${esc(formName(sp, e.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">Lv. ${e.lv}</span></div>`;
+      status = `<h3>${esc(formName(sp, e.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">Lv. ${e.lv}</span>${threatLabel(e.pen) ? `<span class="tag" style="--gc:#FF5C7A">▲ ${threatLabel(e.pen)}</span>` : ''}</div>`;
     } else {
       status = `<h3>A monster has been detected!</h3><p>Unidentified creature. Scan it to learn more.</p>`;
     }
@@ -1793,7 +1799,7 @@ function facetText(sp, k) {
 }
 function viewDetail() {
   const sp = SP(ui.detail), rec = S.sp[sp.id];
-  const st = monStats(sp);
+  const lvHi = rec.lvMax, st = lvStats(sp, lvHi);
   if (!rec.forms.includes(ui.form)) ui.form = rec.forms[0] || 'normal';
   const forms = FORM_KEYS.map(f => rec.forms.includes(f)
     ? `<button class="form${ui.form === f ? ' on' : ''}" data-act="form" data-id="${f}">${FORMS[f].n}</button>`
@@ -1826,7 +1832,8 @@ function viewDetail() {
     <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
       <div class="forms">${forms}</div>
       <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:9px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
-    <section class="panel"><h3>Battle Stats</h3><div class="statgrid">${statRow('hp', st.hp)}${statRow('atk', st.atk)}${statRow('def', st.def)}${statRow('spd', st.spd)}</div></section>
+    <section class="panel"><h3>Battle Stats · Lv. ${lvHi}</h3><div class="statgrid">${statRow('hp', st.hp, STAT_MAX.hp * st.m)}${statRow('atk', st.atk, STAT_MAX.atk * st.m)}${statRow('def', st.def, STAT_MAX.def * st.m)}${statRow('spd', st.spd)}</div>
+      <p class="hint" style="margin-top:8px">Stats at the highest level you have met (×${st.m.toFixed(2)} HP, ATK, DEF). Speed does not scale with level.</p></section>
     <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
     <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
     ${evoPanel}
@@ -2101,8 +2108,16 @@ function rollForm() {
   for (const [f, p] of t) { if (x < p) return f; x -= p; }
   return 'normal';
 }
-function newZone(sp) {
-  const w = Math.max(.085, .19 - sp.r * .022 + S.tech.scanner * .034);
+/* Catch difficulty vs. level. A monster whose level is above the researcher's level (1 + scans/6)
+   is harder to scan: narrower zone, faster needle, and it bolts sooner after a miss.
+   Tweak the numbers in DIFF to make the game easier / harder. */
+const DIFF = {gap:60, zoneCut:.45, minZone:.06, speedUp:.3, fleeUp:.3};
+const researcherLv = () => 1 + Math.floor(S.scans / 6);
+const lvPenalty = (lv) => Math.max(0, Math.min(1, (lv - researcherLv()) / DIFF.gap));
+function threatLabel(pen) { return pen >= .75 ? 'Extreme' : pen >= .4 ? 'Dangerous' : pen >= .15 ? 'Tough' : ''; }
+function newZone(sp, pen) {
+  pen = pen || 0;
+  const w = Math.max(DIFF.minZone, (.19 - sp.r * .022 + S.tech.scanner * .034) * (1 - DIFF.zoneCut * pen));
   return {w, c: w / 2 + .05 + Math.random() * (.9 - w)};
 }
 function startExplore() {
@@ -2118,14 +2133,15 @@ function startExplore() {
     const sp = pickSpecies(e.loc), form = rollForm();
     e.sp = sp; e.form = form; e.known = !!S.sp[sp.id];
     e.lv = Math.round((sp.lv[0] + Math.random() * (sp.lv[1] - sp.lv[0])) * FORMS[form].lv);
-    e.zone = newZone(sp); e.phase = 'found'; e.misses = 0;
+    e.pen = lvPenalty(e.lv);
+    e.zone = newZone(sp, e.pen); e.phase = 'found'; e.misses = 0;
     render(); startGauge();
   }, 1400);
 }
 function startGauge() {
   stopGauge();
   const e = ui.enc; if (!e || !e.sp) return;
-  const t0 = performance.now(), speed = Math.max(.95, 1.35 + e.sp.r * .2 - S.tech.scanner * .11);
+  const t0 = performance.now(), speed = Math.max(.95, 1.35 + e.sp.r * .2 - S.tech.scanner * .11) * (1 + DIFF.speedUp * (e.pen || 0));
   const tick = (now) => {
     const ph = (Math.max(0, now - t0) / 1000 * speed) % 2, p = ph > 1 ? 2 - ph : ph;
     e.pos = p;
@@ -2175,12 +2191,12 @@ function doScan() {
   if (q === 'miss') {
     e.misses = (e.misses || 0) + 1;
     e.last = {miss: true, title: 'Miss!'};
-    const fleeChance = .3 + e.misses * .2;
+    const fleeChance = Math.min(.95, .3 + e.misses * .2 + DIFF.fleeUp * (e.pen || 0));
     if (e.charges <= 0 || Math.random() < fleeChance) { e.phase = 'done'; e.fled = true; stopGauge(); render(); return; }
-    e.zone = newZone(e.sp); render(); startGauge(); return;
+    e.zone = newZone(e.sp, e.pen); render(); startGauge(); return;
   }
   e.last = resolveScan(e, q);
-  if (e.charges > 0) e.zone = newZone(e.sp); else { e.phase = 'done'; stopGauge(); }
+  if (e.charges > 0) e.zone = newZone(e.sp, e.pen); else { e.phase = 'done'; stopGauge(); }
   render();
   if (e.charges > 0) startGauge();
 }
