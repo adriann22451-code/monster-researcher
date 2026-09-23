@@ -336,10 +336,15 @@ svg{display:block}
 .chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:10px 0 0}
 .chips li{background:var(--surface2);border-radius:99px;padding:4px 11px;font-size:13px;font-weight:600}
 .chips li.hl{background:var(--lamp);color:var(--lampink);box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 55%,transparent)}
+.winOverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(4,8,18,.74);backdrop-filter:blur(3px);animation:fadein .22s ease-out}
+.winOverlay .result.win{width:100%;max-width:360px;margin:0;animation:winCardIn .45s cubic-bezier(.2,1.5,.4,1) both}
+.winOverlay .dock{position:static;margin:16px 0 0;padding:0;background:none}
+@keyframes winCardIn{0%{transform:scale(.78) translateY(14px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 .result.win{text-align:center;padding:22px 16px 18px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--gold-hi) 16%,var(--surface)),var(--surface));
   border-color:color-mix(in srgb,var(--gold-hi) 55%,var(--line));
-  box-shadow:0 0 28px color-mix(in srgb,var(--gold-hi) 28%,transparent),inset 0 1px 0 rgba(255,255,255,.06)}
+  box-shadow:0 0 34px color-mix(in srgb,var(--gold-hi) 32%,transparent),inset 0 1px 0 rgba(255,255,255,.06)}
 .result.win::before{background:linear-gradient(90deg,transparent,var(--gold-hi),transparent)}
 .resultBurst{position:absolute;inset:-30% -20% auto -20%;height:180%;pointer-events:none;z-index:0;
   background:conic-gradient(from 0deg,color-mix(in srgb,var(--gold-hi) 18%,transparent) 0deg 6deg,transparent 6deg 22deg);
@@ -1561,13 +1566,14 @@ function viewBattleFight() {
   if (b.over) {
     if (b.over === 'win' && b.reward) {
       const spark = `<svg class="fx resultSpark" viewBox="0 0 300 160" aria-hidden="true">${STAR(28,22,.9,0)}${STAR(270,26,.7,.4)}${STAR(18,118,.8,.8)}${STAR(282,112,1,.2)}${STAR(150,8,.6,.5)}${STAR(60,140,.6,1)}${STAR(240,142,.7,.7)}</svg>`;
-      controls = `<div class="result win"><div class="resultBurst"></div>${spark}
+      controls = `<div class="winOverlay"><div class="result win"><div class="resultBurst"></div>${spark}
         <h3 class="resultTitle">Victory!</h3><p class="resultSub">${esc(esp.name)} was defeated</p>
         <div class="rewardRow">
           <div class="rewardChip"><img src="assets/icons/coin.webp" alt="">+<b data-count="${b.reward.coins}">0</b></div>
           <div class="rewardChip"><img src="assets/icons/diamond.webp" alt="">+<b data-count="${b.reward.dp}">0</b></div>
-        </div></div>
-        <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
+        </div>
+        <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>
+      </div></div>`;
     } else {
       const title = b.over === 'draw' ? 'Draw' : 'Defeated';
       controls = `<div class="result miss"><h3>${title}</h3><p class="note">This one got away. Heal up and try again.</p></div>
