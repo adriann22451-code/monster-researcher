@@ -1332,10 +1332,11 @@ function pickOpponent(excludeId, lv) {
   const elv = Math.max(sp.lv[0], Math.min(sp.lv[1], lv + Math.round(Math.random() * 8 - 4)));
   return {sp, lv: elv};
 }
+const MAX_TURNS = 15;
 function startBattle(id) {
   const sp = SP(id); if (!sp || !S.sp[id]) { toast('Discover this monster first.'); return; }
   const lv = battleLv(id, sp), {sp: esp, lv: elv} = pickOpponent(id, lv);
-  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null, busy: false, anim: null};
+  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null, busy: false, anim: null, turn: 1};
   ui.bPick = null; render(); window.scrollTo(0, 0);
 }
 function battleMoveDmg(atkF, defF, move) {
@@ -1344,7 +1345,7 @@ function battleMoveDmg(atkF, defF, move) {
   const variance = .85 + Math.random() * .3;
   return Math.max(2, Math.round((atkF.atk * power - defF.def * .4) * variance * mult));
 }
-function finishBattle(win) {
+function finishBattle(win, timeout) {
   const b = ui.battle;
   if (win) {
     const esp = SP(b.e.id);
@@ -1352,9 +1353,10 @@ function finishBattle(win) {
     const dp = Math.round(BASE_DP[b.e.r] * (1.2 + b.e.lv * .015));
     S.coins += coins; S.dp += dp; save();
     b.reward = {coins, dp};
-    b.log.push(`${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
+    b.log.push(timeout ? `Time's up! ${esp.name} has less health left \u2014 you win! +${num(coins)} coins, +${num(dp)} data.`
+      : `${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
   } else {
-    b.log.push(`${SP(b.p.id).name} was defeated...`);
+    b.log.push(timeout ? `Time's up! ${SP(b.p.id).name} has less health left \u2014 you lose.` : `${SP(b.p.id).name} was defeated...`);
   }
   b.over = win ? 'win' : 'lose';
 }
@@ -1369,9 +1371,19 @@ function battleTurn(move) {
 }
 function battleStep(order, i) {
   const b = ui.battle; if (!b) return;
-  if (i >= order.length || b.p.hp <= 0 || b.e.hp <= 0) {
+  if (b.p.hp <= 0 || b.e.hp <= 0) {
     if (b.p.hp <= 0 && !b.over) finishBattle(false);
     else if (b.e.hp <= 0 && !b.over) finishBattle(true);
+    b.busy = false; b.anim = null; render(); scrollBlog();
+    return;
+  }
+  if (i >= order.length) {
+    if (b.turn >= MAX_TURNS) {
+      const pPct = b.p.hp / b.p.maxHp, ePct = b.e.hp / b.e.maxHp;
+      if (pPct >= ePct) finishBattle(true, true); else finishBattle(false, true);
+    } else {
+      b.turn++;
+    }
     b.busy = false; b.anim = null; render(); scrollBlog();
     return;
   }
@@ -1387,12 +1399,12 @@ function battleStep(order, i) {
     const mvName = mv === 'special' ? atkF.mvSpecial : atkF.mvBasic;
     const eff = mv === 'special' ? typeMult(atkF.el, defF.el) : 1;
     const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
-    bb.log.push(`${atkName} used ${mvName}: ${dmg} dmg${tag}`);
+    bb.log.push(`Turn ${bb.turn}: ${atkName} used ${mvName}: ${dmg} dmg${tag}`);
     if (bb.log.length > 40) bb.log = bb.log.slice(-40);
     bb.anim = {side: who, phase: 'hit', dmg, crit: eff > 1};
     render(); scrollBlog();
-    setTimeout(() => battleStep(order, i + 1), 620);
-  }, 260);
+    setTimeout(() => battleStep(order, i + 1), 850);
+  }, 420);
 }
 
 /* ---------- views ---------- */
@@ -1517,14 +1529,20 @@ function viewBattleFight() {
   const dmgPop = (side) => (a && a.side !== side && a.phase === 'hit')
     ? `<span class="dmgpop${a.crit ? ' crit' : ''}">-${a.dmg}${a.crit ? '!' : ''}</span>` : '';
   const log = `<div class="blogWrap"><span class="blogHead">Battle Log</span><div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div></div>`;
+  let flagTxt = 'Your turn \u2014 choose a move';
+  if (b.busy && a) {
+    const who = a.side === 'p' ? psp.name : esp.name;
+    flagTxt = a.phase === 'wind' ? `${who} is attacking\u2026` : `${who} lands the hit!`;
+  } else if (b.busy) flagTxt = 'Battling\u2026';
   let controls;
   if (b.over) {
-    controls = `<div class="result${b.over === 'lose' ? ' miss' : ''}"><h3>${b.over === 'win' ? 'Victory!' : 'Defeated'}</h3>
+    const title = b.over === 'win' ? 'Victory!' : b.over === 'draw' ? 'Draw' : 'Defeated';
+    controls = `<div class="result${b.over !== 'win' ? ' miss' : ''}"><h3>${title}</h3>
       ${b.reward ? `<ul class="chips"><li>Coins +${num(b.reward.coins)}</li><li>Data +${num(b.reward.dp)}</li></ul>` : '<p class="note">This one got away. Heal up and try again.</p>'}</div>
       <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
   } else {
     const dis = b.busy ? ' disabled' : '';
-    controls = `<span class="turnFlag">${b.busy ? 'Battling\u2026' : 'Your turn \u2014 choose a move'}</span>
+    controls = `<span class="turnFlag">${flagTxt}</span>
       <div class="bmoves${b.busy ? ' busy' : ''}">
         <button class="moveBtn" data-act="bmove" data-id="attack" style="--elc:var(--ink2)"${dis}>
           <span class="moveIcon">${ic('battle')}</span>
@@ -1540,7 +1558,7 @@ function viewBattleFight() {
   return `${topbar('Battle Arena', 'battleleave')}
     <div class="hprow">${hpCard(b.p, psp, 'me')}${hpCard(b.e, esp, 'foe')}</div>
     <div class="arena">
-      <span class="arenaVs">VS</span>
+      <span class="arenaVs">Turn ${Math.min(b.turn, MAX_TURNS)} / ${MAX_TURNS}</span>
       <div class="arenaGround me"></div><div class="arenaGround foe"></div>
       <div class="arenaFighter${fighterCls('p', b.p.hp)}">${monSVG(psp, 'normal')}${dmgPop('p')}</div>
       <div class="arenaFighter${fighterCls('e', b.e.hp)}">${monSVG(esp, 'normal')}${dmgPop('e')}</div>
