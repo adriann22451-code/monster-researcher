@@ -181,8 +181,11 @@ svg{display:block}
 .statrow .sl{flex:1;color:var(--ink2);font-weight:600}
 .statrow .sv{font-weight:700}
 .cta.sm{min-height:40px;font-size:13px}
-.menu{margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.gcard{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line);
+.menu{margin-top:12px;display:flex;gap:9px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;padding-bottom:2px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+.menu::-webkit-scrollbar{display:none}
+.gcard{flex:0 0 clamp(96px,27vw,126px);scroll-snap-align:start;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
+  background:var(--surface);border:1px solid var(--line);
   text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25);aspect-ratio:1/1.05}
 .gbanner{position:absolute;inset:0;display:grid;place-items:center;color:#fff;overflow:hidden}
 .gbanner svg{width:19px;height:19px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));position:relative;z-index:1}
@@ -312,6 +315,36 @@ svg{display:block}
 .tr i{width:9px;height:9px;border-radius:50%;display:block}
 .tile.unk .tn{color:var(--ink2)}
 .count{color:var(--ink2);font-size:14px;margin:0 0 10px}
+
+/* inventory */
+.invstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 14px}
+.ivcard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 6px 9px;
+  text-align:center;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.ivcard::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent);opacity:.7}
+.ivcard b{display:block;font:800 21px/1.1 var(--display);color:var(--lamp)}
+.ivcard span{font-size:10px;color:var(--ink2);display:block;margin-top:3px;letter-spacing:.01em}
+.lootgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:4px}
+.loot{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 10px 12px;border-radius:18px;
+  text-align:center;isolation:isolate;overflow:hidden;
+  background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface2) 50%,var(--surface)));
+  border:1.5px solid color-mix(in srgb,var(--rc,var(--lamp)) 42%,var(--line))}
+.loot::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.6;pointer-events:none;
+  background:radial-gradient(ellipse 90% 60% at 50% -8%,color-mix(in srgb,var(--rc,var(--lamp)) 28%,transparent),transparent 70%)}
+.lootqty{position:absolute;right:7px;top:7px;background:var(--plate);border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 55%,var(--plateline));
+  color:var(--ink);font:700 11px/1 var(--display);padding:4px 8px;border-radius:99px;box-shadow:0 0 8px color-mix(in srgb,var(--rc,var(--lamp)) 30%,transparent)}
+.lootico{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--rc,var(--lamp));margin-top:2px;
+  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rc,var(--lamp)) 45%,var(--surface2)),var(--surface2) 72%);
+  border:2px solid color-mix(in srgb,var(--rc,var(--lamp)) 68%,var(--line));
+  box-shadow:0 0 12px color-mix(in srgb,var(--rc,var(--lamp)) 50%,transparent)}
+.lootico svg{width:24px;height:24px}
+.loot b{font:700 14px/1.22 var(--display);word-break:break-word}
+.lootsrc{font-size:11px;color:var(--ink2)}
+.lootrar{font:700 9.5px/1 var(--display);letter-spacing:.05em;color:var(--rc,var(--lamp));
+  background:color-mix(in srgb,var(--rc,var(--lamp)) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 45%,var(--line));
+  border-radius:99px;padding:3px 9px;margin-top:1px}
+.lootempty{text-align:center;padding:34px 18px;background:var(--surface);border:1px dashed var(--line);border-radius:16px}
+.lootempty svg{width:30px;height:30px;color:var(--ink2);margin:0 auto 8px}
+.lootempty p{color:var(--ink2);font-size:14px}
 
 /* detail */
 .dhead{text-align:center}
@@ -1493,13 +1526,24 @@ function viewInventory() {
   const chips = [{id:'all', n:'All'}].concat(LOCS.map(l => ({id:l.id, n:l.n})))
     .map(c => `<button class="fc${ui.invFilter === c.id ? ' on' : ''}" data-act="invfilter" data-id="${c.id}">${c.n}</button>`).join('');
   const list = entries.filter(e => ui.invFilter === 'all' || e.sp.loc === ui.invFilter)
-    .sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name));
-  const rows = list.length ? list.map(e => `<div class="row"><div class="rb"><b>${esc(e.name)}</b><span>From ${esc(e.sp.name)} · ${RAR[e.sp.r].n}</span></div><span class="pill">×${num(e.qty)}</span></div>`).join('')
-    : `<p class="note">No materials in this area yet. Keep researching to find drops.</p>`;
+    .sort((a, b) => b.sp.r - a.sp.r || b.qty - a.qty || a.name.localeCompare(b.name));
+  const cards = list.map(e => {
+    const r = RAR[e.sp.r];
+    return `<div class="loot" style="--rc:${r.c}"><span class="lootqty">×${num(e.qty)}</span>
+      <span class="lootico">${ic('flask')}</span>
+      <b>${esc(e.name)}</b><span class="lootsrc">From ${esc(e.sp.name)}</span>
+      <i class="lootrar">${r.n}</i></div>`;
+  }).join('');
+  const body = list.length ? `<div class="lootgrid">${cards}</div>`
+    : `<div class="lootempty">${ic('inv')}<p>No materials in this area yet. Keep researching to find drops.</p></div>`;
   return `${topbar('Inventory', 'go', 'home')}
-    <p class="count">${list.length} of ${entries.length} material types · ${num(totalQty)} collected total.</p>
+    <div class="invstats">
+      <div class="ivcard"><b>${list.length}</b><span>Types shown</span></div>
+      <div class="ivcard"><b>${num(totalQty)}</b><span>Total collected</span></div>
+      <div class="ivcard"><b>${entries.length}</b><span>Discovered</span></div>
+    </div>
     <div class="chipbar">${chips}</div>
-    <div class="stack">${rows}</div>`;
+    ${body}`;
 }
 function render() {
   let h = '';
