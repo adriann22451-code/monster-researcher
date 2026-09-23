@@ -507,20 +507,24 @@ body{background-image:
   if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
   var appEl = document.getElementById('app');
   var lastScale = 1;
-  var lastViewportW = 0;
+  var lastWidth = 0;
   function applyScale(){
-    var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-    /* Mobile browsers fire a visualViewport "resize" event when the address
+    var iw = window.innerWidth;
+    /* Mobile browsers fire a visualViewport/resize event when the address
        bar collapses/expands during scrolling — that only changes viewport
        HEIGHT, not width. Skip the whole recalculation when width hasn't
        actually moved, otherwise every scroll retriggers a reset-to-1 /
-       reapply cycle and the game visibly re-zooms while scrolling. */
-    if (lastViewportW && Math.abs(vw - lastViewportW) < 1) return;
-    lastViewportW = vw;
+       reapply cycle and the game visibly re-zooms while scrolling.
+       Deliberately using window.innerWidth (not visualViewport.width) here:
+       it's the layout-viewport width — including the "fake" wide one some
+       browsers substitute in Desktop Site mode — which is what this hack
+       needs to detect and compensate for. */
+    if (lastWidth && Math.abs(iw - lastWidth) < 1) return;
+    lastWidth = iw;
     appEl.style.setProperty('--ui-scale', 1);
     var naturalW = appEl.getBoundingClientRect().width;
     if(!naturalW) return;
-    var scale = vw / naturalW;
+    var scale = iw / naturalW;
     if(!isFinite(scale) || scale <= 0) scale = 1;
     scale = Math.max(0.5, Math.min(scale, 3));
     if (Math.abs(scale - lastScale) < 0.005) { scale = lastScale; }
