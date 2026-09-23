@@ -506,6 +506,7 @@ body{background-image:
 (function(){
   if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
   var appEl = document.getElementById('app');
+  var lastScale = 1;
   function applyScale(){
     appEl.style.setProperty('--ui-scale', 1);
     var naturalW = appEl.getBoundingClientRect().width;
@@ -513,6 +514,8 @@ body{background-image:
     var scale = window.innerWidth / naturalW;
     if(!isFinite(scale) || scale <= 0) scale = 1;
     scale = Math.max(0.5, Math.min(scale, 3));
+    if (Math.abs(scale - lastScale) < 0.005) { scale = lastScale; }
+    lastScale = scale;
     appEl.style.setProperty('--ui-scale', scale);
   }
   applyScale();
@@ -520,7 +523,14 @@ body{background-image:
   window.addEventListener('orientationchange', applyScale);
   window.addEventListener('load', applyScale);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', applyScale);
-  if (window.ResizeObserver) new ResizeObserver(applyScale).observe(appEl);
+  /* NOTE: intentionally NOT using a ResizeObserver on #app here. #app is the
+     very element whose "zoom" we set, so observing its own box triggers this
+     callback again every time we change the zoom (and switching screens
+     changes its HEIGHT, e.g. the tall research tree view, even though scale
+     only ever depends on WIDTH). That self-observe + self-mutate loop is
+     what caused the "zooms by itself" glitch when opening bigger screens
+     like Research. The width-driven listeners above are the only triggers
+     the scale actually needs. */
 })();
 </script>
 <script>
