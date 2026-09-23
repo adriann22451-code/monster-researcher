@@ -181,12 +181,26 @@ svg{display:block}
 .statrow .sl{flex:1;color:var(--ink2);font-weight:600}
 .statrow .sv{font-weight:700}
 .cta.sm{min-height:40px;font-size:13px}
-.menu{margin-top:12px;display:flex;gap:9px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;padding-bottom:2px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+.menuWrap{position:relative;margin-top:12px}
+.menu{display:flex;gap:9px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:0 0 2px}
 .menu::-webkit-scrollbar{display:none}
-.gcard{flex:0 0 clamp(96px,27vw,126px);scroll-snap-align:start;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
+.gcard{flex:0 0 calc((100% - 18px) / 3);scroll-snap-align:start;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;
   background:var(--surface);border:1px solid var(--line);
-  text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25);aspect-ratio:1/1.05}
+  text-align:left;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.25);aspect-ratio:1/1}
+.menuArrow{position:absolute;top:42%;transform:translateY(-50%);z-index:4;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;color:#fff;background:rgba(6,11,24,.78);border:1px solid var(--plateline);
+  box-shadow:0 2px 10px rgba(0,0,0,.5),0 0 0 3px rgba(55,198,244,.12);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  transition:opacity .2s,transform .12s}
+.menuArrow svg{width:16px;height:16px;pointer-events:none}
+.menuArrow:active{transform:translateY(-50%) scale(.9)}
+.menuArrow.prev{left:-6px}
+.menuArrow.next{right:-6px;animation:menuNudge 1.6s ease-in-out 3}
+.menuArrow[hidden]{display:none}
+@keyframes menuNudge{0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-50%) translateX(3px)}}
+.menuDots{display:flex;justify-content:center;gap:6px;margin-top:9px}
+.menuDots i{width:6px;height:6px;border-radius:99px;background:var(--line);transition:width .2s,background .2s}
+.menuDots i.on{width:18px;background:var(--lamp)}
 .gbanner{position:absolute;inset:0;display:grid;place-items:center;color:#fff;overflow:hidden}
 .gbanner svg{width:19px;height:19px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));position:relative;z-index:1}
 .gbanner img{position:absolute;left:10%;top:6%;width:80%;height:68%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
@@ -1685,7 +1699,7 @@ function viewHome() {
     ${heroRow()}
     ${tubeArt()}
     <div class="homeAction">${specCard()}</div>
-    <nav class="menu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${CARD_ICON[c.k] ? `<img src="${CARD_ICON[c.k]}" alt="" draggable="false">` : ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav>`;
+    <div class="menuWrap"><nav class="menu" id="labMenu" aria-label="Lab menu">${cards.map(c => `<button class="gcard" data-act="go" data-to="${c.to}"><span class="gbanner" style="background:linear-gradient(135deg,${c.grad})">${CARD_ICON[c.k] ? `<img src="${CARD_ICON[c.k]}" alt="" draggable="false">` : ic(c.k)}</span><span class="gbody"><span class="gt">${c.t.toUpperCase()}</span><br><span class="gs">${c.s}</span></span>${c.badge ? '<span class="badge" aria-label="Upgrade available"></span>' : '<span class="chev">›</span>'}</button>`).join('')}</nav><button class="menuArrow prev" data-act="menuscroll" data-dir="-1" aria-label="Previous menu" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><button class="menuArrow next" data-act="menuscroll" data-dir="1" aria-label="More menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button><div class="menuDots" aria-hidden="true">${cards.slice(2).map((_, k) => `<i${k === 0 ? ' class="on"' : ''}></i>`).join('')}</div></div>`;
 }
 
 function viewExplore() {
@@ -2007,12 +2021,47 @@ function animateRewardCounts() {
     requestAnimationFrame(step);
   });
 }
+/* Home menu: 3 cards visible, arrows + dots show there is more to scroll to.
+   Uses getBoundingClientRect comparisons (not scrollLeft) so it stays correct under the CSS zoom used in Desktop-site mode. */
+function menuState(m) {
+  const cs = [...m.children]; if (!cs.length) return null;
+  const r = m.getBoundingClientRect(), tol = 3;
+  const first = cs[0].getBoundingClientRect(), last = cs[cs.length - 1].getBoundingClientRect();
+  const w = first.width || 1;
+  let idx = 0; cs.forEach((c, i) => { if (c.getBoundingClientRect().left < r.left - w / 2) idx = i + 1; });
+  return {cs, r, tol, atStart: first.left >= r.left - tol, atEnd: last.right <= r.right + tol, idx};
+}
+function updateMenu() {
+  const m = document.getElementById('labMenu'); if (!m) return;
+  const st = menuState(m); if (!st) return;
+  const wrap = m.parentElement;
+  const prev = wrap.querySelector('.menuArrow.prev'), next = wrap.querySelector('.menuArrow.next');
+  if (prev) prev.hidden = st.atStart;
+  if (next) next.hidden = st.atEnd;
+  const dots = wrap.querySelectorAll('.menuDots i');
+  const on = st.atEnd ? dots.length - 1 : Math.min(st.idx, dots.length - 1);
+  dots.forEach((d, i) => d.classList.toggle('on', i === on));
+}
+function menuScroll(dir) {
+  const m = document.getElementById('labMenu'); if (!m) return;
+  const st = menuState(m); if (!st) return;
+  if (dir > 0) {
+    const c = st.cs.find(c => c.getBoundingClientRect().right > st.r.right + st.tol);
+    if (c) c.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'end'});
+  } else {
+    const c = [...st.cs].reverse().find(c => c.getBoundingClientRect().left < st.r.left - st.tol);
+    if (c) c.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
+  }
+}
+document.addEventListener('scroll', (e) => { if (e.target && e.target.id === 'labMenu') updateMenu(); }, true);
+window.addEventListener('resize', updateMenu);
 function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
   document.body.classList.toggle('bg-fight', ui.screen === 'battle' && !!ui.battle);
   document.documentElement.style.setProperty('--home-img', `url('assets/backgrounds/${BG_OPTS[S.bg] ? BG_OPTS[S.bg].f : BG_OPTS.bright.f}')`);
   if (ui.evo) { app.innerHTML = viewEvolve(); return; }
+  const oldMenu = document.getElementById('labMenu'), keepX = oldMenu ? oldMenu.scrollLeft : 0;
   switch (ui.screen) {
     case 'home': h = viewHome(); break;
     case 'explore': h = viewExplore(); break;
@@ -2026,6 +2075,7 @@ function render() {
     case 'battle': h = viewBattle(); break;
   }
   app.innerHTML = h;
+  if (ui.screen === 'home') { const m = document.getElementById('labMenu'); if (m) { if (keepX) m.scrollLeft = keepX; updateMenu(); requestAnimationFrame(updateMenu); } }
   if (ui.screen === 'battle' && ui.battle && ui.battle.over === 'win') animateRewardCounts();
 }
 function go(to) {
@@ -2213,6 +2263,7 @@ app.addEventListener('click', (ev) => {
   const d = t.dataset;
   switch (d.act) {
     case 'go': go(d.to); break;
+    case 'menuscroll': menuScroll(+d.dir); break;
     case 'pickloc': ui.loc = d.id; ui.locPicked = true; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
     case 'closedock': ui.locPicked = false; render(); break;
     case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(`Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
