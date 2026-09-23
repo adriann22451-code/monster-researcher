@@ -426,7 +426,7 @@ svg{display:block}
 .bhpbar i{display:block;height:100%;border-radius:inherit;transition:width .35s}
 .bhptxt{display:block;margin-top:3px;font:700 11px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink2)}
 .hpcard.foe .bhptxt{text-align:right}
-.arena{position:relative;margin:12px 0 4px;height:min(46vw,220px);border-radius:18px;overflow:hidden;
+.arena{position:relative;margin:12px 0 4px;height:clamp(260px,54vh,480px);border-radius:18px;overflow:hidden;
   border:1px solid var(--line);
   background:
     radial-gradient(ellipse 60% 46% at 18% 88%,color-mix(in srgb,var(--lamp) 22%,transparent),transparent 72%),
@@ -434,24 +434,38 @@ svg{display:block}
     linear-gradient(180deg,var(--surface2),var(--surface) 78%)}
 .arena::before{content:"";position:absolute;left:0;right:0;bottom:10%;height:1px;
   background:linear-gradient(90deg,transparent,var(--line),transparent)}
-.arenaGround{position:absolute;bottom:8%;width:36%;height:14px;border-radius:50%;
+.arenaGround{position:absolute;bottom:8%;width:36%;height:16px;border-radius:50%;
   background:radial-gradient(ellipse,rgba(0,0,0,.4),transparent 72%)}
 .arenaGround.me{left:3%}
 .arenaGround.foe{right:3%}
-.arenaVs{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:800 12px/1 var(--display);
-  color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 10px;z-index:2}
-.arenaFighter{position:absolute;bottom:9%;width:40%;max-width:150px;aspect-ratio:1}
-.arenaFighter.me{left:2%}
-.arenaFighter.foe{right:2%}
+.arenaVs{position:absolute;top:10px;left:50%;transform:translateX(-50%);font:800 12px/1 var(--display);
+  color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 11px;z-index:2}
+.arenaFighter{position:absolute;bottom:9%;width:44%;max-width:210px;aspect-ratio:1}
+.arenaFighter.me{left:3%}
+.arenaFighter.foe{right:3%}
 .arenaFighter .mon,.arenaFighter .mon.img{position:absolute;inset:0;width:100%;height:100%;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
 .arenaFighter.foe .mon,.arenaFighter.foe .mon.img{transform:scaleX(-1)}
 .arenaFighter.lost .mon{opacity:.3;transition:opacity .8s}
-.blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:10px 0 4px;
-  max-height:120px;overflow-y:auto;font-size:13.5px;line-height:1.6}
+.blogWrap{margin:10px 0 4px}
+.blogHead{display:block;font:700 11px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;
+  max-height:90px;overflow-y:auto;font-size:13.5px;line-height:1.6}
 .blog p{margin:2px 0}
 .blog p:last-child{color:var(--ink);font-weight:600}
-.bmoves{display:flex;gap:8px;margin-top:14px}
-.bmoves .cta{flex:1;min-height:50px;font-size:14.5px}
+.turnFlag{display:block;text-align:center;font:700 12.5px/1 var(--body);color:var(--ink2);margin-top:12px}
+.bmoves{display:flex;gap:8px;margin-top:8px}
+.moveBtn{flex:1;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px 12px;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s,border-color .12s}
+.moveBtn:active{transform:scale(.96)}
+.moveIcon{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--elc) 20%,var(--surface2));border:1px solid color-mix(in srgb,var(--elc) 55%,var(--line))}
+.moveIcon svg{width:17px;height:17px;color:var(--elc)}
+.moveInfo{display:flex;flex-direction:column;gap:1px;min-width:0}
+.moveName{font:700 14px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.moveType{font:600 11px/1.2 var(--body);color:var(--ink2)}
+.moveBtn.special{border-color:color-mix(in srgb,var(--elc) 55%,var(--line))}
+.moveBtn.special .moveType{color:var(--elc)}
 .statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
 .statln .sk{font:800 11px/1 var(--display);color:var(--sc);letter-spacing:.03em}
 .statln .sv{font:700 13px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
@@ -1276,6 +1290,15 @@ function topbar(title, backAct, backTo) {
 }
 
 /* ---------- battle arena ---------- */
+const MOVE_BASIC = ['Tackle','Slam','Pounce','Ram','Bite','Strike','Charge','Swipe','Crush','Lunge'];
+function basicMoveName(sp) {
+  let h = 0; for (const ch of sp.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return MOVE_BASIC[h % MOVE_BASIC.length];
+}
+const MOVE_SPECIAL = {
+  Fire:'Ember Burst', Water:'Tidal Wave', Nature:'Vine Whip', Earth:'Rock Slam', Ice:'Frost Bite',
+  Light:'Radiant Beam', Dark:'Shadow Fang', Poison:'Toxic Spit', Wind:'Gale Slash', Lightning:'Volt Strike'
+};
 function typeMult(atkEl, defEl) {
   if (EL[defEl] && EL[defEl].w === atkEl) return 1.4;
   if (EL[atkEl] && EL[atkEl].w === defEl) return 0.7;
@@ -1285,7 +1308,8 @@ function battleLv(id, sp) { const rec = S.sp[id]; return rec ? rec.lvMax : sp.lv
 function battleFighter(sp, lv) {
   const s = monStats(sp), mult = 1 + (lv - 1) * .035;
   const hp = Math.max(10, Math.round(s.hp * mult));
-  return {id: sp.id, el: sp.el, r: sp.r, lv, hp, maxHp: hp, atk: Math.round(s.atk * mult), def: Math.round(s.def * mult), spd: s.spd};
+  return {id: sp.id, el: sp.el, r: sp.r, lv, hp, maxHp: hp, atk: Math.round(s.atk * mult), def: Math.round(s.def * mult), spd: s.spd,
+    mvBasic: basicMoveName(sp), mvSpecial: MOVE_SPECIAL[sp.el] || `${sp.el} Strike`};
 }
 function pickOpponent(excludeId, lv) {
   const pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden);
@@ -1308,7 +1332,7 @@ function battleMoveDmg(atkF, defF, move) {
 function applyMove(atkF, defF, move, atkName, log) {
   const dmg = battleMoveDmg(atkF, defF, move);
   defF.hp = Math.max(0, defF.hp - dmg);
-  const mv = move === 'special' ? `${atkF.el} Strike` : 'Attack';
+  const mv = move === 'special' ? atkF.mvSpecial : atkF.mvBasic;
   const eff = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
   const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
   log.push(`${atkName} used ${mv}: ${dmg} dmg${tag}`);
@@ -1455,14 +1479,24 @@ function viewBattleFight() {
     <div class="hptop"><b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span></div>
     <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div></div>
     <span class="bhptxt">${f.hp}/${f.maxHp}</span></div>`;
-  const log = `<div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
+  const log = `<div class="blogWrap"><span class="blogHead">Battle Log</span><div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div></div>`;
   let controls;
   if (b.over) {
     controls = `<div class="result${b.over === 'lose' ? ' miss' : ''}"><h3>${b.over === 'win' ? 'Victory!' : 'Defeated'}</h3>
       ${b.reward ? `<ul class="chips"><li>Coins +${num(b.reward.coins)}</li><li>Data +${num(b.reward.dp)}</li></ul>` : '<p class="note">This one got away. Heal up and try again.</p>'}</div>
       <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
   } else {
-    controls = `<div class="bmoves"><button class="cta" data-act="bmove" data-id="attack">Attack</button><button class="cta ghost" data-act="bmove" data-id="special">${esc(psp.el)} Strike</button></div>
+    controls = `<span class="turnFlag">Your turn \u2014 choose a move</span>
+      <div class="bmoves">
+        <button class="moveBtn" data-act="bmove" data-id="attack" style="--elc:var(--ink2)">
+          <span class="moveIcon">${ic('battle')}</span>
+          <span class="moveInfo"><span class="moveName">${esc(b.p.mvBasic)}</span><span class="moveType">Normal</span></span>
+        </button>
+        <button class="moveBtn special" data-act="bmove" data-id="special" style="--elc:${EL[psp.el].a}">
+          <span class="moveIcon">${elIc(psp.el)}</span>
+          <span class="moveInfo"><span class="moveName">${esc(b.p.mvSpecial)}</span><span class="moveType">${esc(psp.el)}</span></span>
+        </button>
+      </div>
       <button class="linkbtn" data-act="battleleave">Flee</button>`;
   }
   return `${topbar('Battle Arena', 'battleleave')}
