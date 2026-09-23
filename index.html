@@ -408,6 +408,27 @@ svg{display:block}
 .redact{height:14px;border-radius:5px;margin-top:3px;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--line) 6px 12px)}
 .redcap{font-size:13px;color:var(--ink2);margin-top:5px}
 .statgrid{display:flex;flex-direction:column;gap:8px;padding:10px 0 12px}
+.bpickgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.bpick{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 6px 10px;text-align:center}
+.bpick .mon,.bpick .mon.img{position:relative;width:52px;height:52px;margin:0 auto}
+.bpick b{display:block;font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bpick.sel{border-color:var(--lamp);box-shadow:0 0 0 2px color-mix(in srgb,var(--lamp) 45%,transparent),0 0 12px color-mix(in srgb,var(--lamp) 35%,transparent)}
+.vs{display:flex;align-items:flex-start;justify-content:center;gap:8px;margin:6px 0 4px}
+.bfighter{flex:1;min-width:0;text-align:center}
+.bfighter .plate.sm{margin:0 auto 6px}
+.bfighter b{display:block;font:700 13px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bfighter .blv{color:var(--ink2);font-weight:600;font-size:11.5px}
+.bvs{font:800 13px/1 var(--display);color:var(--ink2);flex:none;align-self:center;padding-top:40px}
+.bhpwrap{display:flex;align-items:center;gap:6px;margin-top:6px}
+.bhpbar{flex:1;height:9px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.bhpbar i{display:block;height:100%;border-radius:inherit;transition:width .35s}
+.bhptxt{font:700 11px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink2)}
+.blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:14px 0 4px;
+  max-height:150px;overflow-y:auto;font-size:13.5px;line-height:1.6}
+.blog p{margin:2px 0}
+.blog p:last-child{color:var(--ink);font-weight:600}
+.bmoves{display:flex;gap:8px;margin-top:14px}
+.bmoves .cta{flex:1;min-height:50px;font-size:14.5px}
 .statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
 .statln .sk{font:800 11px/1 var(--display);color:var(--sc);letter-spacing:.03em}
 .statln .sv{font:700 13px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
@@ -712,7 +733,8 @@ const ICON = {
   scanner:'<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
   radar:'<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12l6-5"/><path d="M12 4a8 8 0 0 1 8 8"/><path d="M12 1a11 11 0 0 1 11 11"/>',
   check:'<path d="M4 12.5l5 5L20 6"/>',
-  inv:'<path d="M3 8l2-4h14l2 4"/><path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 12h6"/>'
+  inv:'<path d="M3 8l2-4h14l2 4"/><path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 12h6"/>',
+  battle:'<path d="M6 3l7 7"/><path d="M4 5l3-3 3 3-3 3z"/><path d="M13 10l7 7"/><path d="M18 3l3 3-3 3-3-3z"/><path d="M4 20l6-6"/><path d="M9 9l6 6"/>'
 };
 const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 const EL_ICON = {
@@ -1113,9 +1135,9 @@ function feat(n, A, c) {
     case 'spikes': return {f:spikes(A, c, 5, 13, .62)};
     case 'crest': return {f:spikes(A, c, 3, 20, .35)};
     case 'shell': { let s = ''; [-.5, 0, .5].forEach(t => { const x = A.arc[0] + t * A.arc[2], y = A.arc[1] - A.arc[3] * Math.sqrt(1 - t * t) * .7; s += `<ellipse cx="${x}" cy="${y}" rx="13" ry="9" fill="${c.b}" stroke="${c.c}" stroke-width="2"/>`; }); return {f:s}; }
-    case 'wings': { const [bx, by] = A.wing; return {b:`<path d="M${bx-8} ${by} C${bx-70} ${by-58} ${bx-74} ${by+6} ${bx-22} ${by+16}Z" fill="${c.b}"/><path d="M${bx+8} ${by} C${bx+70} ${by-58} ${bx+74} ${by+6} ${bx+22} ${by+16}Z" fill="${c.b}"/>`}; }
-    case 'glowtail': { const [gx, gy] = A.tail; return {f:`<circle cx="${gx}" cy="${gy}" r="14" fill="${c.d}" opacity=".28"/><circle cx="${gx}" cy="${gy}" r="7" fill="${c.d}"/><circle cx="${gx}" cy="${gy}" r="3.5" fill="#fff" opacity=".85"/>`}; }
-    case 'flametail': { const [gx, gy] = A.tail; return {f:flame(gx, gy + 6, .7, c)}; }
+    case 'wings': { const [bx, by] = A.wing || A.arc; return {b:`<path d="M${bx-8} ${by} C${bx-70} ${by-58} ${bx-74} ${by+6} ${bx-22} ${by+16}Z" fill="${c.b}"/><path d="M${bx+8} ${by} C${bx+70} ${by-58} ${bx+74} ${by+6} ${bx+22} ${by+16}Z" fill="${c.b}"/>`}; }
+    case 'glowtail': { const [gx, gy] = A.tail || [A.arc[0] - A.arc[2], A.arc[1]]; return {f:`<circle cx="${gx}" cy="${gy}" r="14" fill="${c.d}" opacity=".28"/><circle cx="${gx}" cy="${gy}" r="7" fill="${c.d}"/><circle cx="${gx}" cy="${gy}" r="3.5" fill="#fff" opacity=".85"/>`}; }
+    case 'flametail': { const [gx, gy] = A.tail || [A.arc[0] - A.arc[2], A.arc[1]]; return {f:flame(gx, gy + 6, .7, c)}; }
     case 'fins': return {b:`<path d="M38 98Q12 84 18 114Q30 110 40 110Z" fill="${c.b}"/><path d="M122 98Q148 84 142 114Q130 110 120 110Z" fill="${c.b}"/>`};
     case 'lure': return {f:`<path d="M${tx} ${ty+2} Q${tx+4} ${ty-26} ${tx+26} ${ty-30}" fill="none" stroke="${c.b}" stroke-width="3" stroke-linecap="round"/><circle cx="${tx+26}" cy="${ty-30}" r="12" fill="${c.d}" opacity=".3"/><circle cx="${tx+26}" cy="${ty-30}" r="6" fill="${c.d}"/>`};
     case 'fangs': { const [mx, my, sp] = A.mouth; const g = sp > 6 ? 8 : 4; return {f:`<polygon points="${mx-g-3},${my} ${mx-g+3},${my} ${mx-g},${my+8}" fill="#fff"/><polygon points="${mx+g-3},${my} ${mx+g+3},${my} ${mx+g},${my+8}" fill="#fff"/>`}; }
@@ -1181,7 +1203,7 @@ function load() {
 }
 let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
-const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0};
+const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1228,6 +1250,75 @@ function affordable() {
 function topbar(title, backAct, backTo) {
   return `<header class="top"><button class="back" data-act="${backAct}" data-to="${backTo || ''}" aria-label="Back">${ic('back')}</button><h2>${title}</h2>
     <div class="res"><span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}</span><span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}</span></div></header>`;
+}
+
+/* ---------- battle arena ---------- */
+function typeMult(atkEl, defEl) {
+  if (EL[defEl] && EL[defEl].w === atkEl) return 1.4;
+  if (EL[atkEl] && EL[atkEl].w === defEl) return 0.7;
+  return 1;
+}
+function battleLv(id, sp) { const rec = S.sp[id]; return rec ? rec.lvMax : sp.lv[1]; }
+function battleFighter(sp, lv) {
+  const s = monStats(sp), mult = 1 + (lv - 1) * .035;
+  const hp = Math.max(10, Math.round(s.hp * mult));
+  return {id: sp.id, el: sp.el, r: sp.r, lv, hp, maxHp: hp, atk: Math.round(s.atk * mult), def: Math.round(s.def * mult), spd: s.spd};
+}
+function pickOpponent(excludeId, lv) {
+  const pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden);
+  const sp = pool[Math.floor(Math.random() * pool.length)];
+  const elv = Math.max(sp.lv[0], Math.min(sp.lv[1], lv + Math.round(Math.random() * 8 - 4)));
+  return {sp, lv: elv};
+}
+function startBattle(id) {
+  const sp = SP(id); if (!sp || !S.sp[id]) { toast('Discover this monster first.'); return; }
+  const lv = battleLv(id, sp), {sp: esp, lv: elv} = pickOpponent(id, lv);
+  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null};
+  ui.bPick = null; render(); window.scrollTo(0, 0);
+}
+function battleMoveDmg(atkF, defF, move) {
+  const power = move === 'special' ? .95 : 1.15;
+  const mult = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
+  const variance = .85 + Math.random() * .3;
+  return Math.max(2, Math.round((atkF.atk * power - defF.def * .4) * variance * mult));
+}
+function applyMove(atkF, defF, move, atkName, log) {
+  const dmg = battleMoveDmg(atkF, defF, move);
+  defF.hp = Math.max(0, defF.hp - dmg);
+  const mv = move === 'special' ? `${atkF.el} Strike` : 'Attack';
+  const eff = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
+  const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
+  log.push(`${atkName} used ${mv}: ${dmg} dmg${tag}`);
+  return defF.hp <= 0;
+}
+function finishBattle(win) {
+  const b = ui.battle;
+  if (win) {
+    const esp = SP(b.e.id);
+    const coins = Math.round(BASE_COIN[b.e.r] * (1.2 + b.e.lv * .015));
+    const dp = Math.round(BASE_DP[b.e.r] * (1.2 + b.e.lv * .015));
+    S.coins += coins; S.dp += dp; save();
+    b.reward = {coins, dp};
+    b.log.push(`${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
+  } else {
+    b.log.push(`${SP(b.p.id).name} was defeated...`);
+  }
+  b.over = win ? 'win' : 'lose';
+}
+function battleTurn(move) {
+  const b = ui.battle; if (!b || b.over) return;
+  const psp = SP(b.p.id), esp = SP(b.e.id);
+  const first = b.p.spd >= b.e.spd ? 'p' : 'e';
+  const eMove = Math.random() < .55 ? 'attack' : 'special';
+  const order = first === 'p' ? [['p', move], ['e', eMove]] : [['e', eMove], ['p', move]];
+  for (const [who, mv] of order) {
+    if (b.p.hp <= 0 || b.e.hp <= 0) break;
+    if (who === 'p') { if (applyMove(b.p, b.e, mv, psp.name, b.log)) { finishBattle(true); break; } }
+    else { if (applyMove(b.e, b.p, mv, esp.name, b.log)) { finishBattle(false); break; } }
+  }
+  if (b.log.length > 40) b.log = b.log.slice(-40);
+  render();
+  const logEl = document.getElementById('blog'); if (logEl) logEl.scrollTop = logEl.scrollHeight;
 }
 
 /* ---------- views ---------- */
@@ -1318,6 +1409,42 @@ function questsPanel() {
   return `<section class="panel questpanel"><h3>Daily Quests</h3>${rows}</section>`;
 }
 function viewQuests() { return `${topbar('Daily Quests', 'go', 'home')}${questsPanel()}`; }
+function viewBattle() {
+  if (ui.battle) return viewBattleFight();
+  const owned = Object.keys(S.sp);
+  if (!owned.length) {
+    return `${topbar('Battle Arena', 'go', 'home')}<p class="count">You need to discover a monster before you can battle. Go explore an area first.</p>
+      <div class="dock"><button class="cta" data-act="go" data-to="explore">Go Explore</button></div>`;
+  }
+  const grid = owned.map(id => {
+    const sp = SP(id), sel = ui.bPick === id;
+    return `<button class="bpick${sel ? ' sel' : ''}" data-act="bpick" data-id="${id}" aria-pressed="${sel}">${monSVG(sp, 'normal')}<b>${esc(sp.name)}</b></button>`;
+  }).join('');
+  const popup = ui.bPick ? `<div class="dockbackdrop" data-act="bpickclose"></div>
+    <div class="dockpopup"><button class="cta" data-act="battlestart">Find an opponent</button></div>` : '';
+  return `${topbar('Battle Arena', 'go', 'home')}
+    <p class="count">Choose your fighter, then find an opponent to battle.</p>
+    <div class="bpickgrid">${grid}</div>${popup}`;
+}
+function viewBattleFight() {
+  const b = ui.battle, psp = SP(b.p.id), esp = SP(b.e.id);
+  const hpRow = (f, sp) => `<div class="bfighter"><div class="plate sm${f.hp <= 0 ? ' lost' : ''}">${monSVG(sp, 'normal')}</div>
+    <b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span>
+    <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div><span class="bhptxt">${f.hp}/${f.maxHp}</span></div></div>`;
+  const log = `<div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
+  let controls;
+  if (b.over) {
+    controls = `<div class="result${b.over === 'lose' ? ' miss' : ''}"><h3>${b.over === 'win' ? 'Victory!' : 'Defeated'}</h3>
+      ${b.reward ? `<ul class="chips"><li>Coins +${num(b.reward.coins)}</li><li>Data +${num(b.reward.dp)}</li></ul>` : '<p class="note">This one got away. Heal up and try again.</p>'}</div>
+      <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
+  } else {
+    controls = `<div class="bmoves"><button class="cta" data-act="bmove" data-id="attack">Attack</button><button class="cta ghost" data-act="bmove" data-id="special">${esc(psp.el)} Strike</button></div>
+      <button class="linkbtn" data-act="battleleave">Flee</button>`;
+  }
+  return `${topbar('Battle Arena', 'battleleave')}
+    <div class="vs">${hpRow(b.p, psp)}<span class="bvs">VS</span>${hpRow(b.e, esp)}</div>
+    ${log}${controls}`;
+}
 function viewHome() {
   const disc = discovered();
   const tOwned = Object.values(S.tech).reduce((a, b) => a + b, 0);
@@ -1325,7 +1452,8 @@ function viewHome() {
     {to:'db', k:'db', t:'Monsters', s:`${disc} / ${SPECIES.length} logged`, grad:'#1D4ED8,#38BDF8'},
     {to:'research', k:'research', t:'Research', s: affordable() ? 'Upgrade ready' : `${tOwned}/${TECH_TOTAL} upgrades`, grad:'#6D28D9,#C084FC', badge: affordable()},
     {to:'lab', k:'lab', t:'Lab', s:'Permits & gear', grad:'#047857,#34D399'},
-    {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'}
+    {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'},
+    {to:'battle', k:'battle', t:'Battle', s:'Turn-based arena', grad:'#B91C1C,#FF5C7A'}
   ];
   return `${statusBar()}
     ${heroRow()}
@@ -1657,12 +1785,13 @@ function render() {
     case 'profile': h = viewProfile(); break;
     case 'settings': h = viewSettings(); break;
     case 'quests': h = viewQuests(); break;
+    case 'battle': h = viewBattle(); break;
   }
   app.innerHTML = h;
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
-  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null;
+  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null; ui.battle = null; ui.bPick = null;
   render(); window.scrollTo(0, 0);
 }
 
@@ -1863,6 +1992,12 @@ app.addEventListener('click', (ev) => {
     case 'resetarm': ui.reset = true; render(); break;
     case 'setbg': { if (!BG_OPTS[d.id]) break; S.bg = d.id; save(); render(); toast(`${BG_OPTS[d.id].n} applied`); break; }
     case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
+    case 'bpick': if (!S.sp[d.id]) break; ui.bPick = ui.bPick === d.id ? null : d.id; render(); break;
+    case 'bpickclose': ui.bPick = null; render(); break;
+    case 'battlestart': if (!ui.bPick) break; startBattle(ui.bPick); break;
+    case 'bmove': battleTurn(d.id); break;
+    case 'battleagain': { const pid = ui.battle && ui.battle.p.id; ui.battle = null; if (pid) startBattle(pid); break; }
+    case 'battleleave': ui.battle = null; ui.bPick = null; go('home'); break;
   }
 });
 boot();
