@@ -226,6 +226,42 @@ svg{display:block}
 .loc .lb{font-size:12.5px;color:var(--ink2);line-height:1.3}
 .loc.locked{opacity:.68}
 .loc.locked .lic{background:var(--surface2);color:var(--ink2)}
+
+/* laboratory v2 */
+.permgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.permit{position:relative;display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:16px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface2) 45%,var(--surface)));
+  border:1.5px solid color-mix(in srgb,var(--tint) 42%,var(--line));min-height:150px}
+.permit::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.55;pointer-events:none;
+  background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--tint) 30%,transparent),transparent 72%)}
+.permit .lic{width:36px;height:36px;border-radius:10px;background:var(--tint);color:#fff;display:grid;place-items:center;
+  box-shadow:inset 0 -2px 5px rgba(0,0,0,.3),inset 0 2px 2px rgba(255,255,255,.25)}
+.permit .lic svg{width:19px;height:19px}
+.permit .ln{font:700 15px/1.15 var(--display)}
+.permit .lb{font-size:11.5px;color:var(--ink2);line-height:1.32;flex:1}
+.permit.owned{border-color:color-mix(in srgb,var(--moss) 55%,var(--line))}
+.permit .ownedtag{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font:700 10.5px var(--display);
+  color:var(--moss);background:color-mix(in srgb,var(--moss) 18%,var(--surface));border:1px solid color-mix(in srgb,var(--moss) 45%,var(--line));
+  border-radius:99px;padding:3px 9px}
+.permit .ownedtag svg{width:11px;height:11px}
+.permit .buy{width:100%;justify-content:center;min-height:36px;font-size:12.5px;margin-top:auto}
+.geargrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gear2{position:relative;display:flex;flex-direction:column;gap:7px;padding:14px 12px;border-radius:16px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface2) 45%,var(--surface)));
+  border:1.5px solid var(--line)}
+.gear2::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;pointer-events:none;
+  background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--lamp) 24%,transparent),transparent 72%)}
+.gear2 .gicon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--lamp);
+  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 45%,var(--surface2)),var(--surface2) 72%);
+  border:2px solid color-mix(in srgb,var(--lamp) 60%,var(--line));box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 40%,transparent)}
+.gear2 .gicon svg{width:19px;height:19px}
+.gear2 .gn{font:700 14px/1.15 var(--display)}
+.gear2 .gs{font-size:11px;color:var(--ink2);line-height:1.3;min-height:28px}
+.gearpips{display:flex;gap:4px;margin:1px 0 2px}
+.gearpips span{flex:1;height:6px;border-radius:99px;background:var(--surface2)}
+.gearpips span.on{background:var(--lamp);box-shadow:0 0 6px color-mix(in srgb,var(--lamp) 60%,transparent)}
+.gear2 .buy{width:100%;justify-content:center;min-height:36px;font-size:12.5px;margin-top:2px}
+.gear2 .maxed{text-align:center;font:700 11px var(--display);letter-spacing:.03em;color:var(--lamp);padding:8px 0 2px}
 .dock{position:sticky;bottom:0;margin:14px -16px 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(to bottom,transparent,var(--bg) 32%)}
 .dockbackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;animation:fadein .18s ease-out}
@@ -959,6 +995,8 @@ const BASE_DP = [4,7,12,20,35,60];
 const BASE_COIN = [10,18,35,70,140,300];
 const KIT = [1,1.25,1.5,1.75];
 const KIT_COST = [200,500,1000];
+const DPKIT = [1,1.25,1.5,1.75];
+const DPKIT_COST = [250,600,1200];
 const LAB_MULT = [1,1.3,1.6];
 
 /* ---------- rank ---------- */
@@ -1133,7 +1171,7 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -1286,7 +1324,7 @@ function viewHome() {
   const cards = [
     {to:'db', k:'db', t:'Monsters', s:`${disc} / ${SPECIES.length} logged`, grad:'#1D4ED8,#38BDF8'},
     {to:'research', k:'research', t:'Research', s: affordable() ? 'Upgrade ready' : `${tOwned}/${TECH_TOTAL} upgrades`, grad:'#6D28D9,#C084FC', badge: affordable()},
-    {to:'lab', k:'lab', t:'Lab', s:'Permits & kit', grad:'#047857,#34D399'},
+    {to:'lab', k:'lab', t:'Lab', s:'Permits & gear', grad:'#047857,#34D399'},
     {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'}
   ];
   return `${statusBar()}
@@ -1519,15 +1557,35 @@ function viewResearch() {
 }
 
 function viewLab() {
-  const pending = LOCS.filter(l => !S.locs.includes(l.id));
-  const permits = pending.length ? pending.map(l => `<div class="row"><div class="rb"><b>${l.n}</b><span>${l.blurb}</span></div>
-      <button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button></div>`).join('') : `<p class="note">Every area is open.</p>`;
-  const kitNext = KIT_COST[S.kit];
+  const owned = S.locs.length;
+  const permits = LOCS.map(l => {
+    const has = S.locs.includes(l.id);
+    return `<div class="permit${has ? ' owned' : ''}" style="--tint:${l.tint}"><span class="lic">${ic(l.id)}</span>
+      <span class="ln">${l.n}</span><span class="lb">${l.blurb}</span>
+      ${has ? `<span class="ownedtag">${ic('check')}Owned</span>`
+        : `<button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button>`}</div>`;
+  }).join('');
+  const pips = (lvl, max) => `<div class="gearpips">${Array.from({length:max}, (_, i) => `<span class="${i < lvl ? 'on' : ''}"></span>`).join('')}</div>`;
+  const kitNext = KIT_COST[S.kit], dpkitNext = DPKIT_COST[S.dpkit];
   return `${topbar('Laboratory', 'go', 'home')}
-    <section class="sec" style="margin-top:6px"><h3>Area permits</h3>${permits}</section>
-    <section class="sec"><h3>Field kit</h3>
-      <div class="row"><div class="rb"><b>Field kit level ${S.kit} of ${KIT_COST.length}</b><span>Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}% now${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span></div>
-      ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<span class="pill">Maxed</span>`}</div></section>`;
+    <div class="invstats" style="margin-top:6px">
+      <div class="ivcard"><b>${owned}/${LOCS.length}</b><span>Areas open</span></div>
+      <div class="ivcard"><b>Lv.${S.kit}</b><span>Field Kit</span></div>
+      <div class="ivcard"><b>Lv.${S.dpkit}</b><span>Data Extractor</span></div>
+    </div>
+    <section class="sec" style="margin-top:4px"><h3>Area permits</h3>
+      <div class="permgrid">${permits}</div></section>
+    <section class="sec"><h3>Equipment</h3>
+      <div class="geargrid">
+        <div class="gear2"><span class="gicon">${ic('gear')}</span><span class="gn">Field Kit</span>
+          <span class="gs">Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}%${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span>
+          ${pips(S.kit, KIT_COST.length)}
+          ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
+        <div class="gear2"><span class="gicon">${ic('flask')}</span><span class="gn">Data Extractor</span>
+          <span class="gs">Data from scans +${Math.round((DPKIT[S.dpkit] - 1) * 100)}%${dpkitNext ? `, +${Math.round((DPKIT[S.dpkit + 1] - 1) * 100)}% next` : ''}</span>
+          ${pips(S.dpkit, DPKIT_COST.length)}
+          ${dpkitNext ? `<button class="buy" data-act="buydpkit" aria-disabled="${S.coins < dpkitNext}">${num(dpkitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
+      </div></section>`;
 }
 
 function viewProfile() {
@@ -1673,7 +1731,7 @@ function resolveScan(e, q) {
   rec.scans++; S.scans++; S.daily.scans++; if (q === 'perfect') S.daily.perfect++;
   rec.lvMin = Math.min(rec.lvMin, e.lv); rec.lvMax = Math.max(rec.lvMax, e.lv);
   const newForm = !rec.forms.includes(f); if (newForm) rec.forms.push(f);
-  let dp = Math.round(BASE_DP[sp.r] * Q.m * F.mult);
+  let dp = Math.round(BASE_DP[sp.r] * Q.m * F.mult * DPKIT[S.dpkit]);
   let coins = Math.round(BASE_COIN[sp.r] * Q.m * F.mult * KIT[S.kit]);
   if (first) dp += 10;
   if (newForm && f !== 'normal') dp += 40;
@@ -1797,6 +1855,7 @@ app.addEventListener('click', (ev) => {
     case 'buytech': buyTech(d.k, +d.i); break;
     case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); render(); toast(`${l.n} is open`); break; }
     case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
+    case 'buydpkit': { const c = DPKIT_COST[S.dpkit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.dpkit++; save(); render(); toast('Data extractor upgraded'); break; }
     case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
     case 'setpartner': { if (!S.sp[d.id]) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
     case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } startEvolve(d.id); break;
