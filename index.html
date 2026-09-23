@@ -475,6 +475,36 @@ body{background-image:
   box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 60%,transparent)}
 .loader-pct{font:700 13px/1 var(--display);color:var(--lamp);letter-spacing:.03em}
 .loader-tip{font-size:12.5px;color:var(--ink2);text-align:center;min-height:16px;transition:opacity .3s ease}
+
+/* evolve sequence */
+.evoStage{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center;overflow:hidden;
+  background:radial-gradient(ellipse 90% 65% at 50% 38%,color-mix(in srgb,var(--lamp) 24%,var(--bg)),var(--bg) 78%)}
+.evoRings{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.evoRings i{position:absolute;width:130px;height:130px;border-radius:50%;border:2px solid color-mix(in srgb,var(--lamp) 60%,transparent);
+  opacity:0;animation:evoRing 1.8s ease-out infinite}
+.evoRings i:nth-child(2){animation-delay:.5s}
+.evoRings i:nth-child(3){animation-delay:1s}
+@keyframes evoRing{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2.7);opacity:0}}
+.evoMon{position:relative;z-index:2;width:min(58vw,230px);height:min(58vw,230px);display:grid;place-items:center}
+.evoMon .mon{width:100%;height:100%}
+.evoOld,.evoNew{grid-area:1/1;width:100%;height:100%;display:grid;place-items:center}
+.evo-charge .evoOld .mon{animation:evoCharge 1s ease-in-out infinite}
+@keyframes evoCharge{0%,100%{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--lamp) 60%,transparent)) brightness(1)}
+  50%{filter:drop-shadow(0 0 32px color-mix(in srgb,var(--lamp) 95%,transparent)) brightness(1.35)}}
+.evo-flash .evoOld .mon{animation:evoShake .12s linear infinite}
+@keyframes evoShake{0%,100%{transform:translateX(0) scale(1.04)}25%{transform:translateX(-4px) scale(1.04)}75%{transform:translateX(4px) scale(1.04)}}
+.evoFlash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:5}
+.evo-flash .evoFlash{animation:evoFlashPop .45s ease-out forwards}
+@keyframes evoFlashPop{0%{opacity:0}40%{opacity:1}100%{opacity:0}}
+.evo-reveal .evoNew .mon,.evo-done .evoNew .mon{animation:evoPop .6s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes evoPop{0%{transform:scale(.15);opacity:0;filter:brightness(2.2)}55%{transform:scale(1.14);opacity:1;filter:brightness(1.3)}100%{transform:scale(1);opacity:1;filter:brightness(1)}}
+.evoFx{position:absolute;inset:-25%;width:150%;height:150%;pointer-events:none;z-index:3}
+.evoText{position:relative;z-index:6;margin-top:24px;min-height:34px}
+.evoText h3{font:800 23px/1.25 var(--display);letter-spacing:.01em}
+.evoText p{color:var(--ink2);margin-top:6px;font-size:14.5px}
+.evoText .rise{animation:rise .4s ease-out both}
+.evoDone{animation:rise .4s ease-out both}
 </style>
 </head>
 <body>
@@ -1066,7 +1096,7 @@ function load() {
 }
 let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
-const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false};
+const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1324,7 +1354,7 @@ function viewDetail() {
     ${evoPanel}
     <p class="hint">${rec.scans} ${rec.scans === 1 ? 'scan' : 'scans'} logged. Hidden forms need Radar upgrades.</p>`;
 }
-function evolve(id) {
+function startEvolve(id) {
   const sp = SP(id), rec = sp && S.sp[id], evoSp = sp && SP(sp.id + '_evo');
   if (!sp || !rec || !evoSp) return;
   if (!rec.mastered) { toast('Fully research this monster (100%) first.'); return; }
@@ -1332,12 +1362,58 @@ function evolve(id) {
   if (S.sp[evoSp.id]) { toast(`${evoSp.name} is already unlocked.`); return; }
   const cost = BASE_COIN[sp.r] * 6;
   if (S.coins < cost) { toast(`Need ${num(cost - S.coins)} more coins`); return; }
-  S.coins -= cost;
+  S.coins -= cost; save();
+  ui.evo = {id, evoId: evoSp.id, form: ui.form || 'normal', phase: 'charge'};
+  render(); window.scrollTo(0, 0);
+  runEvolveSequence();
+}
+function finalizeEvolve() {
+  const e = ui.evo; if (!e) return;
+  const sp = SP(e.id), rec = S.sp[e.id], evoSp = SP(e.evoId);
+  if (!sp || !rec || !evoSp || S.sp[evoSp.id]) return;
   S.sp[evoSp.id] = {prog:100, forms:['normal'], drops:[], lvMin:rec.lvMax, lvMax:rec.lvMax, scans:0, mastered:true};
   S.dp += 50; save();
-  ui.detail = evoSp.id; ui.form = 'normal';
+}
+function runEvolveSequence() {
+  const steps = [['charge', 950], ['flash', 420], ['reveal', 1250], ['done', 0]];
+  let i = 0;
+  const step = () => {
+    if (!ui.evo) return;
+    ui.evo.phase = steps[i][0];
+    if (ui.evo.phase === 'flash') finalizeEvolve();
+    render();
+    const dur = steps[i][1]; i++;
+    if (dur) ui.evoTimer = setTimeout(step, dur);
+  };
+  step();
+}
+function endEvolve() {
+  const e = ui.evo; if (!e) return;
+  clearTimeout(ui.evoTimer);
+  ui.detail = e.evoId; ui.form = 'normal'; ui.evo = null;
   render(); window.scrollTo(0, 0);
-  toast(`${sp.name} evolved into ${evoSp.name}!`);
+}
+function viewEvolve() {
+  const e = ui.evo, sp = SP(e.id), evoSp = SP(e.evoId);
+  const showOld = e.phase === 'charge' || e.phase === 'flash';
+  const showNew = e.phase === 'reveal' || e.phase === 'done';
+  const spark = SPARKS.replace('class="fx"', 'class="fx evoFx"');
+  const text = e.phase === 'charge'
+    ? `<h3>Evolving&hellip;</h3><p>${esc(sp.name)} is changing.</p>`
+    : e.phase === 'flash' ? `<h3>&nbsp;</h3>`
+    : e.phase === 'reveal' ? `<h3 class="rise">What?!</h3>`
+    : `<div class="evoDone"><h3>${esc(sp.name)} evolved into ${esc(evoSp.name)}!</h3>
+        <div class="meta" style="justify-content:center;margin-top:8px">${elTag(evoSp.el)}${rarTag(evoSp.r)}</div>
+        <button class="cta sm" data-act="evodone" style="margin-top:18px">Continue</button></div>`;
+  return `<div class="evoStage evo-${e.phase}">
+    <div class="evoRings" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="evoMon">
+      ${showOld ? `<div class="evoOld">${monSVG(sp, e.form)}</div>` : ''}
+      ${showNew ? `<div class="evoNew">${monSVG(evoSp, 'normal')}${spark}</div>` : ''}
+    </div>
+    <div class="evoFlash" aria-hidden="true"></div>
+    <div class="evoText">${text}</div>
+  </div>`;
 }
 
 const BRANCH_TINT = {scanner:'#37C6F4', lab:'#F0A22E', radar:'#8B5CF6'};
@@ -1429,6 +1505,7 @@ function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
   document.documentElement.style.setProperty('--home-img', `url('assets/backgrounds/${BG_OPTS[S.bg] ? BG_OPTS[S.bg].f : BG_OPTS.bright.f}')`);
+  if (ui.evo) { app.innerHTML = viewEvolve(); return; }
   switch (ui.screen) {
     case 'home': h = viewHome(); break;
     case 'explore': h = viewExplore(); break;
@@ -1443,8 +1520,8 @@ function render() {
   app.innerHTML = h;
 }
 function go(to) {
-  stopGauge(); clearTimeout(ui.timer);
-  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false;
+  stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
+  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null;
   render(); window.scrollTo(0, 0);
 }
 
@@ -1639,7 +1716,8 @@ app.addEventListener('click', (ev) => {
     case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
     case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
     case 'setpartner': { if (!S.sp[d.id]) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
-    case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } evolve(d.id); break;
+    case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } startEvolve(d.id); break;
+    case 'evodone': endEvolve(); break;
     case 'resetarm': ui.reset = true; render(); break;
     case 'setbg': { if (!BG_OPTS[d.id]) break; S.bg = d.id; save(); render(); toast(`${BG_OPTS[d.id].n} applied`); break; }
     case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
