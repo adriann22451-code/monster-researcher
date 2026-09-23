@@ -593,7 +593,8 @@ const ICON = {
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4.2 5-6 8-6s6.5 1.8 8 6"/>',
   scanner:'<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
   radar:'<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12l6-5"/><path d="M12 4a8 8 0 0 1 8 8"/><path d="M12 1a11 11 0 0 1 11 11"/>',
-  check:'<path d="M4 12.5l5 5L20 6"/>'
+  check:'<path d="M4 12.5l5 5L20 6"/>',
+  inv:'<path d="M3 8l2-4h14l2 4"/><path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 12h6"/>'
 };
 const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 const EL_ICON = {
@@ -1050,7 +1051,7 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -1060,7 +1061,7 @@ function load() {
 }
 let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
-const ui = {screen:'home', loc:'forest', enc:null, filter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false};
+const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1180,7 +1181,8 @@ function viewHome() {
   const cards = [
     {to:'db', k:'db', t:'Monsters', s:`${disc} / ${SPECIES.length} logged`, grad:'#1D4ED8,#38BDF8'},
     {to:'research', k:'research', t:'Research', s: affordable() ? 'Upgrade ready' : `${tOwned}/${TECH_TOTAL} upgrades`, grad:'#6D28D9,#C084FC', badge: affordable()},
-    {to:'lab', k:'lab', t:'Lab', s:'Permits & kit', grad:'#047857,#34D399'}
+    {to:'lab', k:'lab', t:'Lab', s:'Permits & kit', grad:'#047857,#34D399'},
+    {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'}
   ];
   return `${statusBar()}
     ${heroRow()}
@@ -1296,10 +1298,13 @@ function viewDetail() {
   let evoPanel = '';
   if (evoSp) {
     const has = !!S.sp[evoSp.id], cost = BASE_COIN[sp.r] * 6;
+    const dropsNeed = sp.dr.length, dropsHave = rec.drops.length, dropsDone = dropsHave >= dropsNeed;
+    const canEvolve = rec.mastered && dropsDone;
     evoPanel = `<section class="panel"><h3>Evolution</h3>${
       has ? `<p class="note">Evolved into ${esc(evoSp.name)}.</p><button class="cta sm" data-act="open" data-id="${evoSp.id}">View ${esc(evoSp.name)}</button>`
-      : rec.mastered ? `<p class="note">Ready to evolve into ${esc(evoSp.name)} for ${num(cost)} coins.</p><button class="cta sm" data-act="evolve" data-id="${sp.id}" aria-disabled="${S.coins < cost}">Evolve (${num(cost)} coins)</button>`
-      : `<p class="note">Reach 100% research to unlock evolution into ${esc(evoSp.name)}.</p>`
+      : rec.mastered
+        ? `<p class="note">Ready to evolve into ${esc(evoSp.name)} for ${num(cost)} coins.${dropsDone ? '' : ` Needs all drops collected (${dropsHave}/${dropsNeed}).`}</p><button class="cta sm" data-act="evolve" data-id="${sp.id}" aria-disabled="${!canEvolve || S.coins < cost}">Evolve (${num(cost)} coins)</button>`
+      : `<p class="note">Reach 100% research to unlock evolution into ${esc(evoSp.name)}. Also collect all drops (${dropsHave}/${dropsNeed}).</p>`
     }</section>`;
   } else if (baseSp) {
     evoPanel = `<section class="panel"><h3>Evolution</h3><p class="note">Evolved form of ${esc(baseSp.name)}.</p></section>`;
@@ -1318,6 +1323,7 @@ function evolve(id) {
   const sp = SP(id), rec = sp && S.sp[id], evoSp = sp && SP(sp.id + '_evo');
   if (!sp || !rec || !evoSp) return;
   if (!rec.mastered) { toast('Fully research this monster (100%) first.'); return; }
+  if (rec.drops.length < sp.dr.length) { toast(`Collect all drops first (${rec.drops.length}/${sp.dr.length}).`); return; }
   if (S.sp[evoSp.id]) { toast(`${evoSp.name} is already unlocked.`); return; }
   const cost = BASE_COIN[sp.r] * 6;
   if (S.coins < cost) { toast(`Need ${num(cost - S.coins)} more coins`); return; }
@@ -1395,6 +1401,25 @@ function viewSettings() {
       <button class="danger${ui.reset ? ' arm' : ''}" data-act="${ui.reset ? 'resetdo' : 'resetarm'}">${ui.reset ? 'Tap again to erase everything' : 'Reset progress'}</button></section>`;
 }
 
+function viewInventory() {
+  const entries = [];
+  SPECIES.forEach(sp => {
+    const rec = S.sp[sp.id];
+    if (!rec) return;
+    rec.drops.forEach(name => entries.push({name, qty: S.inv[name] || 1, sp}));
+  });
+  const totalQty = entries.reduce((a, e) => a + e.qty, 0);
+  const chips = [{id:'all', n:'All'}].concat(LOCS.map(l => ({id:l.id, n:l.n})))
+    .map(c => `<button class="fc${ui.invFilter === c.id ? ' on' : ''}" data-act="invfilter" data-id="${c.id}">${c.n}</button>`).join('');
+  const list = entries.filter(e => ui.invFilter === 'all' || e.sp.loc === ui.invFilter)
+    .sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name));
+  const rows = list.length ? list.map(e => `<div class="row"><div class="rb"><b>${esc(e.name)}</b><span>From ${esc(e.sp.name)} · ${RAR[e.sp.r].n}</span></div><span class="pill">×${num(e.qty)}</span></div>`).join('')
+    : `<p class="note">No materials in this area yet. Keep researching to find drops.</p>`;
+  return `${topbar('Inventory', 'go', 'home')}
+    <p class="count">${list.length} of ${entries.length} material types · ${num(totalQty)} collected total.</p>
+    <div class="chipbar">${chips}</div>
+    <div class="stack">${rows}</div>`;
+}
 function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
@@ -1405,6 +1430,7 @@ function render() {
     case 'db': h = ui.detail ? viewDetail() : viewDb(); break;
     case 'research': h = viewResearch(); break;
     case 'lab': h = viewLab(); break;
+    case 'inv': h = viewInventory(); break;
     case 'profile': h = viewProfile(); break;
     case 'settings': h = viewSettings(); break;
     case 'quests': h = viewQuests(); break;
@@ -1490,6 +1516,7 @@ function resolveScan(e, q) {
   if (Math.random() < .55) {
     const name = sp.dr[Math.floor(Math.random() * sp.dr.length)], isNew = !rec.drops.includes(name);
     if (isNew) rec.drops.push(name);
+    S.inv[name] = (S.inv[name] || 0) + 1;
     drop = {name, isNew}; coins += Math.round(BASE_COIN[sp.r] * .5 * KIT[S.kit]);
   }
   let mastered = false;
@@ -1599,6 +1626,7 @@ app.addEventListener('click', (ev) => {
     case 'scan': doScan(); break;
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
     case 'filter': ui.filter = d.id; render(); break;
+    case 'invfilter': ui.invFilter = d.id; render(); break;
     case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
     case 'form': ui.form = d.id; render(); break;
     case 'buytech': buyTech(d.k, +d.i); break;
