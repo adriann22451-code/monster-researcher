@@ -454,6 +454,22 @@ svg{display:block}
 .bpick{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 6px 10px;text-align:center}
 .bpick .mon,.bpick .mon.img{position:relative;width:52px;height:52px;margin:0 auto}
 .bpick b{display:block;font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bpick .bmeta{display:block;font-size:10.5px;color:var(--ink2);margin-top:1px}
+.durmini{display:block;height:4px;border-radius:99px;background:var(--surface2);margin:5px 6px 0;overflow:hidden}
+.durmini i{display:block;height:100%;border-radius:inherit;background:#5fd08a}
+.bpick.hungry .durmini i{background:var(--signal)}
+.bpinfo{margin:0 0 8px;font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline}
+.bpinfo b{color:var(--ink)}.bpinfo span{flex-basis:100%;font-size:11px}
+.feedrow{display:flex;gap:8px;margin:0 0 10px}
+.feedbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);color:var(--ink)}
+.feedbtn b{font-size:12.5px}.feedbtn span{font-size:10.5px;color:var(--ink2)}
+.feedbtn[aria-disabled="true"]{opacity:.5}
+.trainline{position:relative;z-index:1;margin:12px 0 0;font-size:12px;color:var(--ink2);text-align:center;line-height:1.5}
+.trainline .lvup{color:var(--lamp);font-weight:800}
+.geargrid.three{grid-template-columns:repeat(3,1fr);gap:8px}
+.geargrid.three .gear2{padding:12px 9px}
+.geargrid.three .gs{font-size:10.5px;min-height:0}
+.geargrid.three .gn{font-size:12.5px}
 .bpick.sel{border-color:var(--lamp);box-shadow:0 0 0 2px color-mix(in srgb,var(--lamp) 45%,transparent),0 0 12px color-mix(in srgb,var(--lamp) 35%,transparent)}
 .hprow{display:flex;gap:8px;margin-top:10px}
 .hpcard{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px 9px;
@@ -842,6 +858,7 @@ const ICON = {
   swamp:'<path d="M4 19c3-2 5-2 8 0s5 2 8 0"/><path d="M8 19V7M16 19V10"/>',
   storm:'<path d="M6 16a4 4 0 0 1 .3-8 5 5 0 0 1 9.8-1A4.5 4.5 0 0 1 18 16z"/><path d="M13 16l-2 4h3l-2 4"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 0 1 4 0v.09A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 0 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>',
+  food:'<path d="M12 8c-3.5 0-6 2.4-6 6 0 3.4 2.3 6 6 6s6-2.6 6-6c0-3.6-2.5-6-6-6z"/><path d="M12 8c0-2 1-3.5 3-4"/><path d="M9.5 3.5c1 .2 2 .9 2.5 2"/>',
   flask:'<path d="M9 3h6M10 3v6l-6 10a1.5 1.5 0 0 0 1.3 2.3h13.4A1.5 1.5 0 0 0 20 19L14 9V3"/><path d="M7.5 15h9"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4.2 5-6 8-6s6.5 1.8 8 6"/>',
   scanner:'<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
@@ -1134,6 +1151,53 @@ const KIT_COST = [200,500,1000];
 const DPKIT = [1,1.25,1.5,1.75];
 const DPKIT_COST = [250,600,1200];
 const LAB_MULT = [1,1.3,1.6];
+/* Evolution price by rarity (Common .. Mythic). Edit here to tune. */
+const EVO_COST = [500, 1000, 2500, 6000, 12000, 25000];
+const evoCost = (sp) => EVO_COST[sp.r];
+
+/* ---------- training (battle XP) & care (durability / food) ----------
+   Every battle costs durability (bigger monsters are hungrier). Food from the Laboratory refills it: that is the coin sink.
+   Win battles to earn XP and level up, up to a cap per species. Tune everything here. */
+const TRAIN = {maxDur:100, durCost:[6,8,11,13,19,25], capMult:1.5, loseXp:.3, loseCoin:.25, xpBase:14, xpPerLv:3, needBase:40, needPerLv:15};
+const FOOD = {
+  snack:{n:'Berry Snack', short:'Snack', dur:25, cost:40},
+  meal:{n:'Hearty Meal', short:'Meal', dur:60, cost:90},
+  feast:{n:'Grand Feast', short:'Feast', dur:100, cost:140}
+};
+/* Battle coin reward by the OPPONENT's rarity. Tuned (by simulation) so an average battle pays a little more than the food it uses. */
+const BATTLE_COIN = [16, 18, 22, 28, 34, 40];
+const battleCoins = (foe) => Math.round(BATTLE_COIN[foe.r] * (1 + foe.lv * .006));
+const monLv = (rec) => rec.lv != null ? rec.lv : rec.lvMax;
+const durOf = (rec) => rec.dur != null ? rec.dur : TRAIN.maxDur;
+const durCost = (sp) => TRAIN.durCost[sp.r];
+const xpNeed = (lv) => TRAIN.needBase + lv * TRAIN.needPerLv;
+const capOf = (sp) => Math.ceil(sp.lv[1] * TRAIN.capMult);
+function applyTraining(rec, sp, foe, win) {
+  const lvFrom = monLv(rec), cap = capOf(sp);
+  if (lvFrom >= cap) return {xp:0, lvFrom, lvTo:lvFrom, capped:true};
+  const ratio = Math.max(.4, Math.min(1.6, foe.lv / Math.max(1, lvFrom)));
+  let gain = Math.round((TRAIN.xpBase + foe.lv * TRAIN.xpPerLv) * ratio * (1 + foe.r * .1));
+  if (!win) gain = Math.round(gain * TRAIN.loseXp);
+  let lv = lvFrom, xp = (rec.xp || 0) + gain;
+  while (lv < cap && xp >= xpNeed(lv)) { xp -= xpNeed(lv); lv++; }
+  if (lv >= cap) xp = 0;
+  rec.lv = lv; rec.xp = xp; rec.lvMax = Math.max(rec.lvMax, lv);
+  return {xp:gain, lvFrom, lvTo:lv, capped:lv >= cap};
+}
+function feedRow(id) {
+  const rec = S.sp[id], full = durOf(rec) >= TRAIN.maxDur;
+  return `<div class="feedrow">${Object.keys(FOOD).map(k => `<button class="feedbtn" data-act="feed" data-id="${id}" data-food="${k}" aria-disabled="${S.food[k] <= 0 || full}"><b>${FOOD[k].short}</b><span>+${FOOD[k].dur} · ×${S.food[k]}</span></button>`).join('')}</div>`;
+}
+function trainHtml(b) {
+  const t = b.train, parts = [];
+  if (t) {
+    if (t.lvTo > t.lvFrom) parts.push(`<span class="lvup">Level up! Lv. ${t.lvFrom} → ${t.lvTo}</span>`);
+    if (t.xp) parts.push(`+${num(t.xp)} XP`); else if (t.capped) parts.push('Max level for this species');
+  }
+  if (b.consolation) parts.push(`+${num(b.consolation)} coins`);
+  parts.push(`Durability −${b.durCost} (${b.durLeft}/${TRAIN.maxDur} left)`);
+  return `<p class="trainline">${parts.join(' · ')}</p>`;
+}
 
 /* ---------- rank ---------- */
 const RANKS = [
@@ -1172,7 +1236,7 @@ function ensureDaily() {
 }
 function questProgress(qid) { const Q = QUEST_POOL.find(x => x.id === qid); return {Q, val: Math.min(S.daily[Q.key] || 0, Q.goal)}; }
 function partnerPct() {
-  if (!S.partner || !S.sp[S.partner]) return 0;
+  if (!S.partner || !isOwned(S.partner)) return 0;
   const sp = SP(S.partner), rec = S.sp[S.partner];
   return Math.round((sp.r + 1) * 3 * (rec.mastered ? 1.5 : 1));
 }
@@ -1307,11 +1371,16 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign({scanner:0,lab:0,radar:0}, o.tech); return s; }
+    if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign({scanner:0,lab:0,radar:0}, o.tech);
+      s.food = Object.assign({snack:0,meal:0,feast:0}, o.food);
+      Object.values(s.sp).forEach(r => { if (r.lv == null) r.lv = r.lvMax; if (r.xp == null) r.xp = 0; if (r.dur == null) r.dur = 100; });
+      /* migrate older saves: anything that already has its evolution is now consumed */
+      Object.keys(s.sp).forEach(id => { if (/_evo$/.test(id)) { const b = id.replace(/_evo$/, ''); if (s.sp[b]) s.sp[b].evolved = true; if (s.partner === b) s.partner = id; if (s.last === b) s.last = id; } });
+      return s; }
   } catch (e) {}
   return def();
 }
@@ -1324,6 +1393,8 @@ const app = document.getElementById('app');
 function esc(s) { return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 const num = (v) => Math.round(v).toLocaleString('en-US');
 const discovered = () => Object.keys(S.sp).length;
+/* A monster that has evolved is consumed: its Database entry (research log) stays, but it can no longer be a partner or fight. */
+const isOwned = (id) => !!S.sp[id] && !S.sp[id].evolved;
 const totalPct = () => Object.values(S.sp).reduce((a, r) => a + r.prog, 0) / (SPECIES.length * 100) * 100;
 const bar = (p, sm) => `<div class="bar${sm ? ' sm' : ''}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><i style="width:${p}%"></i>${[20,40,60,80].map(t => `<b style="left:${t}%"></b>`).join('')}</div>`;
 const rarTag = (r) => `<span class="tag" style="--gc:${RAR[r].c}"><i style="background:${RAR[r].c}"></i>${RAR[r].n}</span>`;
@@ -1416,7 +1487,7 @@ function typeMult(atkEl, defEl) {
   if (EL[atkEl] && EL[atkEl].w === defEl) return 0.7;
   return 1;
 }
-function battleLv(id, sp) { const rec = S.sp[id]; return rec ? rec.lvMax : sp.lv[1]; }
+function battleLv(id, sp) { const rec = S.sp[id]; return rec ? monLv(rec) : sp.lv[1]; }
 function battleFighter(sp, lv) {
   const s = monStats(sp), mult = lvMult(lv);
   const hp = Math.max(10, Math.round(s.hp * mult));
@@ -1425,17 +1496,24 @@ function battleFighter(sp, lv) {
     mvBasic: basicMoveName(sp), mvHeavy: heavyMoveName(sp),
     mvSkill1: MOVE_SPECIAL[sp.el] || `${sp.el} Strike`, mvSkill2: MOVE_SPECIAL2[sp.el] || `${sp.el} Surge`};
 }
-function pickOpponent(excludeId, lv) {
-  const pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden);
-  const sp = pool[Math.floor(Math.random() * pool.length)];
+function pickOpponent(excludeId, lv, r) {
+  /* opponents are mostly the same rarity as your fighter, sometimes one tier off */
+  let pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden && Math.abs(s.r - r) <= 1);
+  if (!pool.length) pool = SPECIES.filter(s => s.id !== excludeId && !s.hidden);
+  const w = pool.map(s => Math.abs(s.r - r) === 0 ? 3 : 1.5);
+  let x = Math.random() * w.reduce((a, b) => a + b, 0), sp = pool[pool.length - 1];
+  for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) { sp = pool[i]; break; } }
   const elv = Math.max(sp.lv[0], Math.min(sp.lv[1], lv + Math.round(Math.random() * 8 - 4)));
   return {sp, lv: elv};
 }
 const MAX_TURNS = 15;
 function startBattle(id) {
-  const sp = SP(id); if (!sp || !S.sp[id]) { toast('Discover this monster first.'); return; }
-  const lv = battleLv(id, sp), {sp: esp, lv: elv} = pickOpponent(id, lv);
-  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null, busy: false, anim: null, turn: 1};
+  const sp = SP(id); if (!sp || !isOwned(id)) { toast(S.sp[id] ? 'This monster has evolved.' : 'Discover this monster first.'); return; }
+  const rec = S.sp[id], cost = durCost(sp), dur = durOf(rec);
+  if (dur < cost) { toast(`${sp.name} is too hungry (${dur}/${TRAIN.maxDur}). Feed it first.`); ui.bPick = id; render(); return; }
+  rec.dur = dur - cost; save();
+  const lv = battleLv(id, sp), {sp: esp, lv: elv} = pickOpponent(id, lv, sp.r);
+  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null, busy: false, anim: null, turn: 1, durCost: cost, durLeft: rec.dur, train: null};
   ui.bPick = null; render(); window.scrollTo(0, 0);
 }
 function battleMoveDmg(atkF, defF, move) {
@@ -1448,15 +1526,20 @@ function finishBattle(win, timeout) {
   const b = ui.battle;
   if (win) {
     const esp = SP(b.e.id);
-    const coins = Math.round(BASE_COIN[b.e.r] * (1.2 + b.e.lv * .015));
+    const coins = battleCoins(b.e);
     const dp = Math.round(BASE_DP[b.e.r] * (1.2 + b.e.lv * .015));
     S.coins += coins; S.dp += dp; save();
     b.reward = {coins, dp};
     b.log.push(timeout ? `Time's up! ${esp.name} has less health left \u2014 you win! +${num(coins)} coins, +${num(dp)} data.`
       : `${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
   } else {
-    b.log.push(timeout ? `Time's up! ${SP(b.p.id).name} has less health left \u2014 you lose.` : `${SP(b.p.id).name} was defeated...`);
+    const cons = Math.round(battleCoins(b.e) * TRAIN.loseCoin);
+    S.coins += cons; b.consolation = cons;
+    b.log.push((timeout ? `Time's up! ${SP(b.p.id).name} has less health left \u2014 you lose.` : `${SP(b.p.id).name} was defeated...`) + ` +${num(cons)} coins.`);
   }
+  const prec = S.sp[b.p.id];
+  if (prec && !prec.evolved) b.train = applyTraining(prec, SP(b.p.id), b.e, win);
+  save();
   b.over = win ? 'win' : 'lose';
 }
 function scrollBlog() { const logEl = document.getElementById('blog'); if (logEl) logEl.scrollTop = logEl.scrollHeight; }
@@ -1518,7 +1601,7 @@ function labArt() {
   let mascot = '';
   const ids = Object.keys(S.sp);
   let sp = null;
-  if (S.last && S.sp[S.last]) sp = SP(S.last);
+  if (S.last && isOwned(S.last)) sp = SP(S.last);
   if (sp) mascot = `<svg x="232" y="30" width="92" height="92" viewBox="0 0 160 160" style="overflow:visible">${monInner(sp, 'normal')}</svg>`;
   else mascot = `<svg x="232" y="30" width="92" height="92" viewBox="0 0 160 160" class="sil" style="overflow:visible">${monInner(SP('mossling'), 'normal')}</svg>`;
   return `<svg class="labart" viewBox="0 0 360 150" aria-hidden="true" role="presentation">
@@ -1543,8 +1626,8 @@ function statusBar() {
 }
 function tubeArt() {
   let sp = null;
-  if (S.partner && S.sp[S.partner]) sp = SP(S.partner);
-  else if (S.last && S.sp[S.last]) sp = SP(S.last);
+  if (S.partner && isOwned(S.partner)) sp = SP(S.partner);
+  else if (S.last && isOwned(S.last)) sp = SP(S.last);
   const inner = sp ? monSVG(sp, 'normal') : `<svg class="mon sil" viewBox="0 0 160 160">${monInner(SP('mossling'), 'normal')}</svg>`;
   const tag = sp && S.partner === sp.id ? 'ACTIVE PARTNER' : sp ? 'SIGNAL LOCKED' : 'NO SIGNAL';
   return `<div class="tube"><div class="tubetag"><i></i>${tag}</div>
@@ -1552,8 +1635,8 @@ function tubeArt() {
 }
 function specCard() {
   let sp = null, rec = null;
-  if (S.partner && S.sp[S.partner]) { sp = SP(S.partner); rec = S.sp[S.partner]; }
-  else if (S.last && S.sp[S.last]) { sp = SP(S.last); rec = S.sp[S.last]; }
+  if (S.partner && isOwned(S.partner)) { sp = SP(S.partner); rec = S.sp[S.partner]; }
+  else if (S.last && isOwned(S.last)) { sp = SP(S.last); rec = S.sp[S.last]; }
   const rfPct = [0, 40, 80, 120][S.tech.scanner];
   const rsPct = Math.round((LAB_MULT[S.tech.lab] - 1) * 100);
   const maxLv = sp ? sp.lv[1] : '—';
@@ -1602,17 +1685,19 @@ function questsPanel() {
 function viewQuests() { return `${topbar('Daily Quests', 'go', 'home')}${questsPanel()}`; }
 function viewBattle() {
   if (ui.battle) return viewBattleFight();
-  const owned = Object.keys(S.sp);
+  const owned = Object.keys(S.sp).filter(isOwned);
   if (!owned.length) {
     return `${topbar('Battle Arena', 'go', 'home')}<p class="count">You need to discover a monster before you can battle. Go explore an area first.</p>
       <div class="dock"><button class="cta" data-act="go" data-to="explore">Go Explore</button></div>`;
   }
   const grid = owned.map(id => {
-    const sp = SP(id), sel = ui.bPick === id;
-    return `<button class="bpick${sel ? ' sel' : ''}" data-act="bpick" data-id="${id}" aria-pressed="${sel}">${monSVG(sp, 'normal')}<b>${esc(sp.name)}</b></button>`;
+    const sp = SP(id), sel = ui.bPick === id, rec = S.sp[id], dur = durOf(rec), low = dur < durCost(sp);
+    return `<button class="bpick${sel ? ' sel' : ''}${low ? ' hungry' : ''}" data-act="bpick" data-id="${id}" aria-pressed="${sel}">${monSVG(sp, 'normal')}<b>${esc(sp.name)}</b><span class="bmeta">Lv. ${monLv(rec)}</span><span class="durmini"><i style="width:${dur}%"></i></span></button>`;
   }).join('');
   const popup = ui.bPick ? `<div class="dockbackdrop" data-act="bpickclose"></div>
-    <div class="dockpopup"><button class="cta" data-act="battlestart">Find an opponent</button></div>` : '';
+    <div class="dockpopup">${(() => { const psp = SP(ui.bPick), prec = S.sp[ui.bPick], d = durOf(prec), c = durCost(psp), ok = d >= c;
+      return `<p class="bpinfo"><b>${esc(psp.name)}</b> · Lv. ${monLv(prec)} · Durability <b${ok ? '' : ' style="color:var(--signal)"'}>${d}/${TRAIN.maxDur}</b><span>Costs ${c} per battle</span></p>${feedRow(ui.bPick)}
+      <button class="cta" data-act="battlestart" aria-disabled="${!ok}">${ok ? 'Find an opponent' : 'Too hungry \u2014 feed first'}</button>`; })()}</div>` : '';
   return `${topbar('Battle Arena', 'go', 'home')}
     <p class="count">Choose your fighter, then find an opponent to battle.</p>
     <div class="bpickgrid">${grid}</div>${popup}`;
@@ -1651,11 +1736,12 @@ function viewBattleFight() {
           <div class="rewardChip"><img src="assets/icons/coin.webp" alt="">+<b data-count="${b.reward.coins}">0</b></div>
           <div class="rewardChip"><img src="assets/icons/diamond.webp" alt="">+<b data-count="${b.reward.dp}">0</b></div>
         </div>
+        ${trainHtml(b)}
         <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>
       </div></div>`;
     } else {
       const title = b.over === 'draw' ? 'Draw' : 'Defeated';
-      controls = `<div class="result miss"><h3>${title}</h3><p class="note">This one got away. Heal up and try again.</p></div>
+      controls = `<div class="result miss"><h3>${title}</h3><p class="note">This one got away. Feed your monster and try again.</p>${trainHtml(b)}</div>
         <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
     }
   } else {
@@ -1779,7 +1865,7 @@ function viewDb() {
   const tiles = list.map(s => {
     const rec = S.sp[s.id];
     if (!rec) return `<button class="tile unk" data-act="open" data-id="${s.id}"><div class="mini">${monSVG(s, 'normal', 'sil')}</div><div class="tn">Unknown</div><div class="tr">Not discovered yet</div>${bar(0, true)}</button>`;
-    return `<button class="tile" data-act="open" data-id="${s.id}" style="--rc:${RAR[s.r].c}"><div class="mini">${monSVG(s, 'normal')}</div><div class="tn">${esc(s.name)}</div><div class="tr"><i style="background:${RAR[s.r].c}"></i>${RAR[s.r].n}</div>${bar(rec.prog, true)}</button>`;
+    return `<button class="tile" data-act="open" data-id="${s.id}" style="--rc:${RAR[s.r].c}${rec.evolved ? ';opacity:.55;filter:grayscale(.6)' : ''}"><div class="mini">${monSVG(s, 'normal')}</div><div class="tn">${esc(s.name)}</div><div class="tr"><i style="background:${RAR[s.r].c}"></i>${RAR[s.r].n}${rec.evolved ? ' · Evolved' : ''}</div>${bar(rec.prog, true)}</button>`;
   }).join('');
   return `${topbar('Monster Database', 'go', 'home')}
     <p class="count">${discovered()} of ${SPECIES.length} discovered. Full research: ${Object.values(S.sp).filter(r => r.prog >= 100).length}.</p>
@@ -1799,7 +1885,7 @@ function facetText(sp, k) {
 }
 function viewDetail() {
   const sp = SP(ui.detail), rec = S.sp[sp.id];
-  const lvHi = rec.lvMax, st = lvStats(sp, lvHi);
+  const lvHi = monLv(rec), st = lvStats(sp, lvHi);
   if (!rec.forms.includes(ui.form)) ui.form = rec.forms[0] || 'normal';
   const forms = FORM_KEYS.map(f => rec.forms.includes(f)
     ? `<button class="form${ui.form === f ? ' on' : ''}" data-act="form" data-id="${f}">${FORMS[f].n}</button>`
@@ -1815,13 +1901,13 @@ function viewDetail() {
   const baseSp = sp.hidden ? SP(sp.id.replace(/_evo$/, '')) : null;
   let evoPanel = '';
   if (evoSp) {
-    const has = !!S.sp[evoSp.id], cost = BASE_COIN[sp.r] * 6;
+    const has = !!S.sp[evoSp.id], cost = evoCost(sp), asking = ui.evoAsk === sp.id;
     const dropsNeed = sp.dr.length, dropsHave = rec.drops.length, dropsDone = dropsHave >= dropsNeed;
     const canEvolve = rec.mastered && dropsDone;
     evoPanel = `<section class="panel"><h3>Evolution</h3>${
-      has ? `<p class="note">Evolved into ${esc(evoSp.name)}.</p><button class="cta sm" data-act="open" data-id="${evoSp.id}">View ${esc(evoSp.name)}</button>`
+      has ? `<p class="note">Evolved into ${esc(evoSp.name)}. ${esc(sp.name)} is gone from your team.</p><button class="cta sm" data-act="open" data-id="${evoSp.id}">View ${esc(evoSp.name)}</button>`
       : rec.mastered
-        ? `<p class="note">Ready to evolve into ${esc(evoSp.name)} for ${num(cost)} coins.${dropsDone ? '' : ` Needs all drops collected (${dropsHave}/${dropsNeed}).`}</p><button class="cta sm" data-act="evolve" data-id="${sp.id}" aria-disabled="${!canEvolve || S.coins < cost}">Evolve (${num(cost)} coins)</button>`
+        ? `<p class="note">Ready to evolve into ${esc(evoSp.name)} for ${num(cost)} coins.${dropsDone ? '' : ` Needs all drops collected (${dropsHave}/${dropsNeed}).`} ${esc(sp.name)} will be consumed and leave your team.</p><button class="cta sm" data-act="evolve" data-id="${sp.id}" aria-disabled="${!canEvolve || S.coins < cost}">${asking ? 'Tap again to confirm' : `Evolve (${num(cost)} coins)`}</button>`
       : `<p class="note">Reach 100% research to unlock evolution into ${esc(evoSp.name)}. Also collect all drops (${dropsHave}/${dropsNeed}).</p>`
     }</section>`;
   } else if (baseSp) {
@@ -1831,9 +1917,14 @@ function viewDetail() {
     <div class="plate sm">${plateBg(sp.loc)}${monSVG(sp, ui.form)}</div>
     <div class="dhead"><h3>${esc(formName(sp, ui.form))}</h3><div class="meta">${elTag(sp.el)}${rarTag(sp.r)}<span class="tag">${lvl} seen</span></div>
       <div class="forms">${forms}</div>
-      <button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:9px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button></div>
+      ${rec.evolved ? `<p class="hint" style="margin-top:9px">This monster evolved and is no longer in your team. Its research log is kept.</p>` : `<button class="cta sm" data-act="setpartner" data-id="${sp.id}" style="margin-top:9px">${isPartner ? 'Active Partner ✓ (tap to remove)' : 'Set as Research Partner'}</button>`}</div>
     <section class="panel"><h3>Battle Stats · Lv. ${lvHi}</h3><div class="statgrid">${statRow('hp', st.hp, STAT_MAX.hp * st.m)}${statRow('atk', st.atk, STAT_MAX.atk * st.m)}${statRow('def', st.def, STAT_MAX.def * st.m)}${statRow('spd', st.spd)}</div>
-      <p class="hint" style="margin-top:8px">Stats at the highest level you have met (×${st.m.toFixed(2)} HP, ATK, DEF). Speed does not scale with level.</p></section>
+      <p class="hint" style="margin-top:8px">Stats at its current level (×${st.m.toFixed(2)} HP, ATK, DEF). Speed does not scale with level. Win battles to train it.</p></section>
+    ${rec.evolved ? '' : (() => { const dur = durOf(rec), c = durCost(sp), cap = capOf(sp), maxed = lvHi >= cap, need = xpNeed(lvHi);
+      return `<section class="panel"><h3>Training &amp; care</h3>
+      <div class="rl"><span>Level ${lvHi}${maxed ? ' (max for this species)' : ''}</span><span>${maxed ? 'MAX' : `${rec.xp || 0}/${need} XP`}</span></div>${bar(maxed ? 100 : (rec.xp || 0) / need * 100)}
+      <div class="rl" style="margin-top:10px"><span>Durability</span><span${dur < c ? ' style="color:var(--signal)"' : ''}>${dur}/${TRAIN.maxDur}</span></div>${bar(dur)}
+      <p class="hint" style="margin:8px 0">Each battle uses ${c} durability. Buy food in the Laboratory to refill it.</p>${feedRow(sp.id)}</section>`; })()}
     <section class="panel"><h3>Research ${Math.round(rec.prog)}%</h3>${bar(rec.prog)}${facets}</section>
     <section class="panel"><h3>Drops</h3><ul class="chips" style="margin-bottom:8px">${drops}</ul></section>
     ${evoPanel}
@@ -1845,7 +1936,7 @@ function startEvolve(id) {
   if (!rec.mastered) { toast('Fully research this monster (100%) first.'); return; }
   if (rec.drops.length < sp.dr.length) { toast(`Collect all drops first (${rec.drops.length}/${sp.dr.length}).`); return; }
   if (S.sp[evoSp.id]) { toast(`${evoSp.name} is already unlocked.`); return; }
-  const cost = BASE_COIN[sp.r] * 6;
+  const cost = evoCost(sp);
   if (S.coins < cost) { toast(`Need ${num(cost - S.coins)} more coins`); return; }
   S.coins -= cost; save();
   ui.evo = {id, evoId: evoSp.id, form: ui.form || 'normal', phase: 'charge'};
@@ -1856,7 +1947,10 @@ function finalizeEvolve() {
   const e = ui.evo; if (!e) return;
   const sp = SP(e.id), rec = S.sp[e.id], evoSp = SP(e.evoId);
   if (!sp || !rec || !evoSp || S.sp[evoSp.id]) return;
-  S.sp[evoSp.id] = {prog:100, forms:['normal'], drops:[], lvMin:rec.lvMax, lvMax:rec.lvMax, scans:0, mastered:true};
+  S.sp[evoSp.id] = {prog:100, forms:['normal'], drops:[], lvMin:monLv(rec), lvMax:monLv(rec), lv:monLv(rec), xp:0, dur:TRAIN.maxDur, scans:0, mastered:true};
+  rec.evolved = true; /* the old monster is consumed */
+  if (S.partner === sp.id) S.partner = evoSp.id;
+  if (S.last === sp.id) S.last = evoSp.id;
   S.dp += 50; save();
 }
 function runEvolveSequence() {
@@ -1960,7 +2054,11 @@ function viewLab() {
           <span class="gs">Data from scans +${Math.round((DPKIT[S.dpkit] - 1) * 100)}%${dpkitNext ? `, +${Math.round((DPKIT[S.dpkit + 1] - 1) * 100)}% next` : ''}</span>
           ${pips(S.dpkit, DPKIT_COST.length)}
           ${dpkitNext ? `<button class="buy" data-act="buydpkit" aria-disabled="${S.coins < dpkitNext}">${num(dpkitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
-      </div></section>`;
+      </div></section>
+    <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
+      <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
+        <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
+        <button class="buy" data-act="buyfood" data-id="${k}" aria-disabled="${S.coins < FOOD[k].cost}">${num(FOOD[k].cost)} coins</button></div>`).join('')}</div></section>`;
 }
 
 function viewProfile() {
@@ -2087,7 +2185,7 @@ function render() {
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
-  ui.enc = null; ui.detail = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null; ui.battle = null; ui.bPick = null;
+  ui.enc = null; ui.detail = null; ui.evoAsk = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null; ui.battle = null; ui.bPick = null;
   render(); window.scrollTo(0, 0);
 }
 
@@ -2156,7 +2254,7 @@ function resolveScan(e, q) {
   ensureDaily();
   const Q = {weak:{g:8, m:.6, t:'Weak scan'}, good:{g:15, m:1, t:'Good scan'}, perfect:{g:22, m:1.5, t:'Perfect scan'}}[q];
   let rec = S.sp[sp.id]; const first = !rec;
-  if (first) rec = S.sp[sp.id] = {prog:0, forms:[], drops:[], lvMin:e.lv, lvMax:e.lv, scans:0, mastered:false};
+  if (first) rec = S.sp[sp.id] = {prog:0, forms:[], drops:[], lvMin:e.lv, lvMax:e.lv, lv:e.lv, xp:0, dur:TRAIN.maxDur, scans:0, mastered:false};
   const before = rec.prog;
   const raw = Math.round(Q.g * LAB_MULT[S.tech.lab] * (f === 'normal' ? 1 : 1.5));
   const gain = Math.min(100 - before, raw);
@@ -2164,6 +2262,7 @@ function resolveScan(e, q) {
   const facets = FACETS.filter(([n, t]) => rec.prog >= t && (first || before < t)).map(x => x[0]);
   rec.scans++; S.scans++; S.daily.scans++; if (q === 'perfect') S.daily.perfect++;
   rec.lvMin = Math.min(rec.lvMin, e.lv); rec.lvMax = Math.max(rec.lvMax, e.lv);
+  if (e.lv > monLv(rec)) { rec.lv = e.lv; rec.xp = 0; } /* a stronger specimen lifts your monster to its level */
   const newForm = !rec.forms.includes(f); if (newForm) rec.forms.push(f);
   let dp = Math.round(BASE_DP[sp.r] * Q.m * F.mult * DPKIT[S.dpkit]);
   let coins = Math.round(BASE_COIN[sp.r] * Q.m * F.mult * KIT[S.kit]);
@@ -2287,20 +2386,25 @@ app.addEventListener('click', (ev) => {
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
     case 'filter': ui.filter = d.id; render(); break;
     case 'invfilter': ui.invFilter = d.id; render(); break;
-    case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
+    case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.evoAsk = null; ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
     case 'form': ui.form = d.id; render(); break;
     case 'buytech': buyTech(d.k, +d.i); break;
     case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); render(); toast(`${l.n} is open`); break; }
+    case 'buyfood': { const F = FOOD[d.id]; if (!F) break; if (S.coins < F.cost) { toast(`Need ${num(F.cost - S.coins)} more coins`); break; } S.coins -= F.cost; S.food[d.id]++; save(); render(); toast(`${F.n} bought`); break; }
+    case 'feed': { const rec = S.sp[d.id], F = FOOD[d.food]; if (!rec || !F || !isOwned(d.id)) break;
+      if (durOf(rec) >= TRAIN.maxDur) { toast('Already full'); break; }
+      if (S.food[d.food] <= 0) { toast(`No ${F.short} left. Buy some in the Laboratory`); break; }
+      S.food[d.food]--; rec.dur = Math.min(TRAIN.maxDur, durOf(rec) + F.dur); save(); render(); toast(`${SP(d.id).name} ate a ${F.short.toLowerCase()}`); break; }
     case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
     case 'buydpkit': { const c = DPKIT_COST[S.dpkit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.dpkit++; save(); render(); toast('Data extractor upgraded'); break; }
     case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
-    case 'setpartner': { if (!S.sp[d.id]) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
-    case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } startEvolve(d.id); break;
+    case 'setpartner': { if (!isOwned(d.id)) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
+    case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } if (ui.evoAsk !== d.id) { ui.evoAsk = d.id; render(); break; } ui.evoAsk = null; startEvolve(d.id); break;
     case 'evodone': endEvolve(); break;
     case 'resetarm': ui.reset = true; render(); break;
     case 'setbg': { if (!BG_OPTS[d.id]) break; S.bg = d.id; save(); render(); toast(`${BG_OPTS[d.id].n} applied`); break; }
     case 'resetdo': S = def(); save(); ui.reset = false; go('home'); toast('Progress erased'); break;
-    case 'bpick': if (!S.sp[d.id]) break; ui.bPick = ui.bPick === d.id ? null : d.id; render(); break;
+    case 'bpick': if (!isOwned(d.id)) break; ui.bPick = ui.bPick === d.id ? null : d.id; render(); break;
     case 'bpickclose': ui.bPick = null; render(); break;
     case 'battlestart': if (!ui.bPick) break; startBattle(ui.bPick); break;
     case 'bmove': battleTurn(d.id); break;
