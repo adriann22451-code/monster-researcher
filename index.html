@@ -464,7 +464,9 @@ svg{display:block}
   background:
     radial-gradient(ellipse 60% 46% at 18% 88%,color-mix(in srgb,var(--lamp) 22%,transparent),transparent 72%),
     radial-gradient(ellipse 60% 46% at 82% 88%,color-mix(in srgb,var(--signal) 18%,transparent),transparent 72%),
-    linear-gradient(180deg,var(--surface2),var(--surface) 78%)}
+    linear-gradient(180deg,rgba(10,12,20,.35),rgba(10,12,20,.55) 78%),
+    url('assets/backgrounds/arena.webp');
+  background-size:cover;background-position:center}
 .arena::before{content:"";position:absolute;left:0;right:0;bottom:10%;height:1px;
   background:linear-gradient(90deg,transparent,var(--line),transparent)}
 .arenaGround{position:absolute;bottom:8%;width:36%;height:16px;border-radius:50%;
@@ -1276,7 +1278,7 @@ const GLYPHS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true"><g stro
 const STAR = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
 const SPARKS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true">${STAR(24, 40, 1.1, 0)}${STAR(138, 34, .8, .6)}${STAR(142, 104, 1, 1.1)}${STAR(18, 112, .7, .3)}</svg>`;
 const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.webp'};
-const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/research.webp', lab:'assets/icons/lab.webp'};
+const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/research.webp', lab:'assets/icons/lab.webp', battle:'assets/icons/battle.webp', inv:'assets/icons/inventory.webp'};
 const BG_OPTS = {bright:{n:'Bright Lab', f:'bg-bright.jpg'}, dark:{n:'Dark Lab', f:'bg-dark.jpg'}};
 function monImg(sp, form, extra) {
   const src = ASSET.mon + sp.id + ASSET.monExt;
@@ -1514,7 +1516,7 @@ function labArt() {
 function statusBar() {
   const plv = 1 + Math.floor(S.scans / 6), pcur = S.scans % 6, pneed = 6;
   return `<header class="statusbar">
-    <button class="avwrap" data-act="go" data-to="profile" aria-label="View profile"><span class="av">${ic('user')}</span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></button>
+    <button class="avwrap" data-act="go" data-to="profile" aria-label="View profile"><span class="av"><img src="assets/icons/avatar.webp" alt="" draggable="false" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></button>
     <span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
     <span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
     <button class="gear" data-act="go" data-to="settings" aria-label="Settings">${ic('gear')}</button></header>`;
@@ -2157,6 +2159,8 @@ function collectAssetUrls() {
   Object.values(CARD_ICON).forEach(u => set.add(u));
   set.add('assets/icons/coin.webp');
   set.add('assets/icons/diamond.webp');
+  set.add('assets/icons/avatar.webp');
+  set.add('assets/backgrounds/arena.webp');
   Object.values(BG_OPTS).forEach(o => set.add('assets/backgrounds/' + o.f));
   return [...set];
 }
