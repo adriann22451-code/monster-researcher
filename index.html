@@ -506,29 +506,29 @@ body{background-image:
 (function(){
   if(!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
   var appEl = document.getElementById('app');
-  var lastScale = 1;
+  var currentScale = 1;
   var lastWidth = 0;
   function applyScale(){
     var iw = window.innerWidth;
-    /* Mobile browsers fire a visualViewport/resize event when the address
-       bar collapses/expands during scrolling — that only changes viewport
-       HEIGHT, not width. Skip the whole recalculation when width hasn't
-       actually moved, otherwise every scroll retriggers a reset-to-1 /
-       reapply cycle and the game visibly re-zooms while scrolling.
-       Deliberately using window.innerWidth (not visualViewport.width) here:
-       it's the layout-viewport width — including the "fake" wide one some
-       browsers substitute in Desktop Site mode — which is what this hack
-       needs to detect and compensate for. */
-    if (lastWidth && Math.abs(iw - lastWidth) < 1) return;
+    /* Chrome's address bar / scrollbar overlay can nudge innerWidth by a
+       stray pixel or two purely from scrolling — ignore sub-3px noise so a
+       plain scroll never re-triggers this at all. */
+    if (lastWidth && Math.abs(iw - lastWidth) < 3) return;
     lastWidth = iw;
-    appEl.style.setProperty('--ui-scale', 1);
-    var naturalW = appEl.getBoundingClientRect().width;
+    /* Derive the natural (unscaled) width from the box's current size and
+       the scale we know is currently applied — never reset to 1 first.
+       Reset-then-remeasure briefly puts a real style value on the page
+       (not just a JS variable), and on a heavy screen like Explore that
+       intermediate state could get painted, showing up as the image
+       "zooming" and the sticky dock button jumping mid-scroll. */
+    var rect = appEl.getBoundingClientRect();
+    var naturalW = rect.width / currentScale;
     if(!naturalW) return;
     var scale = iw / naturalW;
     if(!isFinite(scale) || scale <= 0) scale = 1;
     scale = Math.max(0.5, Math.min(scale, 3));
-    if (Math.abs(scale - lastScale) < 0.005) { scale = lastScale; }
-    lastScale = scale;
+    if (Math.abs(scale - currentScale) < 0.01) return; // no meaningful change — skip the style write entirely
+    currentScale = scale;
     appEl.style.setProperty('--ui-scale', scale);
   }
   applyScale();
