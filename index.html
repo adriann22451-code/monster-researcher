@@ -446,6 +446,19 @@ svg{display:block}
 .arenaFighter .mon,.arenaFighter .mon.img{position:absolute;inset:0;width:100%;height:100%;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
 .arenaFighter.foe .mon,.arenaFighter.foe .mon.img{transform:scaleX(-1)}
 .arenaFighter.lost .mon{opacity:.3;transition:opacity .8s}
+.arenaFighter.wind.me{animation:lungeR .26s ease-out}
+.arenaFighter.wind.foe{animation:lungeL .26s ease-out}
+@keyframes lungeR{0%{transform:translateX(0)}55%{transform:translateX(12%) translateY(-2%)}100%{transform:translateX(0)}}
+@keyframes lungeL{0%{transform:translateX(0)}55%{transform:translateX(-12%) translateY(-2%)}100%{transform:translateX(0)}}
+.arenaFighter.hit{animation:hitShake .5s ease-in-out}
+@keyframes hitShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3.5%)}40%{transform:translateX(3.5%)}60%{transform:translateX(-2.5%)}80%{transform:translateX(2.5%)}}
+.arenaFighter.hit .mon,.arenaFighter.hit .mon.img{animation:pop .5s cubic-bezier(.2,1.4,.4,1),hitFlash .5s ease-in-out}
+@keyframes hitFlash{0%,100%{filter:brightness(1) saturate(1)}30%{filter:brightness(2.4) saturate(0)}}
+.dmgpop{position:absolute;left:50%;top:2%;transform:translateX(-50%);font:800 22px/1 var(--display);
+  color:var(--signal);text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:4;
+  animation:dmgFloat .85s ease-out forwards}
+.dmgpop.crit{color:var(--lamp);font-size:26px}
+@keyframes dmgFloat{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}18%{opacity:1;transform:translate(-50%,-4px) scale(1.2)}70%{opacity:1;transform:translate(-50%,-22px) scale(1)}100%{opacity:0;transform:translate(-50%,-38px) scale(.9)}}
 .blogWrap{margin:10px 0 4px}
 .blogHead{display:block;font:700 11px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
 .blog{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;
@@ -466,6 +479,8 @@ svg{display:block}
 .moveType{font:600 11px/1.2 var(--body);color:var(--ink2)}
 .moveBtn.special{border-color:color-mix(in srgb,var(--elc) 55%,var(--line))}
 .moveBtn.special .moveType{color:var(--elc)}
+.bmoves.busy .moveBtn{opacity:.5}
+.moveBtn:disabled{pointer-events:none}
 .statln{display:grid;grid-template-columns:36px 1fr 32px;gap:9px;align-items:center}
 .statln .sk{font:800 11px/1 var(--display);color:var(--sc);letter-spacing:.03em}
 .statln .sv{font:700 13px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
@@ -1320,7 +1335,7 @@ function pickOpponent(excludeId, lv) {
 function startBattle(id) {
   const sp = SP(id); if (!sp || !S.sp[id]) { toast('Discover this monster first.'); return; }
   const lv = battleLv(id, sp), {sp: esp, lv: elv} = pickOpponent(id, lv);
-  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null};
+  ui.battle = {p: battleFighter(sp, lv), e: battleFighter(esp, elv), log: [`A wild ${esp.name} challenges you!`], over: null, reward: null, busy: false, anim: null};
   ui.bPick = null; render(); window.scrollTo(0, 0);
 }
 function battleMoveDmg(atkF, defF, move) {
@@ -1328,15 +1343,6 @@ function battleMoveDmg(atkF, defF, move) {
   const mult = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
   const variance = .85 + Math.random() * .3;
   return Math.max(2, Math.round((atkF.atk * power - defF.def * .4) * variance * mult));
-}
-function applyMove(atkF, defF, move, atkName, log) {
-  const dmg = battleMoveDmg(atkF, defF, move);
-  defF.hp = Math.max(0, defF.hp - dmg);
-  const mv = move === 'special' ? atkF.mvSpecial : atkF.mvBasic;
-  const eff = move === 'special' ? typeMult(atkF.el, defF.el) : 1;
-  const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
-  log.push(`${atkName} used ${mv}: ${dmg} dmg${tag}`);
-  return defF.hp <= 0;
 }
 function finishBattle(win) {
   const b = ui.battle;
@@ -1352,20 +1358,41 @@ function finishBattle(win) {
   }
   b.over = win ? 'win' : 'lose';
 }
+function scrollBlog() { const logEl = document.getElementById('blog'); if (logEl) logEl.scrollTop = logEl.scrollHeight; }
 function battleTurn(move) {
-  const b = ui.battle; if (!b || b.over) return;
-  const psp = SP(b.p.id), esp = SP(b.e.id);
+  const b = ui.battle; if (!b || b.over || b.busy) return;
   const first = b.p.spd >= b.e.spd ? 'p' : 'e';
   const eMove = Math.random() < .55 ? 'attack' : 'special';
   const order = first === 'p' ? [['p', move], ['e', eMove]] : [['e', eMove], ['p', move]];
-  for (const [who, mv] of order) {
-    if (b.p.hp <= 0 || b.e.hp <= 0) break;
-    if (who === 'p') { if (applyMove(b.p, b.e, mv, psp.name, b.log)) { finishBattle(true); break; } }
-    else { if (applyMove(b.e, b.p, mv, esp.name, b.log)) { finishBattle(false); break; } }
+  b.busy = true; b.anim = null;
+  battleStep(order, 0);
+}
+function battleStep(order, i) {
+  const b = ui.battle; if (!b) return;
+  if (i >= order.length || b.p.hp <= 0 || b.e.hp <= 0) {
+    if (b.p.hp <= 0 && !b.over) finishBattle(false);
+    else if (b.e.hp <= 0 && !b.over) finishBattle(true);
+    b.busy = false; b.anim = null; render(); scrollBlog();
+    return;
   }
-  if (b.log.length > 40) b.log = b.log.slice(-40);
-  render();
-  const logEl = document.getElementById('blog'); if (logEl) logEl.scrollTop = logEl.scrollHeight;
+  const [who, mv] = order[i];
+  b.anim = {side: who, phase: 'wind'};
+  render(); scrollBlog();
+  setTimeout(() => {
+    const bb = ui.battle; if (!bb) return;
+    const atkF = who === 'p' ? bb.p : bb.e, defF = who === 'p' ? bb.e : bb.p;
+    const atkName = SP(atkF.id).name;
+    const dmg = battleMoveDmg(atkF, defF, mv);
+    defF.hp = Math.max(0, defF.hp - dmg);
+    const mvName = mv === 'special' ? atkF.mvSpecial : atkF.mvBasic;
+    const eff = mv === 'special' ? typeMult(atkF.el, defF.el) : 1;
+    const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
+    bb.log.push(`${atkName} used ${mvName}: ${dmg} dmg${tag}`);
+    if (bb.log.length > 40) bb.log = bb.log.slice(-40);
+    bb.anim = {side: who, phase: 'hit', dmg, crit: eff > 1};
+    render(); scrollBlog();
+    setTimeout(() => battleStep(order, i + 1), 620);
+  }, 260);
 }
 
 /* ---------- views ---------- */
@@ -1475,10 +1502,20 @@ function viewBattle() {
 }
 function viewBattleFight() {
   const b = ui.battle, psp = SP(b.p.id), esp = SP(b.e.id);
+  const a = b.anim;
   const hpCard = (f, sp, side) => `<div class="hpcard ${side}">
     <div class="hptop"><b>${esc(sp.name)}</b><span class="blv">Lv. ${f.lv}</span></div>
     <div class="bhpwrap"><div class="bhpbar"><i style="width:${Math.max(0, Math.round(f.hp / f.maxHp * 100))}%;background:${f.hp / f.maxHp < .25 ? 'var(--signal)' : 'var(--lamp)'}"></i></div></div>
     <span class="bhptxt">${f.hp}/${f.maxHp}</span></div>`;
+  const fighterCls = (side, hp) => {
+    let cls = side === 'p' ? ' me' : ' foe';
+    if (hp <= 0) cls += ' lost';
+    if (a && a.side === side && a.phase === 'wind') cls += ' wind';
+    if (a && a.side !== side && a.phase === 'hit') cls += ' hit';
+    return cls;
+  };
+  const dmgPop = (side) => (a && a.side !== side && a.phase === 'hit')
+    ? `<span class="dmgpop${a.crit ? ' crit' : ''}">-${a.dmg}${a.crit ? '!' : ''}</span>` : '';
   const log = `<div class="blogWrap"><span class="blogHead">Battle Log</span><div class="blog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div></div>`;
   let controls;
   if (b.over) {
@@ -1486,13 +1523,14 @@ function viewBattleFight() {
       ${b.reward ? `<ul class="chips"><li>Coins +${num(b.reward.coins)}</li><li>Data +${num(b.reward.dp)}</li></ul>` : '<p class="note">This one got away. Heal up and try again.</p>'}</div>
       <div class="dock"><button class="cta" data-act="battleagain">Battle again</button><button class="linkbtn" data-act="battleleave">Back to Lab</button></div>`;
   } else {
-    controls = `<span class="turnFlag">Your turn \u2014 choose a move</span>
-      <div class="bmoves">
-        <button class="moveBtn" data-act="bmove" data-id="attack" style="--elc:var(--ink2)">
+    const dis = b.busy ? ' disabled' : '';
+    controls = `<span class="turnFlag">${b.busy ? 'Battling\u2026' : 'Your turn \u2014 choose a move'}</span>
+      <div class="bmoves${b.busy ? ' busy' : ''}">
+        <button class="moveBtn" data-act="bmove" data-id="attack" style="--elc:var(--ink2)"${dis}>
           <span class="moveIcon">${ic('battle')}</span>
           <span class="moveInfo"><span class="moveName">${esc(b.p.mvBasic)}</span><span class="moveType">Normal</span></span>
         </button>
-        <button class="moveBtn special" data-act="bmove" data-id="special" style="--elc:${EL[psp.el].a}">
+        <button class="moveBtn special" data-act="bmove" data-id="special" style="--elc:${EL[psp.el].a}"${dis}>
           <span class="moveIcon">${elIc(psp.el)}</span>
           <span class="moveInfo"><span class="moveName">${esc(b.p.mvSpecial)}</span><span class="moveType">${esc(psp.el)}</span></span>
         </button>
@@ -1504,8 +1542,8 @@ function viewBattleFight() {
     <div class="arena">
       <span class="arenaVs">VS</span>
       <div class="arenaGround me"></div><div class="arenaGround foe"></div>
-      <div class="arenaFighter me${b.p.hp <= 0 ? ' lost' : ''}">${monSVG(psp, 'normal')}</div>
-      <div class="arenaFighter foe${b.e.hp <= 0 ? ' lost' : ''}">${monSVG(esp, 'normal')}</div>
+      <div class="arenaFighter${fighterCls('p', b.p.hp)}">${monSVG(psp, 'normal')}${dmgPop('p')}</div>
+      <div class="arenaFighter${fighterCls('e', b.e.hp)}">${monSVG(esp, 'normal')}${dmgPop('e')}</div>
     </div>
     ${log}${controls}`;
 }
