@@ -409,25 +409,30 @@ svg{display:block}
 .ivcard::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--lamp),transparent);opacity:.7}
 .ivcard b{display:block;font:800 21px/1.1 var(--display);color:var(--lamp)}
 .ivcard span{font-size:10px;color:var(--ink2);display:block;margin-top:3px;letter-spacing:.01em}
-.lootgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:4px}
-.loot{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 10px 12px;border-radius:18px;
+.lootgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding-bottom:4px}
+.invhead{font:700 15px/1.1 var(--display);margin:4px 0 8px}
+.invhead:not(:first-child){margin-top:14px}
+.loot{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:20px 4px 8px;border-radius:13px;min-width:0;
   text-align:center;isolation:isolate;overflow:hidden;
   background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface2) 50%,var(--surface)));
-  border:1.5px solid color-mix(in srgb,var(--rc,var(--lamp)) 42%,var(--line))}
+  border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 42%,var(--line))}
+.loot.zero{opacity:.45}
+.loot.food{cursor:pointer;transition:transform .12s}
+.loot.food:active{transform:scale(.95)}
 .loot::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.6;pointer-events:none;
   background:radial-gradient(ellipse 90% 60% at 50% -8%,color-mix(in srgb,var(--rc,var(--lamp)) 28%,transparent),transparent 70%)}
-.lootqty{position:absolute;right:7px;top:7px;background:var(--plate);border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 55%,var(--plateline));
-  color:var(--ink);font:700 11px/1 var(--display);padding:4px 8px;border-radius:99px;box-shadow:0 0 8px color-mix(in srgb,var(--rc,var(--lamp)) 30%,transparent)}
-.lootico{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--rc,var(--lamp));margin-top:2px;
+.lootqty{position:absolute;right:4px;top:4px;background:var(--plate);border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 55%,var(--plateline));
+  color:var(--ink);font:700 9.5px/1 var(--display);padding:3px 6px;border-radius:99px;box-shadow:0 0 6px color-mix(in srgb,var(--rc,var(--lamp)) 30%,transparent)}
+.lootico{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--rc,var(--lamp));margin-top:0;
   background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rc,var(--lamp)) 45%,var(--surface2)),var(--surface2) 72%);
-  border:2px solid color-mix(in srgb,var(--rc,var(--lamp)) 68%,var(--line));
-  box-shadow:0 0 12px color-mix(in srgb,var(--rc,var(--lamp)) 50%,transparent)}
-.lootico svg{width:24px;height:24px}
-.loot b{font:700 14px/1.22 var(--display);word-break:break-word}
-.lootsrc{font-size:11px;color:var(--ink2)}
-.lootrar{font:700 9.5px/1 var(--display);letter-spacing:.05em;color:var(--rc,var(--lamp));
+  border:1.5px solid color-mix(in srgb,var(--rc,var(--lamp)) 68%,var(--line));
+  box-shadow:0 0 8px color-mix(in srgb,var(--rc,var(--lamp)) 50%,transparent)}
+.lootico svg{width:17px;height:17px}
+.loot b{font:700 11px/1.15 var(--display);word-break:break-word;max-width:100%;padding:0 2px}
+.lootsrc{font-size:9px;line-height:1.15;color:var(--ink2);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lootrar{font:700 8px/1 var(--display);letter-spacing:.04em;color:var(--rc,var(--lamp));
   background:color-mix(in srgb,var(--rc,var(--lamp)) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 45%,var(--line));
-  border-radius:99px;padding:3px 9px;margin-top:1px}
+  border-radius:99px;padding:2px 6px;margin-top:1px}
 .lootempty{text-align:center;padding:34px 18px;background:var(--surface);border:1px dashed var(--line);border-radius:16px}
 .lootempty svg{width:30px;height:30px;color:var(--ink2);margin:0 auto 8px}
 .lootempty p{color:var(--ink2);font-size:14px}
@@ -2143,10 +2148,10 @@ function viewInventory() {
     if (!rec) return;
     rec.drops.forEach(name => entries.push({name, qty: S.inv[name] || 1, sp}));
   });
-  const totalQty = entries.reduce((a, e) => a + e.qty, 0);
-  const chips = [{id:'all', n:'All'}].concat(LOCS.map(l => ({id:l.id, n:l.n})))
+  const chips = [{id:'all', n:'All'}, {id:'food', n:'Food'}].concat(LOCS.map(l => ({id:l.id, n:l.n})))
     .map(c => `<button class="fc${ui.invFilter === c.id ? ' on' : ''}" data-act="invfilter" data-id="${c.id}">${c.n}</button>`).join('');
-  const list = entries.filter(e => ui.invFilter === 'all' || e.sp.loc === ui.invFilter)
+  const showFood = ui.invFilter === 'all' || ui.invFilter === 'food', showMats = ui.invFilter !== 'food';
+  const list = (showMats ? entries : []).filter(e => ui.invFilter === 'all' || e.sp.loc === ui.invFilter)
     .sort((a, b) => b.sp.r - a.sp.r || b.qty - a.qty || a.name.localeCompare(b.name));
   const cards = list.map(e => {
     const r = RAR[e.sp.r];
@@ -2155,12 +2160,20 @@ function viewInventory() {
       <b>${esc(e.name)}</b><span class="lootsrc">From ${esc(e.sp.name)}</span>
       <i class="lootrar">${r.n}</i></div>`;
   }).join('');
-  const body = list.length ? `<div class="lootgrid">${cards}</div>`
+  const totalQty = list.reduce((a, e) => a + e.qty, 0);
+  const foodKeys = Object.keys(FOOD);
+  const foodCards = foodKeys.map(k => { const F = FOOD[k], q = S.food[k];
+    return `<div class="loot food${q ? '' : ' zero'}" role="button" tabindex="0" data-act="fooditem" data-id="${k}" style="--rc:#7BD88F"><span class="lootqty">×${num(q)}</span>
+      <span class="lootico">${ic('food')}</span><b>${F.short}</b><span class="lootsrc">+${F.dur} durability</span><i class="lootrar">Food</i></div>`; }).join('');
+  const matsHtml = list.length ? `<div class="lootgrid">${cards}</div>`
     : `<div class="lootempty">${ic('inv')}<p>No materials in this area yet. Keep researching to find drops.</p></div>`;
+  const body = (showFood ? `<h3 class="invhead">Monster food</h3><div class="lootgrid">${foodCards}</div>` : '')
+    + (showMats ? `${showFood ? '<h3 class="invhead">Materials</h3>' : ''}${matsHtml}` : '');
+  const foodQty = showFood ? foodKeys.reduce((a, k) => a + S.food[k], 0) : 0;
   return `${topbar('Inventory', 'go', 'home')}
     <div class="invstats">
-      <div class="ivcard"><b>${list.length}</b><span>Types shown</span></div>
-      <div class="ivcard"><b>${num(totalQty)}</b><span>Total collected</span></div>
+      <div class="ivcard"><b>${list.length + (showFood ? foodKeys.length : 0)}</b><span>Types shown</span></div>
+      <div class="ivcard"><b>${num(totalQty + foodQty)}</b><span>Total collected</span></div>
       <div class="ivcard"><b>${entries.length}</b><span>Discovered</span></div>
     </div>
     <div class="chipbar">${chips}</div>
@@ -2441,6 +2454,7 @@ app.addEventListener('click', (ev) => {
     case 'scan': doScan(); break;
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
     case 'filter': ui.filter = d.id; render(); break;
+    case 'fooditem': { const F = FOOD[d.id]; if (!F) break; bump(t); toast(S.food[d.id] > 0 ? `${F.n}: restores ${F.dur} durability. Feed it from a monster's page or before a battle.` : `${F.n}: none left. Buy some in the Laboratory.`); break; }
     case 'invfilter': ui.invFilter = d.id; render(); break;
     case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.evoAsk = null; ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
     case 'form': ui.form = d.id; render(); break;
