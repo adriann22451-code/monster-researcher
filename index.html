@@ -548,6 +548,14 @@ svg{display:block}
 .arenaFighter.enraged .mon{filter:drop-shadow(0 0 12px rgba(255,59,59,.9)) saturate(1.3)}
 .rageBurst{position:absolute;left:50%;top:50%;width:140%;aspect-ratio:1;margin:-70% 0 0 -70%;border-radius:50%;border:4px solid #FF3B3B;background:radial-gradient(circle,rgba(255,59,59,.5),transparent 70%);pointer-events:none;z-index:1;animation:rageBurst .85s ease-out forwards}
 @keyframes rageBurst{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.4);opacity:0}}
+.potrow{display:flex;gap:8px;justify-content:center;margin:2px 0 4px}
+.potbtn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);font:600 12.5px var(--display)}
+.potbtn svg{width:16px;height:16px;color:#7BE495}
+.potbtn b{color:var(--ink2);font-weight:700}
+.potbtn:disabled{opacity:.4}
+.dmgpop.heal{color:#7BE495;text-shadow:0 0 8px rgba(123,228,149,.8)}
+.healGlow{position:absolute;inset:-6%;border-radius:50%;background:radial-gradient(circle,rgba(123,228,149,.55),transparent 68%);pointer-events:none;z-index:1;animation:healPulse .85s ease-out forwards}
+@keyframes healPulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.25);opacity:0}}
 /* ATTACKER: winds up, then dashes at the target (cyan glow), then slides back. */
 .arenaFighter.wind,.arenaFighter.strike{z-index:3}
 .arenaFighter.wind .mon,.arenaFighter.strike .mon{filter:drop-shadow(0 0 9px var(--lamp)) brightness(1.15)}
@@ -1225,6 +1233,13 @@ DUNGEONS.forEach((D, i) => {
 });
 const BOSS_SP = Object.fromEntries(DUNGEONS.map(D => [D.id, D.sp]));
 const DG_BY = (id) => DUNGEONS.find(d => d.id === id);
+/* HP potions: bought in the Laboratory, used between dungeon floors (free) or mid-battle (costs your turn). heal = share of max HP. */
+const POTIONS = {
+  minor:{n:'Minor Potion', short:'Minor', heal:.3, cost:90},
+  major:{n:'Major Potion', short:'Major', heal:.6, cost:200},
+  elixir:{n:'Full Elixir', short:'Elixir', heal:1, cost:380}
+};
+const potionTotal = () => Object.values(S.potions).reduce((a, b) => a + b, 0);
 const dgUnlocked = (D) => D.id === 'prismcolossus' ? DUNGEONS.filter(x => !x.final).every(x => S.dg[x.id]) : D.id === 'riftdevourer' ? !!S.dg.prismcolossus : S.locs.includes(D.loc);
 const dgLockMsg = (D) => D.id === 'prismcolossus' ? 'Clear all 8 area dungeons first' : D.id === 'riftdevourer' ? 'Clear the Crystal Cathedral first' : `Unlock ${LOC(D.loc).n} in the Laboratory first`;
 const bossArt = (D, enraged) => `<div class="mon img" role="img" aria-label="${esc(D.boss)}"><img class="base" src="${DG.art}${D.id}${enraged && D.enr ? '_Enraged' : ''}${DG.ext}" alt="" draggable="false" decoding="async"></div>`;
@@ -1498,7 +1513,7 @@ const GLYPHS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true"><g stro
 const STAR = (x, y, s, d) => `<path class="tw" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -8L2 -2L8 0L2 2L0 8L-2 2L-8 0L-2 -2Z" fill="#FFF6C2"/>`;
 const SPARKS = `<svg class="fx" viewBox="0 0 160 160" aria-hidden="true">${STAR(24, 40, 1.1, 0)}${STAR(138, 34, .8, .6)}${STAR(142, 104, 1, 1.1)}${STAR(18, 112, .7, .3)}</svg>`;
 const ASSET = {mon:'assets/monsters/', monExt:'.webp', loc:'assets/locations/', locExt:'.jpg', lab:'assets/lab.webp'};
-const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/research.webp', lab:'assets/icons/lab.webp', battle:'assets/icons/battle.webp', inv:'assets/icons/inventory.webp'};
+const CARD_ICON = {db:'assets/icons/monsters.webp', research:'assets/icons/research.webp', lab:'assets/icons/lab.webp', battle:'assets/icons/battle.webp', dungeon:'assets/icons/dungeon.webp', inv:'assets/icons/inventory.webp'};
 const BG_OPTS = {bright:{n:'Bright Lab', f:'bg-bright.jpg'}, dark:{n:'Dark Lab', f:'bg-dark.jpg'}};
 function monImg(sp, form, extra) {
   const src = ASSET.mon + sp.id + ASSET.monExt;
@@ -1513,12 +1528,13 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:TECH0(), kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now(), dg:{}});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:TECH0(), kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now(), dg:{}, potions:{minor:0,major:0,elixir:0}});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign(TECH0(), o.tech);
       s.food = Object.assign({snack:0,meal:0,feast:0}, o.food);
+      s.potions = Object.assign({minor:0,major:0,elixir:0}, o.potions);
       if (!(s.energy >= 0)) s.energy = ENERGY.max; if (!s.energyAt || s.energyAt > Date.now()) s.energyAt = Date.now();
       Object.values(s.sp).forEach(r => { if (r.lv == null) r.lv = r.lvMax; if (r.xp == null) r.xp = 0; if (r.dur == null) r.dur = 100; });
       /* migrate older saves: anything that already has its evolution is now consumed */
@@ -1759,6 +1775,26 @@ function battleTurn(move) {
   b.busy = true; b.anim = null;
   battleStep(order, 0);
 }
+const potionRow = (b) => `<div class="potrow">${Object.keys(POTIONS).map(k => { const P = POTIONS[k], q = S.potions[k], off = b.busy || !q || b.p.hp >= b.p.maxHp;
+  return `<button class="potbtn" data-act="${b.over ? 'dgpotion' : 'bpotion'}" data-id="${k}"${off ? ' disabled' : ''} aria-label="${P.n}, ${q} left, heals ${Math.round(P.heal * 100)}%">${ic('flask')}<span>${P.short}</span><b>\u00d7${q}</b></button>`; }).join('')}</div>`;
+function battlePotion(key) {
+  const b = ui.battle, P = POTIONS[key];
+  if (!b || !b.dg || b.over || b.busy || !P) return;
+  if (!S.potions[key]) { toast(`No ${P.n} left. Buy more in the Laboratory.`); return; }
+  if (b.p.hp >= b.p.maxHp) { toast('HP is already full'); return; }
+  S.potions[key]--; save();
+  b.busy = true; b.anim = null;
+  battleStep([['p', 'potion:' + key], ['e', pickEnemyMove(b.e)]], 0);
+}
+function dgUsePotion(key) {
+  const b = ui.battle, P = POTIONS[key];
+  if (!b || !b.dg || b.over !== 'win' || b.floor >= 3 || !P) return;
+  if (!S.potions[key]) { toast(`No ${P.n} left. Buy more in the Laboratory.`); return; }
+  if (b.p.hp >= b.p.maxHp) { toast('HP is already full'); return; }
+  const before = b.p.hp;
+  S.potions[key]--; b.p.hp = Math.min(b.p.maxHp, b.p.hp + Math.round(b.p.maxHp * P.heal)); save(); render();
+  toast(`${P.n} used: +${b.p.hp - before} HP`);
+}
 function dgFloorFoe(D, floor) {
   if (floor === 3) { const f = battleFighter(D.sp, D.lv); f.hp = f.maxHp = Math.round(f.hp * DG.bossHp); f.boss = true; f.enraged = false; return f; }
   const pool = SPECIES.filter(s => !s.hidden && (D.final ? s.r >= 3 : s.loc === D.loc));
@@ -1807,7 +1843,7 @@ function dgResultHtml(b) {
   const D = DG_BY(b.dg.id);
   if (b.over === 'lose') return `<div class="result miss"><h3>Dungeon failed</h3><p class="note">Your monster fell on floor ${b.floor}. Feed it, then try again.</p>${trainHtml(b)}</div>
     <div class="dock"><button class="cta" data-act="dgleave">Back to Dungeon</button></div>`;
-  if (b.floor < 3) return `<div class="result"><h3>Floor ${b.floor} cleared</h3><p class="note">HP left: ${b.p.hp}/${b.p.maxHp}. Health does not recover between floors.</p>${trainHtml(b)}</div>
+  if (b.floor < 3) return `<div class="result"><h3>Floor ${b.floor} cleared</h3><p class="note">HP left: ${b.p.hp}/${b.p.maxHp}. Health does not recover between floors.</p>${trainHtml(b)}${potionRow(b)}</div>
     <div class="dock"><button class="cta" data-act="dgnext">Next floor</button><button class="linkbtn" data-act="dgleave">Leave dungeon</button></div>`;
   const r = b.reward;
   return `<div class="winOverlay"><div class="result win"><div class="resultBurst"></div>
@@ -1837,6 +1873,16 @@ function battleStep(order, i) {
     return;
   }
   const [who, mv] = order[i];
+  if (typeof mv === 'string' && mv.indexOf('potion:') === 0) {
+    const P = POTIONS[mv.slice(7)], before = b.p.hp;
+    b.p.hp = Math.min(b.p.maxHp, b.p.hp + Math.round(b.p.maxHp * P.heal));
+    const got = b.p.hp - before;
+    b.log.push(`Turn ${b.turn}: ${SP(b.p.id).name} used ${P.n}: +${got} HP`);
+    b.rageFx = false; b.anim = {side: 'p', phase: 'heal', amt: got};
+    render(); scrollBlog();
+    setTimeout(() => battleStep(order, i + 1), 900);
+    return;
+  }
   b.rageFx = false; b.anim = {side: who, phase: 'wind'};
   render(); scrollBlog();
   setTimeout(() => {
@@ -1962,7 +2008,7 @@ function viewDungeon() {
       <button class="cta" data-act="dgstart" aria-disabled="${!okD || !okE}">${!okD ? 'Too hungry \u2014 feed first' : !okE ? 'Not enough energy' : `Enter ${esc(D.n)}`}</button>`; })()}</div>` : '';
     return `${topbar(D.n, 'dgback')}${energyBar()}
       <div class="dgboss" style="--tint:${EL[D.el].a}"><img src="${DG.art}${D.id}${DG.ext}" alt="" draggable="false"><div><b>${esc(D.boss)}</b><span>${elTag(D.el)} Lv. ${D.lv} \u00b7 3 floors</span><span>${S.dg[D.id] ? 'Cleared. Repeat runs pay less.' : `First clear: ${num(D.first.coins)} coins, ${num(D.first.dp)} data, ${esc(D.trophy)}`}</span></div></div>
-      <p class="count">${owned.length ? 'Choose your fighter. Health does not recover between floors.' : 'Discover a monster first.'}</p>
+      <p class="count">${owned.length ? `Choose your fighter. Health does not recover between floors. Potions: ${potionTotal()}` : 'Discover a monster first.'}</p>
       <div class="bpickgrid">${grid}</div>${popup}`;
   }
   const done = DUNGEONS.filter(D => S.dg[D.id]).length;
@@ -2012,7 +2058,7 @@ function viewBattleFight() {
     if (a && a.side !== side && a.phase === 'hit') cls += ' hit';
     return cls;
   };
-  const dmgPop = (side) => (a && a.side !== side && a.phase === 'hit')
+  const dmgPop = (side) => (a && a.phase === 'heal' && a.side === side) ? `<i class="healGlow"></i><span class="dmgpop heal">+${a.amt}</span>` : (a && a.side !== side && a.phase === 'hit')
     ? `<i class="impact"></i><span class="dmgpop${a.crit ? ' crit' : ''}">-${a.dmg}${a.crit ? '!' : ''}</span>` : '';
   const log = `<div class="arenaLog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
   const dgD = b.dg ? DG_BY(b.dg.id) : null;
@@ -2020,7 +2066,7 @@ function viewBattleFight() {
   let flagTxt = 'Your turn \u2014 choose a move';
   if (b.busy && a) {
     const who = a.side === 'p' ? psp.name : esp.name;
-    flagTxt = a.phase === 'wind' ? `${who} is attacking\u2026` : `${who} lands the hit!`;
+    flagTxt = a.phase === 'heal' ? `${who} recovers HP!` : a.phase === 'wind' ? `${who} is attacking\u2026` : `${who} lands the hit!`;
   } else if (b.busy) flagTxt = 'Battling\u2026';
   let controls;
   if (b.over && b.dg) {
@@ -2060,6 +2106,7 @@ function viewBattleFight() {
         ${moveBtn('skill1', b.p.mvSkill1, psp.el, EL[psp.el].a, elIc(psp.el))}
         ${moveBtn('skill2', b.p.mvSkill2, psp.el, EL[psp.el].a, elIc(psp.el))}
       </div>
+      ${b.dg ? potionRow(b) : ''}
       <button class="linkbtn" data-act="battleleave">Flee</button>`;
   }
   return `${topbar('Battle Arena', 'battleleave')}
@@ -2084,7 +2131,7 @@ function viewHome() {
     {to:'lab', k:'lab', t:'Lab', s:'Permits & gear', grad:'#047857,#34D399'},
     {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'},
     {to:'battle', k:'battle', t:'Battle', s:'Turn-based arena', grad:'#B91C1C,#FF5C7A'},
-    {to:'dungeon', k:'battle', t:'Dungeon', s:`${DUNGEONS.filter(D => S.dg[D.id]).length}/${DUNGEONS.length} cleared`, grad:'#7C2D12,#FB923C'}
+    {to:'dungeon', k:'dungeon', t:'Dungeon', s:`${DUNGEONS.filter(D => S.dg[D.id]).length}/${DUNGEONS.length} cleared`, grad:'#7C2D12,#FB923C'}
   ];
   return `${statusBar()}
     ${heroRow()}
@@ -2363,6 +2410,10 @@ function viewLab() {
       <div class="geargrid">${Object.keys(ENERGY_ITEMS).map(k => `<div class="gear2" data-fx="energy:${k}"><span class="gicon">${ic('bolt')}</span><span class="gn">${ENERGY_ITEMS[k].n}</span>
         <span class="gs">+${ENERGY_ITEMS[k].gain} energy</span>
         <button class="buy" data-act="buyenergy" data-id="${k}" aria-disabled="${S.coins < ENERGY_ITEMS[k].cost || S.energy >= emax()}">${num(ENERGY_ITEMS[k].cost)} coins</button></div>`).join('')}</div></section>
+    <section class="sec"><h3>Potions</h3><p class="count" style="margin:0 0 8px">Heal your monster during a dungeon run: free between floors, or mid-battle at the cost of your turn.</p>
+      <div class="geargrid">${Object.keys(POTIONS).map(k => `<div class="gear2" data-fx="potion:${k}"><span class="gicon">${ic('flask')}</span><span class="gn">${POTIONS[k].n}</span>
+        <span class="gs">Heals ${Math.round(POTIONS[k].heal * 100)}% HP \u00b7 You have ${S.potions[k]}</span>
+        <button class="buy" data-act="buypotion" data-id="${k}" aria-disabled="${S.coins < POTIONS[k].cost}">${num(POTIONS[k].cost)} coins</button></div>`).join('')}</div></section>
     <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
       <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
         <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
@@ -2742,6 +2793,9 @@ app.addEventListener('click', (ev) => {
     case 'battleagain': { const pid = ui.battle && ui.battle.p.id; ui.battle = null; if (pid) startBattle(pid); break; }
     case 'battleleave': if (ui.dg) { ui.battle = null; ui.dg = null; ui.dgSel = null; ui.bPick = null; render(); break; } ui.battle = null; ui.bPick = null; go('home'); break;
     case 'dgpick': { const D = DG_BY(d.id); if (!D) break; if (!dgUnlocked(D)) { toast(dgLockMsg(D)); break; } ui.dgSel = d.id; ui.bPick = null; render(); window.scrollTo(0, 0); break; }
+    case 'bpotion': battlePotion(d.id); break;
+    case 'dgpotion': dgUsePotion(d.id); break;
+    case 'buypotion': { const P = POTIONS[d.id]; if (!P) break; if (S.coins < P.cost) { toast(`Need ${num(P.cost - S.coins)} more coins`); break; } S.coins -= P.cost; S.potions[d.id]++; save(); ui.fx = {key:`potion:${d.id}`, cur:'coins'}; render(); toast(`${P.n} bought \u00b7 you have ${S.potions[d.id]}`); break; }
     case 'dgback': ui.dgSel = null; ui.bPick = null; render(); break;
     case 'dgstart': if (ui.dgSel && ui.bPick) startDungeon(ui.dgSel, ui.bPick); break;
     case 'dgnext': { const b = ui.battle; if (!b || !b.dg || b.over !== 'win') break; b.dg.hp = b.p.hp; b.dg.floor++; dgStartFloor(); break; }
