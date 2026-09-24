@@ -248,8 +248,7 @@ svg{display:block}
   border:1.5px solid color-mix(in srgb,var(--tint) 42%,var(--line));min-height:150px}
 .permit::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.55;pointer-events:none;
   background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--tint) 30%,transparent),transparent 72%)}
-.permit .lic{width:36px;height:36px;border-radius:10px;background:var(--tint);color:#fff;display:grid;place-items:center;
-  box-shadow:inset 0 -2px 5px rgba(0,0,0,.3),inset 0 2px 2px rgba(255,255,255,.25)}
+.permit .lic{width:56px;height:56px;color:var(--tint);display:grid;place-items:center}
 .permit .lic svg{width:19px;height:19px}
 .permit .ln{font:700 15px/1.15 var(--display)}
 .permit .lb{font-size:11.5px;color:var(--ink2);line-height:1.32;flex:1}
@@ -265,9 +264,7 @@ svg{display:block}
   border:1.5px solid var(--line)}
 .gear2::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;pointer-events:none;
   background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--lamp) 24%,transparent),transparent 72%)}
-.gear2 .gicon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--lamp);
-  background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--lamp) 45%,var(--surface2)),var(--surface2) 72%);
-  border:2px solid color-mix(in srgb,var(--lamp) 60%,var(--line));box-shadow:0 0 10px color-mix(in srgb,var(--lamp) 40%,transparent)}
+.gear2 .gicon{width:56px;height:56px;display:grid;place-items:center;color:var(--lamp)}
 .gear2 .gicon svg{width:19px;height:19px}
 .gear2 .gn{font:700 14px/1.15 var(--display)}
 .gear2 .gs{font-size:11px;color:var(--ink2);line-height:1.3;min-height:28px}
@@ -435,6 +432,12 @@ svg{display:block}
   border:1.5px solid color-mix(in srgb,var(--rc,var(--lamp)) 68%,var(--line));
   box-shadow:0 0 8px color-mix(in srgb,var(--rc,var(--lamp)) 50%,transparent)}
 .lootico svg{width:17px;height:17px}
+.loot.food .lootico{width:46px;height:46px;border:0;background:none;box-shadow:none}
+.itemimg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.itemfb{display:grid;place-items:center;width:100%;height:100%}
+.itemfb[hidden],.itemimg[hidden]{display:none}
+.feedbtn .fi{width:30px;height:30px}
+.potbtn .pi{width:22px;height:22px;display:block}
 .loot b{font:700 11px/1.15 var(--display);word-break:break-word;max-width:100%;padding:0 2px}
 .lootsrc{font-size:9px;line-height:1.15;color:var(--ink2);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lootrar{font:700 8px/1 var(--display);letter-spacing:.04em;color:var(--rc,var(--lamp));
@@ -1235,10 +1238,11 @@ const BOSS_SP = Object.fromEntries(DUNGEONS.map(D => [D.id, D.sp]));
 const DG_BY = (id) => DUNGEONS.find(d => d.id === id);
 /* HP potions: bought in the Laboratory, used between dungeon floors (free) or mid-battle (costs your turn). heal = share of max HP. */
 const POTIONS = {
-  minor:{n:'Minor Potion', short:'Minor', heal:.3, cost:90},
-  major:{n:'Major Potion', short:'Major', heal:.6, cost:200},
-  elixir:{n:'Full Elixir', short:'Elixir', heal:1, cost:380}
+  minor:{n:'Minor Potion', img:'potion_minor', short:'Minor', heal:.3, cost:90},
+  major:{n:'Major Potion', img:'potion_major', short:'Major', heal:.6, cost:200},
+  elixir:{n:'Full Elixir', img:'potion_elixir', short:'Elixir', heal:1, cost:380}
 };
+const itemIcon = (name, fb) => `<img class="itemimg" src="assets/icons/items/${name}.webp" alt="" loading="lazy" draggable="false" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="itemfb" hidden>${ic(fb)}</span>`;
 const potionTotal = () => Object.values(S.potions).reduce((a, b) => a + b, 0);
 const dgUnlocked = (D) => D.id === 'prismcolossus' ? DUNGEONS.filter(x => !x.final).every(x => S.dg[x.id]) : D.id === 'riftdevourer' ? !!S.dg.prismcolossus : S.locs.includes(D.loc);
 const dgLockMsg = (D) => D.id === 'prismcolossus' ? 'Clear all 8 area dungeons first' : D.id === 'riftdevourer' ? 'Clear the Crystal Cathedral first' : `Unlock ${LOC(D.loc).n} in the Laboratory first`;
@@ -1315,8 +1319,8 @@ const FOOD = {
    or instantly with items from the Laboratory (coin sink). Tune everything here. */
 const ENERGY = {max:12, regenMs:4 * 60 * 1000, hiCost:2, hiFrom:1200};
 const ENERGY_ITEMS = {
-  drink:{n:'Energy Drink', gain:5, cost:75},
-  cell:{n:'Power Cell', gain:12, cost:150}
+  drink:{n:'Energy Drink', img:'item_energydrink', gain:5, cost:75},
+  cell:{n:'Power Cell', img:'item_powercell', gain:12, cost:150}
 };
 /* Battle coins are paid in full for the first `full` battles each day, then multiplied by `dim`. XP is never reduced. */
 const BATTLE_DAILY = {full:12, dim:.5};
@@ -1342,7 +1346,7 @@ function applyTraining(rec, sp, foe, win) {
 }
 function feedRow(id) {
   const rec = S.sp[id], full = durOf(rec) >= TRAIN.maxDur;
-  return `<div class="feedrow">${Object.keys(FOOD).map(k => `<button class="feedbtn" data-act="feed" data-id="${id}" data-food="${k}" aria-disabled="${S.food[k] <= 0 || full}"><b>${FOOD[k].short}</b><span>+${FOOD[k].dur} · ×${S.food[k]}</span></button>`).join('')}</div>`;
+  return `<div class="feedrow">${Object.keys(FOOD).map(k => `<button class="feedbtn" data-act="feed" data-id="${id}" data-food="${k}" aria-disabled="${S.food[k] <= 0 || full}"><span class="fi">${itemIcon('food_' + k, 'food')}</span><b>${FOOD[k].short}</b><span>+${FOOD[k].dur} · ×${S.food[k]}</span></button>`).join('')}</div>`;
 }
 function trainHtml(b) {
   const t = b.train, parts = [];
@@ -1776,7 +1780,7 @@ function battleTurn(move) {
   battleStep(order, 0);
 }
 const potionRow = (b) => `<div class="potrow">${Object.keys(POTIONS).map(k => { const P = POTIONS[k], q = S.potions[k], off = b.busy || !q || b.p.hp >= b.p.maxHp;
-  return `<button class="potbtn" data-act="${b.over ? 'dgpotion' : 'bpotion'}" data-id="${k}"${off ? ' disabled' : ''} aria-label="${P.n}, ${q} left, heals ${Math.round(P.heal * 100)}%">${ic('flask')}<span>${P.short}</span><b>\u00d7${q}</b></button>`; }).join('')}</div>`;
+  return `<button class="potbtn" data-act="${b.over ? 'dgpotion' : 'bpotion'}" data-id="${k}"${off ? ' disabled' : ''} aria-label="${P.n}, ${q} left, heals ${Math.round(P.heal * 100)}%"><span class="pi">${itemIcon(P.img, 'flask')}</span><span>${P.short}</span><b>\u00d7${q}</b></button>`; }).join('')}</div>`;
 function battlePotion(key) {
   const b = ui.battle, P = POTIONS[key];
   if (!b || !b.dg || b.over || b.busy || !P) return;
@@ -2379,7 +2383,7 @@ function viewLab() {
   const owned = S.locs.length;
   const permits = LOCS.map(l => {
     const has = S.locs.includes(l.id);
-    return `<div class="permit${has ? ' owned' : S.coins >= l.cost ? ' can' : ''}" data-fx="loc:${l.id}" style="--tint:${l.tint}"><span class="lic">${ic(l.id)}</span>
+    return `<div class="permit${has ? ' owned' : S.coins >= l.cost ? ' can' : ''}" data-fx="loc:${l.id}" style="--tint:${l.tint}"><span class="lic">${itemIcon('permit_' + l.id, l.id)}</span>
       <span class="ln">${l.n}</span><span class="lb">${l.blurb}</span>
       ${has ? `<span class="ownedtag">${ic('check')}Owned</span>`
         : `<button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button>`}</div>`;
@@ -2396,26 +2400,26 @@ function viewLab() {
       <div class="permgrid">${permits}</div></section>
     <section class="sec"><h3>Equipment</h3>
       <div class="geargrid">
-        <div class="gear2" data-fx="kit"><span class="gicon">${ic('gear')}</span><span class="gn">Field Kit</span>
+        <div class="gear2" data-fx="kit"><span class="gicon">${itemIcon('item_fieldkit', 'gear')}</span><span class="gn">Field Kit</span>
           <span class="gs">Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}%${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span>
           ${pips(S.kit, KIT_COST.length)}
           ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
-        <div class="gear2" data-fx="dpkit"><span class="gicon">${ic('flask')}</span><span class="gn">Data Extractor</span>
+        <div class="gear2" data-fx="dpkit"><span class="gicon">${itemIcon('item_dataextractor', 'flask')}</span><span class="gn">Data Extractor</span>
           <span class="gs">Data from scans +${Math.round((DPKIT[S.dpkit] - 1) * 100)}%${dpkitNext ? `, +${Math.round((DPKIT[S.dpkit + 1] - 1) * 100)}% next` : ''}</span>
           ${pips(S.dpkit, DPKIT_COST.length)}
           ${dpkitNext ? `<button class="buy" data-act="buydpkit" aria-disabled="${S.coins < dpkitNext}">${num(dpkitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
       </div></section>
     <section class="sec"><h3>Energy</h3><p class="count" style="margin:0 0 8px">Every expedition uses energy. It refills over time, or recharge instantly here.</p>
       ${energyBar()}
-      <div class="geargrid">${Object.keys(ENERGY_ITEMS).map(k => `<div class="gear2" data-fx="energy:${k}"><span class="gicon">${ic('bolt')}</span><span class="gn">${ENERGY_ITEMS[k].n}</span>
+      <div class="geargrid">${Object.keys(ENERGY_ITEMS).map(k => `<div class="gear2" data-fx="energy:${k}"><span class="gicon">${itemIcon(ENERGY_ITEMS[k].img, 'bolt')}</span><span class="gn">${ENERGY_ITEMS[k].n}</span>
         <span class="gs">+${ENERGY_ITEMS[k].gain} energy</span>
         <button class="buy" data-act="buyenergy" data-id="${k}" aria-disabled="${S.coins < ENERGY_ITEMS[k].cost || S.energy >= emax()}">${num(ENERGY_ITEMS[k].cost)} coins</button></div>`).join('')}</div></section>
     <section class="sec"><h3>Potions</h3><p class="count" style="margin:0 0 8px">Heal your monster during a dungeon run: free between floors, or mid-battle at the cost of your turn.</p>
-      <div class="geargrid">${Object.keys(POTIONS).map(k => `<div class="gear2" data-fx="potion:${k}"><span class="gicon">${ic('flask')}</span><span class="gn">${POTIONS[k].n}</span>
+      <div class="geargrid">${Object.keys(POTIONS).map(k => `<div class="gear2" data-fx="potion:${k}"><span class="gicon">${itemIcon(POTIONS[k].img, 'flask')}</span><span class="gn">${POTIONS[k].n}</span>
         <span class="gs">Heals ${Math.round(POTIONS[k].heal * 100)}% HP \u00b7 You have ${S.potions[k]}</span>
         <button class="buy" data-act="buypotion" data-id="${k}" aria-disabled="${S.coins < POTIONS[k].cost}">${num(POTIONS[k].cost)} coins</button></div>`).join('')}</div></section>
     <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
-      <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
+      <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${itemIcon('food_' + k, 'food')}</span><span class="gn">${FOOD[k].n}</span>
         <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
         <button class="buy" data-act="buyfood" data-id="${k}" aria-disabled="${S.coins < FOOD[k].cost}">${num(FOOD[k].cost)} coins</button></div>`).join('')}</div></section>`;
 }
@@ -2468,7 +2472,7 @@ function viewInventory() {
   const foodKeys = Object.keys(FOOD);
   const foodCards = foodKeys.map(k => { const F = FOOD[k], q = S.food[k];
     return `<div class="loot food${q ? '' : ' zero'}" role="button" tabindex="0" data-act="fooditem" data-id="${k}" style="--rc:#7BD88F"><span class="lootqty">×${num(q)}</span>
-      <span class="lootico">${ic('food')}</span><b>${F.short}</b><span class="lootsrc">+${F.dur} durability</span><i class="lootrar">Food</i></div>`; }).join('');
+      <span class="lootico">${itemIcon('food_' + k, 'food')}</span><b>${F.short}</b><span class="lootsrc">+${F.dur} durability</span><i class="lootrar">Food</i></div>`; }).join('');
   const matsHtml = list.length ? `<div class="lootgrid">${cards}</div>`
     : `<div class="lootempty">${ic('inv')}<p>No materials in this area yet. Keep researching to find drops.</p></div>`;
   const body = (showFood ? `<h3 class="invhead">Monster food</h3><div class="lootgrid">${foodCards}</div>` : '')
