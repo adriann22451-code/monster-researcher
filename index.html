@@ -629,6 +629,25 @@ body.bg-fight .top{flex:none}
 .buy{flex:none;min-height:40px;padding:0 14px;border-radius:11px;background:var(--lamp);color:var(--lampink);font-weight:700;
   display:inline-flex;align-items:center;gap:6px;border:1px solid color-mix(in srgb,var(--lamp) 55%,black)}
 .buy[aria-disabled="true"]{background:var(--surface2);color:var(--ink2);border-color:var(--line)}
+.buy{position:relative;overflow:hidden;isolation:isolate;transition:transform .12s}
+.buy:active{transform:scale(.93)}
+.buy:not([aria-disabled="true"]){animation:buyPulse 2.2s ease-in-out infinite}
+.buy:not([aria-disabled="true"])::after{content:"";position:absolute;top:0;left:-60%;width:34%;height:100%;pointer-events:none;
+  background:linear-gradient(115deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:ctashine 3.4s ease-in-out infinite}
+@keyframes buyPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--lamp) 55%,transparent)}60%{box-shadow:0 0 0 7px transparent}}
+.nope{animation:nope .38s ease-in-out!important}
+@keyframes nope{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.permit.can{border-color:color-mix(in srgb,var(--tint) 65%,var(--line));animation:permitGlow 2.4s ease-in-out infinite}
+.permit.can .lic{animation:licBob 2s ease-in-out infinite}
+@keyframes permitGlow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 16px color-mix(in srgb,var(--tint) 45%,transparent)}}
+@keyframes licBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.fx-unlock{animation:fxPop .7s cubic-bezier(.2,1.4,.4,1)!important}
+@keyframes fxPop{0%{transform:scale(.88);filter:brightness(1.9)}45%{transform:scale(1.07);filter:brightness(1.3)}100%{transform:scale(1);filter:none}}
+.fxlayer{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
+.fxring{position:fixed;border-radius:16px;border:2px solid var(--lamp);animation:fxRing .7s ease-out forwards}
+@keyframes fxRing{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
+.fxspark{position:fixed;width:7px;height:7px;margin:-3px 0 0 -3px;border-radius:50%;animation:fxSpark .8s ease-out forwards}
+@keyframes fxSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kv div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .kv b{display:block;font:700 22px/1.1 var(--display);color:var(--lamp)}
@@ -645,11 +664,21 @@ body.bg-fight .top{flex:none}
 .bgswatch .chk::after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid var(--lampink);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .danger.arm{background:var(--signal);color:#fff}
 
-.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+.toast{border-radius:18px!important;position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
   background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:10px 16px;border-radius:99px;
   font-weight:600;font-size:14px;z-index:30;max-width:90vw;text-align:center;pointer-events:none;animation:rise .2s ease-out;
   box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .toast[hidden]{display:none}
+ /* no text selection / web-search popup on long-press; taps on the wallet pills bounce instead */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none}
+.pill img,.pill .dot{pointer-events:none}
+button.pill{font:inherit;font-weight:600;font-size:13.5px;color:inherit;-webkit-appearance:none;appearance:none}
+.pill[data-act="wallet"]{cursor:pointer;transition:transform .12s}
+.pill[data-act="wallet"]:active{transform:scale(.92)}
+.pill.bump{animation:pillBump .45s ease-out}
+@keyframes pillBump{0%{transform:scale(1)}35%{transform:scale(1.16);box-shadow:0 0 0 4px color-mix(in srgb,var(--lamp) 45%,transparent)}100%{transform:scale(1)}}
 /* image assets */
 .mon.img{position:relative}
 .mon.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
@@ -1429,10 +1458,32 @@ function monStats(sp) {
 const statRow = (k, v, mx) => `<div class="statln" style="--sc:${STAT_COLOR[k]}"><span class="sk">${k.toUpperCase()}</span>
   <div class="sbar"><i style="width:${Math.max(4, Math.min(100, Math.round(v / (mx || STAT_MAX[k]) * 100)))}%"></i></div><span class="sv">${v}</span></div>`;
 let toastT;
+function bump(el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+function shake(el) { el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope'); }
+/* Unlock celebration: the card pops, a ring flashes and sparks fly out; the wallet pill that paid bounces. */
+function playFx() {
+  const fx = ui.fx; if (!fx) return; ui.fx = null;
+  const pill = app.querySelector(`.pill[data-k="${fx.cur}"]`); if (pill) bump(pill);
+  const el = app.querySelector(`[data-fx="${fx.key}"]`); if (!el) return;
+  el.classList.add('fx-unlock'); setTimeout(() => el.classList.remove('fx-unlock'), 800);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = el.getBoundingClientRect(), col = getComputedStyle(el).getPropertyValue('--tint').trim() || 'var(--lamp)';
+  const box = document.createElement('div'); box.className = 'fxlayer';
+  const ring = document.createElement('i'); ring.className = 'fxring';
+  ring.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;border-color:${col}`;
+  box.appendChild(ring);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 + Math.random() * .4, dist = 34 + Math.random() * 40, sp = document.createElement('i');
+    sp.className = 'fxspark';
+    sp.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;background:${col};box-shadow:0 0 8px ${col};--dx:${Math.cos(a) * (r.width / 2 + dist * .6)}px;--dy:${Math.sin(a) * (r.height / 2 + dist * .6)}px`;
+    box.appendChild(sp);
+  }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1000);
+}
 function toast(m) {
   let t = document.getElementById('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
-  t.textContent = m; t.hidden = false;
+  t.textContent = m; t.hidden = false; t.style.animation = 'none'; void t.offsetWidth; t.style.animation = '';
   clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2300);
 }
 function affordable() {
@@ -1440,7 +1491,7 @@ function affordable() {
 }
 function topbar(title, backAct, backTo) {
   return `<header class="top"><button class="back" data-act="${backAct}" data-to="${backTo || ''}" aria-label="Back">${ic('back')}</button><h2>${title}</h2>
-    <div class="res"><span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}</span><span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}</span></div></header>`;
+    <div class="res"><button class="pill" data-act="wallet" data-k="coins" aria-label="Coins"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}</button><button class="pill" data-act="wallet" data-k="dp" aria-label="Data"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}</button></div></header>`;
 }
 
 /* ---------- battle arena ---------- */
@@ -1620,8 +1671,8 @@ function statusBar() {
   const plv = 1 + Math.floor(S.scans / 6), pcur = S.scans % 6, pneed = 6;
   return `<header class="statusbar">
     <button class="avwrap" data-act="go" data-to="profile" aria-label="View profile"><span class="av"><img src="assets/icons/avatar.webp" alt="" draggable="false" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></span><div class="avmeta"><b>Lv. ${plv}</b>${bar(pcur / pneed * 100, true)}</div></button>
-    <span class="pill"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
-    <span class="pill"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
+    <span class="pill" role="button" tabindex="0" data-act="wallet" data-k="dp"><img class="dot dp" src="assets/icons/diamond.webp" alt="">${num(S.dp)}<button class="plusbtn" data-act="go" data-to="research" aria-label="Go to research">+</button></span>
+    <span class="pill" role="button" tabindex="0" data-act="wallet" data-k="coins"><img class="dot coin" src="assets/icons/coin.webp" alt="">${num(S.coins)}<button class="plusbtn" data-act="go" data-to="lab" aria-label="Go to laboratory">+</button></span>
     <button class="gear" data-act="go" data-to="settings" aria-label="Settings">${ic('gear')}</button></header>`;
 }
 function tubeArt() {
@@ -2006,7 +2057,7 @@ function viewResearch() {
       const isOwned = S.tech[k] > i, next = S.tech[k] === i, can = next && S.dp >= n.c;
       const cls = isOwned ? 'owned' : next ? `next${can ? ' can' : ''}` : 'lock';
       const badge = isOwned ? ic('check') : !next ? ic('lock') : ic(BRANCH_ICON[k]);
-      return `<button class="node ${cls}" style="--tint:${tint}" data-act="buytech" data-k="${k}" data-i="${i}" ${isOwned ? 'aria-label="' + n.n + ', researched"' : ''}>
+      return `<button class="node ${cls}" style="--tint:${tint}" data-fx="tech:${k}:${i}" data-act="buytech" data-k="${k}" data-i="${i}" ${isOwned ? 'aria-label="' + n.n + ', researched"' : ''}>
         <span class="ntier">Tier ${i + 1}</span><span class="nicon">${badge}</span>
         <span class="nt">${n.n}</span><span class="nd">${n.d}</span>
         <span class="nc">${isOwned ? 'Researched' : num(n.c) + ' data'}</span></button>`;
@@ -2029,7 +2080,7 @@ function viewLab() {
   const owned = S.locs.length;
   const permits = LOCS.map(l => {
     const has = S.locs.includes(l.id);
-    return `<div class="permit${has ? ' owned' : ''}" style="--tint:${l.tint}"><span class="lic">${ic(l.id)}</span>
+    return `<div class="permit${has ? ' owned' : S.coins >= l.cost ? ' can' : ''}" data-fx="loc:${l.id}" style="--tint:${l.tint}"><span class="lic">${ic(l.id)}</span>
       <span class="ln">${l.n}</span><span class="lb">${l.blurb}</span>
       ${has ? `<span class="ownedtag">${ic('check')}Owned</span>`
         : `<button class="buy" data-act="buyloc" data-id="${l.id}" aria-disabled="${S.coins < l.cost}">${num(l.cost)} coins</button>`}</div>`;
@@ -2046,17 +2097,17 @@ function viewLab() {
       <div class="permgrid">${permits}</div></section>
     <section class="sec"><h3>Equipment</h3>
       <div class="geargrid">
-        <div class="gear2"><span class="gicon">${ic('gear')}</span><span class="gn">Field Kit</span>
+        <div class="gear2" data-fx="kit"><span class="gicon">${ic('gear')}</span><span class="gn">Field Kit</span>
           <span class="gs">Coins from scans +${Math.round((KIT[S.kit] - 1) * 100)}%${kitNext ? `, +${Math.round((KIT[S.kit + 1] - 1) * 100)}% next` : ''}</span>
           ${pips(S.kit, KIT_COST.length)}
           ${kitNext ? `<button class="buy" data-act="buykit" aria-disabled="${S.coins < kitNext}">${num(kitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
-        <div class="gear2"><span class="gicon">${ic('flask')}</span><span class="gn">Data Extractor</span>
+        <div class="gear2" data-fx="dpkit"><span class="gicon">${ic('flask')}</span><span class="gn">Data Extractor</span>
           <span class="gs">Data from scans +${Math.round((DPKIT[S.dpkit] - 1) * 100)}%${dpkitNext ? `, +${Math.round((DPKIT[S.dpkit + 1] - 1) * 100)}% next` : ''}</span>
           ${pips(S.dpkit, DPKIT_COST.length)}
           ${dpkitNext ? `<button class="buy" data-act="buydpkit" aria-disabled="${S.coins < dpkitNext}">${num(dpkitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
       </div></section>
     <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
-      <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
+      <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
         <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
         <button class="buy" data-act="buyfood" data-id="${k}" aria-disabled="${S.coins < FOOD[k].cost}">${num(FOOD[k].cost)} coins</button></div>`).join('')}</div></section>`;
 }
@@ -2182,6 +2233,7 @@ function render() {
   app.innerHTML = h;
   if (ui.screen === 'home') { const m = document.getElementById('labMenu'); if (m) { if (keepX) m.scrollLeft = keepX; updateMenu(); requestAnimationFrame(updateMenu); } }
   if (ui.screen === 'battle' && ui.battle && ui.battle.over === 'win') animateRewardCounts();
+  if (ui.fx) playFx();
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
@@ -2303,11 +2355,12 @@ function doScan() {
 /* ---------- actions ---------- */
 function buyTech(k, i) {
   const T = TECH[k];
-  if (S.tech[k] > i) { toast('Already researched'); return; }
-  if (S.tech[k] < i) { toast('Research the previous level first'); return; }
+  if (S.tech[k] > i) { toast('Already researched'); return true; }
+  if (S.tech[k] < i) { toast('Research the previous level first'); return false; }
   const c = T.lv[i].c;
-  if (S.dp < c) { toast(`Need ${num(c - S.dp)} more data`); return; }
-  S.dp -= c; S.tech[k]++; save(); render(); toast(`${T.lv[i].n} researched`);
+  if (S.dp < c) { toast(`Need ${num(c - S.dp)} more data`); return false; }
+  S.dp -= c; S.tech[k]++; save(); ui.fx = {key:`tech:${k}:${i}`, cur:'dp'}; render(); toast(`${T.lv[i].n} researched`);
+  return true;
 }
 /* ---------- boot / full asset preload ---------- */
 const LOAD_TIPS = [
@@ -2373,10 +2426,13 @@ function boot() {
   });
   setTimeout(finish, 12000); /* safety net: never let a slow/broken asset trap the player on the loader */
 }
+document.addEventListener('contextmenu', (e) => { if (!e.target.closest('input,textarea')) e.preventDefault(); });
 app.addEventListener('click', (ev) => {
   const t = ev.target.closest('[data-act]'); if (!t) return;
   const d = t.dataset;
+  if (t.getAttribute('aria-disabled') === 'true' && (t.classList.contains('buy') || t.classList.contains('cta'))) shake(t);
   switch (d.act) {
+    case 'wallet': bump(t); toast(d.k === 'coins' ? `Coins ${num(S.coins)} · Earned from scans and battles. Spend them in the Lab.` : `Data ${num(S.dp)} · Earned from every scan. Spend it on Research.`); break;
     case 'go': go(d.to); break;
     case 'menuscroll': menuScroll(+d.dir); break;
     case 'pickloc': ui.loc = d.id; ui.locPicked = true; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
@@ -2388,15 +2444,15 @@ app.addEventListener('click', (ev) => {
     case 'invfilter': ui.invFilter = d.id; render(); break;
     case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.evoAsk = null; ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
     case 'form': ui.form = d.id; render(); break;
-    case 'buytech': buyTech(d.k, +d.i); break;
-    case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); render(); toast(`${l.n} is open`); break; }
-    case 'buyfood': { const F = FOOD[d.id]; if (!F) break; if (S.coins < F.cost) { toast(`Need ${num(F.cost - S.coins)} more coins`); break; } S.coins -= F.cost; S.food[d.id]++; save(); render(); toast(`${F.n} bought`); break; }
+    case 'buytech': if (!buyTech(d.k, +d.i)) shake(t); break;
+    case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); ui.fx = {key:`loc:${l.id}`, cur:'coins'}; render(); toast(`${l.n} is open`); break; }
+    case 'buyfood': { const F = FOOD[d.id]; if (!F) break; if (S.coins < F.cost) { toast(`Need ${num(F.cost - S.coins)} more coins`); break; } S.coins -= F.cost; S.food[d.id]++; save(); ui.fx = {key:`food:${d.id}`, cur:'coins'}; render(); toast(`${F.n} bought`); break; }
     case 'feed': { const rec = S.sp[d.id], F = FOOD[d.food]; if (!rec || !F || !isOwned(d.id)) break;
       if (durOf(rec) >= TRAIN.maxDur) { toast('Already full'); break; }
       if (S.food[d.food] <= 0) { toast(`No ${F.short} left. Buy some in the Laboratory`); break; }
       S.food[d.food]--; rec.dur = Math.min(TRAIN.maxDur, durOf(rec) + F.dur); save(); render(); toast(`${SP(d.id).name} ate a ${F.short.toLowerCase()}`); break; }
-    case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); render(); toast('Field kit upgraded'); break; }
-    case 'buydpkit': { const c = DPKIT_COST[S.dpkit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.dpkit++; save(); render(); toast('Data extractor upgraded'); break; }
+    case 'buykit': { const c = KIT_COST[S.kit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.kit++; save(); ui.fx = {key:'kit', cur:'coins'}; render(); toast('Field kit upgraded'); break; }
+    case 'buydpkit': { const c = DPKIT_COST[S.dpkit]; if (S.coins < c) { toast(`Need ${num(c - S.coins)} more coins`); break; } S.coins -= c; S.dpkit++; save(); ui.fx = {key:'dpkit', cur:'coins'}; render(); toast('Data extractor upgraded'); break; }
     case 'claimquest': { ensureDaily(); const entry = S.quests.list.find(q => q.id === d.id); if (!entry || entry.claimed) break; const {Q, val} = questProgress(d.id); if (val < Q.goal) break; entry.claimed = true; S.coins += Q.reward.coins || 0; S.dp += Q.reward.dp || 0; save(); render(); toast('Quest reward claimed'); break; }
     case 'setpartner': { if (!isOwned(d.id)) break; S.partner = S.partner === d.id ? null : d.id; save(); render(); toast(S.partner ? 'Partner set' : 'Partner removed'); break; }
     case 'evolve': if (t.getAttribute('aria-disabled') === 'true') { toast('Not enough coins yet'); break; } if (ui.evoAsk !== d.id) { ui.evoAsk = d.id; render(); break; } ui.evoAsk = null; startEvolve(d.id); break;
