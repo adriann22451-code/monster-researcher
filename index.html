@@ -884,6 +884,9 @@ const RAR = [
   {n:'Epic',c:'#8B5CF6'},{n:'Legendary',c:'#F0A22E'},{n:'Mythic',c:'#E5484D'}
 ];
 const ICON = {
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  box:'<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
   bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
   explore:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
   db:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
@@ -1178,13 +1181,34 @@ const TECH = {
     {n:'Rare Find III',d:'Rare finds +120%. Wider scan zone.',c:300}]},
   lab:{n:'Lab',sub:'Research faster',lv:[
     {n:'Faster Research I',d:'Scan data +30%.',c:60},
-    {n:'Faster Research II',d:'Scan data +60%.',c:180}]},
+    {n:'Faster Research II',d:'Scan data +60%.',c:180},
+    {n:'Faster Research III',d:'Scan data +90%.',c:450}]},
   radar:{n:'Radar',sub:'Reveal hidden forms',lv:[
     {n:'Hidden Monsters I',d:'Ancient forms can appear.',c:80},
     {n:'Hidden Monsters II',d:'Alpha and Corrupted forms can appear.',c:220},
-    {n:'Hidden Monsters III',d:'Shiny forms can appear.',c:500}]}
+    {n:'Hidden Monsters III',d:'Shiny forms can appear.',c:500}]},
+  power:{n:'Power Grid',sub:'More energy, faster recharge',lv:[
+    {n:'Battery I',d:'Max energy +2.',c:90},
+    {n:'Fast Charge I',d:'Energy recharges 20% faster.',c:200},
+    {n:'Battery II',d:'Max energy +2 more.',c:450},
+    {n:'Fast Charge II',d:'Energy recharges 40% faster in total.',c:900}]},
+  focus:{n:'Focus',sub:'Steadier scans',lv:[
+    {n:'Steady Hand I',d:'Scan needle moves 10% slower.',c:70},
+    {n:'Steady Hand II',d:'Scan needle moves 20% slower.',c:190},
+    {n:'Calm Approach',d:'Monsters flee 35% less after a miss.',c:420},
+    {n:'Extended Signal',d:'+1 scan per encounter.',c:900}]},
+  combat:{n:'Combat',sub:'Train harder, fight longer',lv:[
+    {n:'Combat Drills I',d:'Battle XP +25%.',c:110},
+    {n:'Light Rations I',d:'Battles cost 15% less durability.',c:240},
+    {n:'Combat Drills II',d:'Battle XP +50% in total.',c:520},
+    {n:'Light Rations II',d:'Battles cost 30% less durability in total.',c:1000}]},
+  salvage:{n:'Salvage',sub:'Better drops',lv:[
+    {n:'Salvage I',d:'Drop chance +10%.',c:70},
+    {n:'Salvage II',d:'Drop chance +20%. Drops pay 50% more coins.',c:200},
+    {n:'Salvage III',d:'Drop chance +30%.',c:480}]}
 };
-const TECH_TOTAL = 8;
+const TECH_TOTAL = Object.values(TECH).reduce((a, b) => a + b.lv.length, 0);
+const TECH0 = () => Object.fromEntries(Object.keys(TECH).map(k => [k, 0]));
 const FACETS = [['Appearance',0],['Habitat',20],['Behavior',40],['Weakness',60],['Origin',80],['Evolution',100]];
 const BASE_DP = [4,7,12,20,35,60];
 const BASE_COIN = [10,18,35,70,140,300];
@@ -1192,7 +1216,7 @@ const KIT = [1,1.25,1.5,1.75];
 const KIT_COST = [200,500,1000];
 const DPKIT = [1,1.25,1.5,1.75];
 const DPKIT_COST = [250,600,1200];
-const LAB_MULT = [1,1.3,1.6];
+const LAB_MULT = [1,1.3,1.6,1.9];
 /* Evolution price by rarity (Common .. Mythic). Edit here to tune. */
 const EVO_COST = [500, 1000, 2500, 6000, 12000, 25000];
 const evoCost = (sp) => EVO_COST[sp.r];
@@ -1221,7 +1245,7 @@ const BATTLE_COIN = [16, 18, 22, 28, 34, 40];
 const battleCoins = (foe) => Math.round(BATTLE_COIN[foe.r] * (1 + foe.lv * .006));
 const monLv = (rec) => rec.lv != null ? rec.lv : rec.lvMax;
 const durOf = (rec) => rec.dur != null ? rec.dur : TRAIN.maxDur;
-const durCost = (sp) => TRAIN.durCost[sp.r];
+const durCost = (sp) => Math.max(1, Math.round(TRAIN.durCost[sp.r] * (1 - .15 * ((S.tech.combat >= 2) + (S.tech.combat >= 4)))));
 const xpNeed = (lv) => TRAIN.needBase + lv * TRAIN.needPerLv;
 const capOf = (sp) => Math.ceil(sp.lv[1] * TRAIN.capMult);
 function applyTraining(rec, sp, foe, win) {
@@ -1229,6 +1253,7 @@ function applyTraining(rec, sp, foe, win) {
   if (lvFrom >= cap) return {xp:0, lvFrom, lvTo:lvFrom, capped:true};
   const ratio = Math.max(.4, Math.min(1.6, foe.lv / Math.max(1, lvFrom)));
   let gain = Math.round((TRAIN.xpBase + foe.lv * TRAIN.xpPerLv) * ratio * (1 + foe.r * .1));
+  gain = Math.round(gain * (1 + .25 * ((S.tech.combat >= 1) + (S.tech.combat >= 3))));
   if (!win) gain = Math.round(gain * TRAIN.loseXp);
   let lv = lvFrom, xp = (rec.xp || 0) + gain;
   while (lv < cap && xp >= xpNeed(lv)) { xp -= xpNeed(lv); lv++; }
@@ -1424,11 +1449,11 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now()});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:TECH0(), kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now()});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign({scanner:0,lab:0,radar:0}, o.tech);
+    if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign(TECH0(), o.tech);
       s.food = Object.assign({snack:0,meal:0,feast:0}, o.food);
       if (!(s.energy >= 0)) s.energy = ENERGY.max; if (!s.energyAt || s.energyAt > Date.now()) s.energyAt = Date.now();
       Object.values(s.sp).forEach(r => { if (r.lv == null) r.lv = r.lvMax; if (r.xp == null) r.xp = 0; if (r.dur == null) r.dur = 100; });
@@ -1442,39 +1467,42 @@ let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
 
 /* ---------- energy logic ---------- */
+const emax = () => ENERGY.max + 2 * ((S.tech.power >= 1) + (S.tech.power >= 3));
+const eregen = () => Math.round(ENERGY.regenMs * (1 - .2 * ((S.tech.power >= 2) + (S.tech.power >= 4))));
+const maxCharges = () => 3 + (S.tech.focus >= 4 ? 1 : 0);
 const energyCost = (locId) => (LOC(locId).cost >= ENERGY.hiFrom ? ENERGY.hiCost : 1);
 function tickEnergy() {
   const now = Date.now();
-  if (S.energy >= ENERGY.max) { S.energyAt = now; return false; }
-  const n = Math.floor((now - S.energyAt) / ENERGY.regenMs);
+  if (S.energy >= emax()) { S.energyAt = now; return false; }
+  const n = Math.floor((now - S.energyAt) / eregen());
   if (n <= 0) return false;
-  S.energy = Math.min(ENERGY.max, S.energy + n);
-  S.energyAt = S.energy >= ENERGY.max ? now : S.energyAt + n * ENERGY.regenMs;
+  S.energy = Math.min(emax(), S.energy + n);
+  S.energyAt = S.energy >= emax() ? now : S.energyAt + n * eregen();
   save(); return true;
 }
-const energyNextIn = () => Math.max(0, ENERGY.regenMs - (Date.now() - S.energyAt));
-const energyWaitFor = (need) => Math.max(0, (need - S.energy) * ENERGY.regenMs - (Date.now() - S.energyAt));
+const energyNextIn = () => Math.max(0, eregen() - (Date.now() - S.energyAt));
+const energyWaitFor = (need) => Math.max(0, (need - S.energy) * eregen() - (Date.now() - S.energyAt));
 function fmtWait(ms) { const t = Math.ceil(ms / 1000), m = Math.floor(t / 60), sec = t % 60; return `${m}:${String(sec).padStart(2, '0')}`; }
-function energyMsg(cost) { return `Need ${cost} energy (${S.energy}/${ENERGY.max}). Ready in ${fmtWait(energyWaitFor(cost))}, or recharge in the Laboratory.`; }
+function energyMsg(cost) { return `Need ${cost} energy (${S.energy}/${emax()}). Ready in ${fmtWait(energyWaitFor(cost))}, or recharge in the Laboratory.`; }
 function energyBar() {
   tickEnergy();
-  const full = S.energy >= ENERGY.max;
-  return `<div class="energybar" id="energybar" aria-label="Energy"><span class="eic">${ic('bolt')}</span><b data-energy="val">${S.energy}/${ENERGY.max}</b><div class="etrack"><i data-energy="fill" style="width:${(S.energy / ENERGY.max * 100).toFixed(1)}%"></i></div><span class="esub" data-energy="sub">${full ? 'Full' : '+1 in ' + fmtWait(energyNextIn())}</span></div>`;
+  const full = S.energy >= emax();
+  return `<div class="energybar" id="energybar" aria-label="Energy"><span class="eic">${ic('bolt')}</span><b data-energy="val">${S.energy}/${emax()}</b><div class="etrack"><i data-energy="fill" style="width:${(S.energy / emax() * 100).toFixed(1)}%"></i></div><span class="esub" data-energy="sub">${full ? 'Full' : '+1 in ' + fmtWait(energyNextIn())}</span></div>`;
 }
 function updateEnergyUi() {
   const changed = tickEnergy();
   const bar = document.getElementById('energybar');
   if (bar) {
-    const full = S.energy >= ENERGY.max;
+    const full = S.energy >= emax();
     const v = bar.querySelector('[data-energy="val"]'), f = bar.querySelector('[data-energy="fill"]'), sub = bar.querySelector('[data-energy="sub"]');
-    if (v) v.textContent = `${S.energy}/${ENERGY.max}`;
-    if (f) f.style.width = (S.energy / ENERGY.max * 100).toFixed(1) + '%';
+    if (v) v.textContent = `${S.energy}/${emax()}`;
+    if (f) f.style.width = (S.energy / emax() * 100).toFixed(1) + '%';
     if (sub) sub.textContent = full ? 'Full' : '+1 in ' + fmtWait(energyNextIn());
   }
   /* refresh button states when energy ticks up, but never while the scan gauge is running */
   if (changed && !ui.evo && !ui.battle && ((ui.screen === 'explore' && (!ui.enc || ui.enc.phase === 'nothing' || ui.enc.phase === 'done')) || ui.screen === 'lab')) render();
 }
-const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
+const ui = {screen:'home', techTab:'core', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1942,7 +1970,7 @@ function viewEncounter() {
     } else {
       status = `<h3>A monster has been detected!</h3><p>Unidentified creature. Scan it to learn more.</p>`;
     }
-    const pips = `<div class="pips" aria-label="${chargesLeft} scans left">${[0, 1, 2].map(i => `<span class="${i < chargesLeft ? 'on' : ''}"></span>`).join('')}</div>`;
+    const pips = `<div class="pips" aria-label="${chargesLeft} scans left">${Array.from({length: maxCharges()}, (_, i) => i).map(i => `<span class="${i < chargesLeft ? 'on' : ''}"></span>`).join('')}</div>`;
     if (e.phase === 'found') {
       const z = e.zone, pl = (z.c - z.w * .2) * 100, pw = z.w * .4 * 100;
       controls = `${pips}<p class="pipcap">${chargesLeft} ${chargesLeft === 1 ? 'scan' : 'scans'} left before the signal fades</p>
@@ -2108,11 +2136,14 @@ function viewEvolve() {
   </div>`;
 }
 
-const BRANCH_TINT = {scanner:'#37C6F4', lab:'#F0A22E', radar:'#8B5CF6'};
-const BRANCH_ICON = {scanner:'scanner', lab:'flask', radar:'radar'};
+const BRANCH_TINT = {scanner:'#37C6F4', lab:'#F0A22E', radar:'#8B5CF6', power:'#FFD34D', focus:'#4ADE80', combat:'#FF5C7A', salvage:'#F97316'};
+const BRANCH_ICON = {scanner:'scanner', lab:'flask', radar:'radar', power:'bolt', focus:'target', combat:'shield', salvage:'box'};
+const TECH_TABS = [['core','Core'],['power','Power'],['focus','Focus'],['combat','Combat'],['salvage','Salvage']];
 function viewResearch() {
   const owned = Object.values(S.tech).reduce((a, b) => a + b, 0);
-  const pct = Math.round(owned / TECH_TOTAL * 100);
+  const pct = Math.round(owned / TECH_TOTAL * 100), tab = ui.techTab || 'core';
+  const ready = (k) => { const n = TECH[k].lv[S.tech[k]]; return !!n && S.dp >= n.c; };
+  const chips = TECH_TABS.map(([id, n]) => `<button class="fc${tab === id ? ' on' : ''}" data-act="techtab" data-id="${id}">${n}${(id === 'core' ? ['scanner', 'lab', 'radar'].some(ready) : ready(id)) ? ' •' : ''}</button>`).join('');
   const col = (k) => {
     const T = TECH[k], tint = BRANCH_TINT[k];
     const nodes = T.lv.map((n, i) => {
@@ -2129,12 +2160,13 @@ function viewResearch() {
   return `${topbar('Research', 'go', 'home')}
     <div class="root"><div class="rooticon">${ic('flask')}</div><div class="rootmeta"><b>${num(S.dp)}<small>data</small></b><span>${owned} of ${TECH_TOTAL} technologies unlocked</span></div></div>
     ${bar(pct)}
-    <div class="fork" aria-hidden="true"><s style="left:50%;top:0;width:2px;height:12px;margin-left:-1px;background:var(--line)"></s>
+    <div class="chipbar" style="margin-top:10px">${chips}</div>
+    ${tab !== 'core' ? `<div class="tree" style="grid-template-columns:1fr;margin-top:10px">${col(tab)}</div>` : `<div class="fork" aria-hidden="true"><s style="left:50%;top:0;width:2px;height:12px;margin-left:-1px;background:var(--line)"></s>
       <s style="left:16.66%;right:16.66%;top:11px;height:2px;background:linear-gradient(90deg,${BRANCH_TINT.scanner},${BRANCH_TINT.lab},${BRANCH_TINT.radar})"></s>
       <s style="left:16.66%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.scanner}"></s>
       <s style="left:50%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.lab}"></s>
       <s style="left:83.33%;top:11px;width:2px;height:13px;margin-left:-1px;background:${BRANCH_TINT.radar}"></s></div>
-    <div class="tree">${col('scanner')}${col('lab')}${col('radar')}</div>
+    <div class="tree">${col('scanner')}${col('lab')}${col('radar')}</div>`}
     <p class="hint">Every scan earns data. Rarer monsters and new forms pay more.</p>`;
 }
 
@@ -2172,7 +2204,7 @@ function viewLab() {
       ${energyBar()}
       <div class="geargrid">${Object.keys(ENERGY_ITEMS).map(k => `<div class="gear2" data-fx="energy:${k}"><span class="gicon">${ic('bolt')}</span><span class="gn">${ENERGY_ITEMS[k].n}</span>
         <span class="gs">+${ENERGY_ITEMS[k].gain} energy</span>
-        <button class="buy" data-act="buyenergy" data-id="${k}" aria-disabled="${S.coins < ENERGY_ITEMS[k].cost || S.energy >= ENERGY.max}">${num(ENERGY_ITEMS[k].cost)} coins</button></div>`).join('')}</div></section>
+        <button class="buy" data-act="buyenergy" data-id="${k}" aria-disabled="${S.coins < ENERGY_ITEMS[k].cost || S.energy >= emax()}">${num(ENERGY_ITEMS[k].cost)} coins</button></div>`).join('')}</div></section>
     <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
       <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
         <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
@@ -2351,10 +2383,10 @@ function startExplore() {
   const ecost = energyCost(ui.loc);
   if (S.energy < ecost) { toast(energyMsg(ecost)); return; }
   stopGauge(); clearTimeout(ui.timer);
-  if (S.energy >= ENERGY.max) S.energyAt = Date.now(); /* regen clock starts when a full tank is first used */
+  if (S.energy >= emax()) S.energyAt = Date.now(); /* regen clock starts when a full tank is first used */
   S.energy -= ecost;
   ensureDaily(); S.trips++; S.daily.trips++; save();
-  ui.enc = {loc: ui.loc, phase: 'searching', charges: 3, last: null, known: false, pos: 0};
+  ui.enc = {loc: ui.loc, phase: 'searching', charges: maxCharges(), last: null, known: false, pos: 0};
   render();
   ui.timer = setTimeout(() => {
     const e = ui.enc; if (!e) return;
@@ -2371,7 +2403,7 @@ function startExplore() {
 function startGauge() {
   stopGauge();
   const e = ui.enc; if (!e || !e.sp) return;
-  const t0 = performance.now(), speed = Math.max(.95, 1.35 + e.sp.r * .2 - S.tech.scanner * .11) * (1 + DIFF.speedUp * (e.pen || 0));
+  const t0 = performance.now(), speed = Math.max(.95, 1.35 + e.sp.r * .2 - S.tech.scanner * .11) * (1 + DIFF.speedUp * (e.pen || 0)) * [1, .9, .8, .8, .8][S.tech.focus];
   const tick = (now) => {
     const ph = (Math.max(0, now - t0) / 1000 * speed) % 2, p = ph > 1 ? 2 - ph : ph;
     e.pos = p;
@@ -2401,11 +2433,11 @@ function resolveScan(e, q) {
   if (first) dp += 10;
   if (newForm && f !== 'normal') dp += 40;
   let drop = null;
-  if (Math.random() < .55) {
+  if (Math.random() < .55 + .1 * S.tech.salvage) {
     const name = sp.dr[Math.floor(Math.random() * sp.dr.length)], isNew = !rec.drops.includes(name);
     if (isNew) rec.drops.push(name);
     S.inv[name] = (S.inv[name] || 0) + 1;
-    drop = {name, isNew}; coins += Math.round(BASE_COIN[sp.r] * .5 * KIT[S.kit]);
+    drop = {name, isNew}; coins += Math.round(BASE_COIN[sp.r] * .5 * KIT[S.kit] * (S.tech.salvage >= 2 ? 1.5 : 1));
   }
   let mastered = false;
   if (rec.prog >= 100 && !rec.mastered) { rec.mastered = true; mastered = true; dp += 50; coins += BASE_COIN[sp.r] * 10; }
@@ -2422,7 +2454,7 @@ function doScan() {
   if (q === 'miss') {
     e.misses = (e.misses || 0) + 1;
     e.last = {miss: true, title: 'Miss!'};
-    const fleeChance = Math.min(.95, .3 + e.misses * .2 + DIFF.fleeUp * (e.pen || 0));
+    const fleeChance = Math.min(.95, (.3 + e.misses * .2 + DIFF.fleeUp * (e.pen || 0)) * (S.tech.focus >= 3 ? .65 : 1));
     if (e.charges <= 0 || Math.random() < fleeChance) { e.phase = 'done'; e.fled = true; stopGauge(); render(); return; }
     e.zone = newZone(e.sp, e.pen); render(); startGauge(); return;
   }
@@ -2518,7 +2550,7 @@ app.addEventListener('click', (ev) => {
     case 'pickloc': ui.loc = d.id; ui.locPicked = true; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
     case 'closedock': ui.locPicked = false; render(); break;
     case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(S.locs.includes(ui.loc) ? energyMsg(energyCost(ui.loc)) : `Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
-    case 'buyenergy': { const E = ENERGY_ITEMS[d.id]; if (!E) break; tickEnergy(); if (S.energy >= ENERGY.max) { toast('Energy is already full'); break; } if (S.coins < E.cost) { toast(`Need ${num(E.cost - S.coins)} more coins`); break; } S.coins -= E.cost; S.energy = Math.min(ENERGY.max, S.energy + E.gain); if (S.energy >= ENERGY.max) S.energyAt = Date.now(); save(); ui.fx = {key:`energy:${d.id}`, cur:'coins'}; render(); toast(`${E.n} used · Energy ${S.energy}/${ENERGY.max}`); break; }
+    case 'buyenergy': { const E = ENERGY_ITEMS[d.id]; if (!E) break; tickEnergy(); if (S.energy >= emax()) { toast('Energy is already full'); break; } if (S.coins < E.cost) { toast(`Need ${num(E.cost - S.coins)} more coins`); break; } S.coins -= E.cost; S.energy = Math.min(emax(), S.energy + E.gain); if (S.energy >= emax()) S.energyAt = Date.now(); save(); ui.fx = {key:`energy:${d.id}`, cur:'coins'}; render(); toast(`${E.n} used · Energy ${S.energy}/${emax()}`); break; }
     case 'scan': doScan(); break;
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
     case 'filter': ui.filter = d.id; render(); break;
@@ -2526,6 +2558,7 @@ app.addEventListener('click', (ev) => {
     case 'invfilter': ui.invFilter = d.id; render(); break;
     case 'open': if (!S.sp[d.id]) { toast('Not discovered yet. Keep exploring.'); break; } ui.evoAsk = null; ui.detail = d.id; ui.form = 'normal'; render(); window.scrollTo(0, 0); break;
     case 'form': ui.form = d.id; render(); break;
+    case 'techtab': ui.techTab = d.id; render(); break;
     case 'buytech': if (!buyTech(d.k, +d.i)) shake(t); break;
     case 'buyloc': { const l = LOC(d.id); if (S.coins < l.cost) { toast(`Need ${num(l.cost - S.coins)} more coins`); break; } S.coins -= l.cost; S.locs.push(l.id); save(); ui.fx = {key:`loc:${l.id}`, cur:'coins'}; render(); toast(`${l.n} is open`); break; }
     case 'buyfood': { const F = FOOD[d.id]; if (!F) break; if (S.coins < F.cost) { toast(`Need ${num(F.cost - S.coins)} more coins`); break; } S.coins -= F.cost; S.food[d.id]++; save(); ui.fx = {key:`food:${d.id}`, cur:'coins'}; render(); toast(`${F.n} bought`); break; }
