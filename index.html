@@ -275,6 +275,13 @@ svg{display:block}
 .gearpips span{flex:1;height:6px;border-radius:99px;background:var(--surface2)}
 .gearpips span.on{background:var(--lamp);box-shadow:0 0 6px color-mix(in srgb,var(--lamp) 60%,transparent)}
 .gear2 .buy{width:100%;justify-content:center;min-height:36px;font-size:12.5px;margin-top:2px}
+.energybar{display:flex;align-items:center;gap:9px;margin:6px 0 12px;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.energybar .eic{width:18px;height:18px;color:#FFD34D;flex:none;filter:drop-shadow(0 0 5px rgba(255,211,77,.55))}
+.energybar .eic svg{width:18px;height:18px}
+.energybar b{font:700 13.5px/1 var(--display);font-variant-numeric:tabular-nums;flex:none}
+.energybar .etrack{flex:1;height:7px;border-radius:99px;background:var(--surface2);overflow:hidden;min-width:0}
+.energybar .etrack i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#FFB534,#FFE07A);transition:width .4s}
+.energybar .esub{color:var(--ink2);font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;flex:none}
 .gear2 .maxed{text-align:center;font:700 11px var(--display);letter-spacing:.03em;color:var(--lamp);padding:8px 0 2px}
 .dock{position:sticky;bottom:0;margin:14px -16px 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(to bottom,transparent,var(--bg) 32%)}
@@ -877,6 +884,7 @@ const RAR = [
   {n:'Epic',c:'#8B5CF6'},{n:'Legendary',c:'#F0A22E'},{n:'Mythic',c:'#E5484D'}
 ];
 const ICON = {
+  bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
   explore:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
   db:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
   research:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M8 15h8"/>',
@@ -1194,11 +1202,21 @@ const evoCost = (sp) => EVO_COST[sp.r];
    Win battles to earn XP and level up, up to a cap per species. Tune everything here. */
 const TRAIN = {maxDur:100, durCost:[6,8,11,13,19,25], capMult:1.5, loseXp:.3, loseCoin:.25, xpBase:14, xpPerLv:3, needBase:40, needPerLv:15};
 const FOOD = {
-  snack:{n:'Berry Snack', short:'Snack', dur:25, cost:40},
-  meal:{n:'Hearty Meal', short:'Meal', dur:60, cost:90},
-  feast:{n:'Grand Feast', short:'Feast', dur:100, cost:140}
+  snack:{n:'Berry Snack', short:'Snack', dur:25, cost:50},
+  meal:{n:'Hearty Meal', short:'Meal', dur:60, cost:115},
+  feast:{n:'Grand Feast', short:'Feast', dur:100, cost:175}
 };
 /* Battle coin reward by the OPPONENT's rarity. Tuned (by simulation) so an average battle pays a little more than the food it uses. */
+/* ---------- energy (limits exploring) ----------
+   Each expedition costs energy (2 in the priciest areas). Energy refills over time, even while the game is closed,
+   or instantly with items from the Laboratory (coin sink). Tune everything here. */
+const ENERGY = {max:12, regenMs:4 * 60 * 1000, hiCost:2, hiFrom:1200};
+const ENERGY_ITEMS = {
+  drink:{n:'Energy Drink', gain:5, cost:75},
+  cell:{n:'Power Cell', gain:12, cost:150}
+};
+/* Battle coins are paid in full for the first `full` battles each day, then multiplied by `dim`. XP is never reduced. */
+const BATTLE_DAILY = {full:12, dim:.5};
 const BATTLE_COIN = [16, 18, 22, 28, 34, 40];
 const battleCoins = (foe) => Math.round(BATTLE_COIN[foe.r] * (1 + foe.lv * .006));
 const monLv = (rec) => rec.lv != null ? rec.lv : rec.lvMax;
@@ -1229,6 +1247,7 @@ function trainHtml(b) {
     if (t.xp) parts.push(`+${num(t.xp)} XP`); else if (t.capped) parts.push('Max level for this species');
   }
   if (b.consolation) parts.push(`+${num(b.consolation)} coins`);
+  if (b.dimmed) parts.push('Daily coin bonus used up: coins halved');
   parts.push(`Durability −${b.durCost} (${b.durLeft}/${TRAIN.maxDur} left)`);
   return `<p class="trainline">${parts.join(' · ')}</p>`;
 }
@@ -1263,7 +1282,7 @@ function pickQuests(seedStr) {
 function ensureDaily() {
   const t = todayStr();
   if (!S.daily || S.daily.date !== t) {
-    S.daily = {date: t, scans: 0, perfect: 0, trips: 0, coins: 0, newsp: 0};
+    S.daily = {date: t, scans: 0, perfect: 0, trips: 0, coins: 0, newsp: 0, battles: 0};
     S.quests = {date: t, list: pickQuests(t)};
     save();
   }
@@ -1405,12 +1424,13 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright'});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:{scanner:0,lab:0,radar:0}, kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now()});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) { const o = JSON.parse(raw); const d = def(); const s = Object.assign(d, o); s.tech = Object.assign({scanner:0,lab:0,radar:0}, o.tech);
       s.food = Object.assign({snack:0,meal:0,feast:0}, o.food);
+      if (!(s.energy >= 0)) s.energy = ENERGY.max; if (!s.energyAt || s.energyAt > Date.now()) s.energyAt = Date.now();
       Object.values(s.sp).forEach(r => { if (r.lv == null) r.lv = r.lvMax; if (r.xp == null) r.xp = 0; if (r.dur == null) r.dur = 100; });
       /* migrate older saves: anything that already has its evolution is now consumed */
       Object.keys(s.sp).forEach(id => { if (/_evo$/.test(id)) { const b = id.replace(/_evo$/, ''); if (s.sp[b]) s.sp[b].evolved = true; if (s.partner === b) s.partner = id; if (s.last === b) s.last = id; } });
@@ -1420,6 +1440,40 @@ function load() {
 }
 let S = load();
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- energy logic ---------- */
+const energyCost = (locId) => (LOC(locId).cost >= ENERGY.hiFrom ? ENERGY.hiCost : 1);
+function tickEnergy() {
+  const now = Date.now();
+  if (S.energy >= ENERGY.max) { S.energyAt = now; return false; }
+  const n = Math.floor((now - S.energyAt) / ENERGY.regenMs);
+  if (n <= 0) return false;
+  S.energy = Math.min(ENERGY.max, S.energy + n);
+  S.energyAt = S.energy >= ENERGY.max ? now : S.energyAt + n * ENERGY.regenMs;
+  save(); return true;
+}
+const energyNextIn = () => Math.max(0, ENERGY.regenMs - (Date.now() - S.energyAt));
+const energyWaitFor = (need) => Math.max(0, (need - S.energy) * ENERGY.regenMs - (Date.now() - S.energyAt));
+function fmtWait(ms) { const t = Math.ceil(ms / 1000), m = Math.floor(t / 60), sec = t % 60; return `${m}:${String(sec).padStart(2, '0')}`; }
+function energyMsg(cost) { return `Need ${cost} energy (${S.energy}/${ENERGY.max}). Ready in ${fmtWait(energyWaitFor(cost))}, or recharge in the Laboratory.`; }
+function energyBar() {
+  tickEnergy();
+  const full = S.energy >= ENERGY.max;
+  return `<div class="energybar" id="energybar" aria-label="Energy"><span class="eic">${ic('bolt')}</span><b data-energy="val">${S.energy}/${ENERGY.max}</b><div class="etrack"><i data-energy="fill" style="width:${(S.energy / ENERGY.max * 100).toFixed(1)}%"></i></div><span class="esub" data-energy="sub">${full ? 'Full' : '+1 in ' + fmtWait(energyNextIn())}</span></div>`;
+}
+function updateEnergyUi() {
+  const changed = tickEnergy();
+  const bar = document.getElementById('energybar');
+  if (bar) {
+    const full = S.energy >= ENERGY.max;
+    const v = bar.querySelector('[data-energy="val"]'), f = bar.querySelector('[data-energy="fill"]'), sub = bar.querySelector('[data-energy="sub"]');
+    if (v) v.textContent = `${S.energy}/${ENERGY.max}`;
+    if (f) f.style.width = (S.energy / ENERGY.max * 100).toFixed(1) + '%';
+    if (sub) sub.textContent = full ? 'Full' : '+1 in ' + fmtWait(energyNextIn());
+  }
+  /* refresh button states when energy ticks up, but never while the scan gauge is running */
+  if (changed && !ui.evo && !ui.battle && ((ui.screen === 'explore' && (!ui.enc || ui.enc.phase === 'nothing' || ui.enc.phase === 'done')) || ui.screen === 'lab')) render();
+}
 const ui = {screen:'home', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
 
 /* ---------- helpers ---------- */
@@ -1580,16 +1634,19 @@ function battleMoveDmg(atkF, defF, move) {
 }
 function finishBattle(win, timeout) {
   const b = ui.battle;
+  ensureDaily();
+  const fought = S.daily.battles || 0, dim = fought >= BATTLE_DAILY.full, cm = dim ? BATTLE_DAILY.dim : 1;
+  S.daily.battles = fought + 1; b.dimmed = dim;
   if (win) {
     const esp = SP(b.e.id);
-    const coins = battleCoins(b.e);
+    const coins = Math.round(battleCoins(b.e) * cm);
     const dp = Math.round(BASE_DP[b.e.r] * (1.2 + b.e.lv * .015));
     S.coins += coins; S.dp += dp; save();
     b.reward = {coins, dp};
     b.log.push(timeout ? `Time's up! ${esp.name} has less health left \u2014 you win! +${num(coins)} coins, +${num(dp)} data.`
       : `${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
   } else {
-    const cons = Math.round(battleCoins(b.e) * TRAIN.loseCoin);
+    const cons = Math.round(battleCoins(b.e) * TRAIN.loseCoin * cm);
     S.coins += cons; b.consolation = cons;
     b.log.push((timeout ? `Time's up! ${SP(b.p.id).name} has less health left \u2014 you lose.` : `${SP(b.p.id).name} was defeated...`) + ` +${num(cons)} coins.`);
   }
@@ -1860,9 +1917,9 @@ function viewExplore() {
       <span class="lb">${o ? l.blurb : `Locked. Permit costs ${num(l.cost)} coins.`}</span></button>`;
   }).join('');
   const popup = ui.locPicked ? `<div class="dockbackdrop" data-act="closedock"></div>
-    <div class="dockpopup"><button class="cta" data-act="explore" aria-disabled="${!open}">${open ? `Explore ${L.n}` : `${L.n} is locked`}</button></div>` : '';
-  return `${topbar('Explore', 'go', 'home')}
-    <p class="count">Tap an area to send the scanner out.</p>
+    <div class="dockpopup"><button class="cta" data-act="explore" aria-disabled="${!open || S.energy < energyCost(L.id)}">${open ? `Explore ${L.n} · −${energyCost(L.id)} Energy` : `${L.n} is locked`}</button></div>` : '';
+  return `${topbar('Explore', 'go', 'home')}${energyBar()}
+    <p class="count">Tap an area to send the scanner out. Each expedition uses energy.</p>
     <div class="locs">${tiles}</div>${popup}`;
 }
 
@@ -1876,7 +1933,7 @@ function viewEncounter() {
   } else if (e.phase === 'nothing') {
     plate = `<div class="plate">${plateBg(e.loc)}<div class="sweep"></div></div>`;
     status = `<h3>Only static</h3><p>No signal this time. Try again.</p>`;
-    controls = `<div class="dock"><button class="cta" data-act="explore">Explore ${L.n} again</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
+    controls = `<div class="dock"><button class="cta" data-act="explore" aria-disabled="${S.energy < energyCost(e.loc)}">Explore ${L.n} again · −${energyCost(e.loc)} Energy</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
   } else {
     const sp = e.sp;
     plate = `<div class="plate${e.phase === 'done' ? ' lost' : ''}">${plateBg(e.loc)}${e.phase === 'found' ? '<div class="sweep"></div>' : ''}${monSVG(sp, e.form)}</div>`;
@@ -1893,7 +1950,7 @@ function viewEncounter() {
         <button class="cta" data-act="scan">Scan</button><button class="linkbtn" data-act="leave">Leave</button>`;
     } else {
       controls = `<p class="hint">${e.fled ? 'The reading spiked, then vanished — it bolted!' : 'Signal lost. The monster slipped away.'}</p>
-        <div class="dock"><button class="cta" data-act="explore">Explore ${L.n} again</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
+        <div class="dock"><button class="cta" data-act="explore" aria-disabled="${S.energy < energyCost(e.loc)}">Explore ${L.n} again · −${energyCost(e.loc)} Energy</button><button class="linkbtn" data-act="leave">Change area</button></div>`;
     }
   }
   let result = '';
@@ -1911,7 +1968,7 @@ function viewEncounter() {
     result = `<section class="result" aria-live="polite"><h3>${r.title}</h3>
       <div class="rl"><span>Research data +${r.gain}%</span><span>${esc(sp.name)} ${Math.round(r.prog)}%</span></div>${bar(r.prog)}<ul class="chips">${chips.join('')}</ul></section>`;
   }
-  return `${topbar(L.n, 'leave')}<div class="status">${status}</div>${plate.includes('plate') ? '' : ''}`
+  return `${topbar(L.n, 'leave')}${(e.phase === 'nothing' || e.phase === 'done') ? energyBar() : ''}<div class="status">${status}</div>${plate.includes('plate') ? '' : ''}`
     .replace('<div class="status">', plate + '<div class="status">') + `${controls}${result}`;
 }
 
@@ -2111,6 +2168,11 @@ function viewLab() {
           ${pips(S.dpkit, DPKIT_COST.length)}
           ${dpkitNext ? `<button class="buy" data-act="buydpkit" aria-disabled="${S.coins < dpkitNext}">${num(dpkitNext)} coins</button>` : `<div class="maxed">Maxed</div>`}</div>
       </div></section>
+    <section class="sec"><h3>Energy</h3><p class="count" style="margin:0 0 8px">Every expedition uses energy. It refills over time, or recharge instantly here.</p>
+      ${energyBar()}
+      <div class="geargrid">${Object.keys(ENERGY_ITEMS).map(k => `<div class="gear2" data-fx="energy:${k}"><span class="gicon">${ic('bolt')}</span><span class="gn">${ENERGY_ITEMS[k].n}</span>
+        <span class="gs">+${ENERGY_ITEMS[k].gain} energy</span>
+        <button class="buy" data-act="buyenergy" data-id="${k}" aria-disabled="${S.coins < ENERGY_ITEMS[k].cost || S.energy >= ENERGY.max}">${num(ENERGY_ITEMS[k].cost)} coins</button></div>`).join('')}</div></section>
     <section class="sec"><h3>Monster food</h3><p class="count" style="margin:0 0 8px">Every battle drains durability. Feed your monsters to keep them fighting.</p>
       <div class="geargrid three">${Object.keys(FOOD).map(k => `<div class="gear2" data-fx="food:${k}"><span class="gicon">${ic('food')}</span><span class="gn">${FOOD[k].n}</span>
         <span class="gs">+${FOOD[k].dur} durability<br>You have ${S.food[k]}</span>
@@ -2285,7 +2347,12 @@ function newZone(sp, pen) {
 }
 function startExplore() {
   if (!S.locs.includes(ui.loc)) { toast(`Buy the ${LOC(ui.loc).n} permit in the Laboratory`); return; }
+  tickEnergy();
+  const ecost = energyCost(ui.loc);
+  if (S.energy < ecost) { toast(energyMsg(ecost)); return; }
   stopGauge(); clearTimeout(ui.timer);
+  if (S.energy >= ENERGY.max) S.energyAt = Date.now(); /* regen clock starts when a full tank is first used */
+  S.energy -= ecost;
   ensureDaily(); S.trips++; S.daily.trips++; save();
   ui.enc = {loc: ui.loc, phase: 'searching', charges: 3, last: null, known: false, pos: 0};
   render();
@@ -2450,7 +2517,8 @@ app.addEventListener('click', (ev) => {
     case 'menuscroll': menuScroll(+d.dir); break;
     case 'pickloc': ui.loc = d.id; ui.locPicked = true; if (!S.locs.includes(d.id)) toast(`Unlock ${LOC(d.id).n} in the Laboratory for ${num(LOC(d.id).cost)} coins`); render(); break;
     case 'closedock': ui.locPicked = false; render(); break;
-    case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(`Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
+    case 'explore': if (t.getAttribute('aria-disabled') === 'true') { toast(S.locs.includes(ui.loc) ? energyMsg(energyCost(ui.loc)) : `Unlock ${LOC(ui.loc).n} in the Laboratory first`); break; } startExplore(); break;
+    case 'buyenergy': { const E = ENERGY_ITEMS[d.id]; if (!E) break; tickEnergy(); if (S.energy >= ENERGY.max) { toast('Energy is already full'); break; } if (S.coins < E.cost) { toast(`Need ${num(E.cost - S.coins)} more coins`); break; } S.coins -= E.cost; S.energy = Math.min(ENERGY.max, S.energy + E.gain); if (S.energy >= ENERGY.max) S.energyAt = Date.now(); save(); ui.fx = {key:`energy:${d.id}`, cur:'coins'}; render(); toast(`${E.n} used · Energy ${S.energy}/${ENERGY.max}`); break; }
     case 'scan': doScan(); break;
     case 'leave': stopGauge(); clearTimeout(ui.timer); ui.enc = null; render(); break;
     case 'filter': ui.filter = d.id; render(); break;
@@ -2483,6 +2551,7 @@ app.addEventListener('click', (ev) => {
   }
 });
 boot();
+setInterval(updateEnergyUi, 1000);
 })();
 </script>
 </body>
