@@ -526,6 +526,28 @@ svg{display:block}
 @keyframes popFoe{from{transform:scaleX(-1) scale(.35);opacity:0}}
 .arenaFighter.foe .mon,.arenaFighter.foe .mon.img{transform:scaleX(-1)}
 .arenaFighter.lost .mon{opacity:.3;transition:opacity .8s}
+/* dungeon */
+.dggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dgcard{position:relative;display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--tint) 45%,var(--line));overflow:hidden}
+.dgcard .dgart{display:block;aspect-ratio:1;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--tint) 30%,var(--surface2)),var(--surface2))}
+.dgcard .dgart img{width:100%;height:100%;object-fit:contain}
+.dgcard .dgn{font:700 13px/1.15 var(--display)}
+.dgcard .dgb{font-size:11.5px;color:var(--ink2)}
+.dgcard .dgs{display:flex;align-items:center;gap:4px;font:700 11px var(--display);color:var(--tint)}
+.dgcard .dgs svg{width:12px;height:12px}
+.dgcard.locked{opacity:.65}
+.dgcard.locked .dgart img{filter:brightness(0) opacity(.55)}
+.dgcard.done{box-shadow:0 0 0 1px var(--tint)}
+.dgboss{display:flex;gap:12px;align-items:center;padding:10px;margin-bottom:10px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--tint) 45%,var(--line))}
+.dgboss img{width:84px;height:84px;object-fit:contain;flex:none}
+.dgboss div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dgboss b{font:700 15px/1.15 var(--display)}
+.dgboss span{font-size:12.5px;color:var(--ink2)}
+.arenaFighter.boss{width:46%;max-width:170px;bottom:33%}
+.arenaFighter.boss.foe{right:0}
+.arenaFighter.enraged .mon{filter:drop-shadow(0 0 12px rgba(255,59,59,.9)) saturate(1.3)}
+.rageBurst{position:absolute;left:50%;top:50%;width:140%;aspect-ratio:1;margin:-70% 0 0 -70%;border-radius:50%;border:4px solid #FF3B3B;background:radial-gradient(circle,rgba(255,59,59,.5),transparent 70%);pointer-events:none;z-index:1;animation:rageBurst .85s ease-out forwards}
+@keyframes rageBurst{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.4);opacity:0}}
 /* ATTACKER: winds up, then dashes at the target (cyan glow), then slides back. */
 .arenaFighter.wind,.arenaFighter.strike{z-index:3}
 .arenaFighter.wind .mon,.arenaFighter.strike .mon{filter:drop-shadow(0 0 9px var(--lamp)) brightness(1.15)}
@@ -1179,7 +1201,33 @@ const SPECIES = [
    ap:'A long serpentine dragon made of swirling storm clouds with glowing lightning veins.',be:'Coils through the eye of a storm, calm at its centre while chaos rages around it.',
    or:'A Cloudjelly that fused with the storm it drifted through for years.',ev:'It is said to be reborn each time a great storm dissipates.',dr:['Storm scale','Tempest core','Lightning vein']}
 ];
-const SP = (id) => SPECIES.find(s => s.id === id);
+const SP = (id) => SPECIES.find(s => s.id === id) || BOSS_SP[id];
+
+/* ---------- dungeons (3 floors: 2 normal fights + a two-phase boss). Tune everything here. ---------- */
+const DG = {energy:3, f1:.6, f2:.8, bossHp:1.8, enrageAt:.5, enrageAtk:1.35, turnsFloor:15, turnsBoss:25, repeat:.35,
+  art:'assets/bosses/', room:'assets/backgrounds/dungeon/', ext:'.webp'};
+const DUNGEONS = [
+  {id:'briarmatriarch', n:'Thorn Grove', boss:'Briar Matriarch', el:'Nature', loc:'forest', lv:25, room:'forest_boss'},
+  {id:'sunforgedscorpion', n:'Sun Temple', boss:'Sunforged Scorpion', el:'Earth', loc:'desert', lv:30, room:'desert_boss'},
+  {id:'frostmonarch', n:'Glacier Throne', boss:'Frost Monarch', el:'Ice', loc:'frozen', lv:36, room:'frozen_boss'},
+  {id:'magmatyrant', n:'Magma Crater', boss:'Magma Tyrant', el:'Fire', loc:'volcano', lv:42, room:'volcano_boss'},
+  {id:'trenchleviathan', n:'Sunken Trench', boss:'Trench Leviathan', el:'Water', loc:'ocean', lv:48, room:'ocean_boss'},
+  {id:'umbralsovereign', n:'Twilight Void', boss:'Umbral Sovereign', el:'Dark', loc:'dark', lv:54, room:'dark_boss'},
+  {id:'bogcrownbehemoth', n:'Toxic Hollow', boss:'Bogcrown Behemoth', el:'Poison', loc:'swamp', lv:60, room:'swamp_boss'},
+  {id:'tempestgriffin', n:'Storm Platform', boss:'Tempest Griffin', el:'Lightning', loc:'storm', lv:66, room:'storm_boss'},
+  {id:'prismcolossus', n:'Crystal Cathedral', boss:'Prism Colossus', el:'Light', loc:null, lv:80, room:'prism_boss', final:true, enr:true},
+  {id:'riftdevourer', n:'Torn Rift', boss:'Rift Devourer', el:'Dark', loc:null, lv:95, room:'rift_boss', final:true, enr:true}
+];
+DUNGEONS.forEach((D, i) => {
+  D.trophy = D.boss + ' Trophy';
+  D.first = {coins: 300 + 250 * i, dp: 80 + 50 * i};
+  D.sp = {id:D.id, name:D.boss, el:D.el, r:5, lv:[D.lv, D.lv], loc:D.loc || (D.id === 'prismcolossus' ? 'storm' : 'dark'), hidden:true, boss:true};
+});
+const BOSS_SP = Object.fromEntries(DUNGEONS.map(D => [D.id, D.sp]));
+const DG_BY = (id) => DUNGEONS.find(d => d.id === id);
+const dgUnlocked = (D) => D.id === 'prismcolossus' ? DUNGEONS.filter(x => !x.final).every(x => S.dg[x.id]) : D.id === 'riftdevourer' ? !!S.dg.prismcolossus : S.locs.includes(D.loc);
+const dgLockMsg = (D) => D.id === 'prismcolossus' ? 'Clear all 8 area dungeons first' : D.id === 'riftdevourer' ? 'Clear the Crystal Cathedral first' : `Unlock ${LOC(D.loc).n} in the Laboratory first`;
+const bossArt = (D, enraged) => `<div class="mon img" role="img" aria-label="${esc(D.boss)}"><img class="base" src="${DG.art}${D.id}${enraged && D.enr ? '_Enraged' : ''}${DG.ext}" alt="" draggable="false" decoding="async"></div>`;
 const FORMS = {
   normal:{n:'Normal',lv:1,mult:1},
   ancient:{n:'Ancient',lv:2.7,mult:2},
@@ -1289,7 +1337,7 @@ function trainHtml(b) {
   }
   if (b.consolation) parts.push(`+${num(b.consolation)} coins`);
   if (b.dimmed) parts.push('Daily coin bonus used up: coins halved');
-  parts.push(`Durability −${b.durCost} (${b.durLeft}/${TRAIN.maxDur} left)`);
+  if (b.durCost) parts.push(`Durability −${b.durCost} (${b.durLeft}/${TRAIN.maxDur} left)`);
   return `<p class="trainline">${parts.join(' · ')}</p>`;
 }
 
@@ -1465,7 +1513,7 @@ const monSVG_draw = (sp, form, extra) => `<svg class="mon ${extra || ''}" viewBo
 
 /* ---------- state ---------- */
 const LS_KEY = 'monster-researcher-proto-v1';
-const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:TECH0(), kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now()});
+const def = () => ({coins:0, dp:0, locs:['forest','desert'], tech:TECH0(), kit:0, dpkit:0, food:{snack:0,meal:0,feast:0}, sp:{}, inv:{}, scans:0, trips:0, last:null, partner:null, bg:'bright', energy:ENERGY.max, energyAt:Date.now(), dg:{}});
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -1516,9 +1564,9 @@ function updateEnergyUi() {
     if (sub) sub.textContent = full ? 'Full' : '+1 in ' + fmtWait(energyNextIn());
   }
   /* refresh button states when energy ticks up, but never while the scan gauge is running */
-  if (changed && !ui.evo && !ui.battle && ((ui.screen === 'explore' && (!ui.enc || ui.enc.phase === 'nothing' || ui.enc.phase === 'done')) || ui.screen === 'lab')) render();
+  if (changed && !ui.evo && !ui.battle && ((ui.screen === 'explore' && (!ui.enc || ui.enc.phase === 'nothing' || ui.enc.phase === 'done')) || ui.screen === 'lab' || ui.screen === 'dungeon')) render();
 }
-const ui = {screen:'home', techTab:'core', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
+const ui = {screen:'home', dg:null, dgSel:null, techTab:'core', loc:'forest', enc:null, filter:'all', invFilter:'all', detail:null, form:'normal', reset:false, raf:0, timer:0, locPicked:false, evo:null, evoTimer:0, battle:null, bPick:null};
 
 /* ---------- helpers ---------- */
 const app = document.getElementById('app');
@@ -1678,6 +1726,7 @@ function battleMoveDmg(atkF, defF, move) {
 }
 function finishBattle(win, timeout) {
   const b = ui.battle;
+  if (b.dg) { finishDungeonBattle(win, timeout); return; }
   ensureDaily();
   const fought = S.daily.battles || 0, dim = fought >= BATTLE_DAILY.full, cm = dim ? BATTLE_DAILY.dim : 1;
   S.daily.battles = fought + 1; b.dimmed = dim;
@@ -1710,6 +1759,63 @@ function battleTurn(move) {
   b.busy = true; b.anim = null;
   battleStep(order, 0);
 }
+function dgFloorFoe(D, floor) {
+  if (floor === 3) { const f = battleFighter(D.sp, D.lv); f.hp = f.maxHp = Math.round(f.hp * DG.bossHp); f.boss = true; f.enraged = false; return f; }
+  const pool = SPECIES.filter(s => !s.hidden && (D.final ? s.r >= 3 : s.loc === D.loc));
+  const sp = pool[Math.floor(Math.random() * pool.length)];
+  return battleFighter(sp, Math.max(sp.lv[0], Math.round(D.lv * (floor === 1 ? DG.f1 : DG.f2))));
+}
+function dgStartFloor() {
+  const d = ui.dg, D = DG_BY(d.id), sp = SP(d.pid), pf = battleFighter(sp, battleLv(d.pid, sp));
+  if (d.hp != null) pf.hp = Math.max(1, Math.min(pf.maxHp, d.hp));
+  const e = dgFloorFoe(D, d.floor);
+  ui.battle = {p: pf, e, dg: d, floor: d.floor, maxTurns: d.floor === 3 ? DG.turnsBoss : DG.turnsFloor,
+    log: [d.floor === 3 ? `${D.boss} blocks the way!` : `Floor ${d.floor}: a wild ${SP(e.id).name} appears!`],
+    over: null, reward: null, busy: false, anim: null, turn: 1, durCost: d.floor === 1 ? d.cost : 0, durLeft: S.sp[d.pid].dur, train: null};
+  ui.bPick = null; render(); window.scrollTo(0, 0);
+}
+function startDungeon(did, pid) {
+  const D = DG_BY(did), sp = SP(pid);
+  if (!D || !sp || !isOwned(pid)) return;
+  if (!dgUnlocked(D)) { toast(dgLockMsg(D)); return; }
+  tickEnergy();
+  if (S.energy < DG.energy) { toast(energyMsg(DG.energy)); return; }
+  const rec = S.sp[pid], cost = durCost(sp), dur = durOf(rec);
+  if (dur < cost) { toast(`${sp.name} is too hungry (${dur}/${TRAIN.maxDur}). Feed it first.`); return; }
+  if (S.energy >= emax()) S.energyAt = Date.now();
+  S.energy -= DG.energy; rec.dur = dur - cost; save();
+  ui.dg = {id: did, pid, floor: 1, hp: null, cost};
+  dgStartFloor();
+}
+function finishDungeonBattle(win, timeout) {
+  const b = ui.battle, D = DG_BY(b.dg.id), esp = SP(b.e.id), psp = SP(b.p.id);
+  b.over = win ? 'win' : 'lose';
+  if (win && b.floor === 3) {
+    const first = !S.dg[D.id], k = first ? 1 : DG.repeat;
+    const coins = Math.round(D.first.coins * k), dp = Math.round(D.first.dp * k);
+    S.coins += coins; S.dp += dp; S.dg[D.id] = true;
+    if (first) S.inv[D.trophy] = (S.inv[D.trophy] || 0) + 1;
+    b.reward = {coins, dp, first};
+    b.log.push(`${esp.name} is defeated! +${num(coins)} coins, +${num(dp)} data.`);
+  } else if (win) b.log.push(`${esp.name} is defeated! Floor ${b.floor} cleared.`);
+  else b.log.push(timeout ? `Time's up! ${psp.name} has less health left \u2014 you lose.` : `${psp.name} was defeated...`);
+  const prec = S.sp[b.p.id];
+  if (prec && !prec.evolved) b.train = applyTraining(prec, psp, b.e, win);
+  save();
+}
+function dgResultHtml(b) {
+  const D = DG_BY(b.dg.id);
+  if (b.over === 'lose') return `<div class="result miss"><h3>Dungeon failed</h3><p class="note">Your monster fell on floor ${b.floor}. Feed it, then try again.</p>${trainHtml(b)}</div>
+    <div class="dock"><button class="cta" data-act="dgleave">Back to Dungeon</button></div>`;
+  if (b.floor < 3) return `<div class="result"><h3>Floor ${b.floor} cleared</h3><p class="note">HP left: ${b.p.hp}/${b.p.maxHp}. Health does not recover between floors.</p>${trainHtml(b)}</div>
+    <div class="dock"><button class="cta" data-act="dgnext">Next floor</button><button class="linkbtn" data-act="dgleave">Leave dungeon</button></div>`;
+  const r = b.reward;
+  return `<div class="winOverlay"><div class="result win"><div class="resultBurst"></div>
+    <h3 class="resultTitle">${r.first ? 'Dungeon cleared!' : 'Victory!'}</h3><p class="resultSub">${esc(D.boss)} was defeated</p>
+    <div class="rewardRow"><div class="rewardChip"><img src="assets/icons/coin.webp" alt="">+<b data-count="${r.coins}">0</b></div><div class="rewardChip"><img src="assets/icons/diamond.webp" alt="">+<b data-count="${r.dp}">0</b></div></div>
+    ${r.first ? `<p class="trainline">First clear: ${esc(D.trophy)} added to Inventory</p>` : ''}${trainHtml(b)}
+    <div class="dock"><button class="cta" data-act="dgleave">Back to Dungeon</button></div></div></div>`;
+}
 function battleStep(order, i) {
   const b = ui.battle; if (!b) return;
   if (b.p.hp <= 0 || b.e.hp <= 0) {
@@ -1721,7 +1827,7 @@ function battleStep(order, i) {
   if (i >= order.length) {
     b.p.stamina = Math.min(b.p.maxStamina, b.p.stamina + STA_REGEN);
     b.e.stamina = Math.min(b.e.maxStamina, b.e.stamina + STA_REGEN);
-    if (b.turn >= MAX_TURNS) {
+    if (b.turn >= (b.maxTurns || MAX_TURNS)) {
       const pPct = b.p.hp / b.p.maxHp, ePct = b.e.hp / b.e.maxHp;
       if (pPct >= ePct) finishBattle(true, true); else finishBattle(false, true);
     } else {
@@ -1731,7 +1837,7 @@ function battleStep(order, i) {
     return;
   }
   const [who, mv] = order[i];
-  b.anim = {side: who, phase: 'wind'};
+  b.rageFx = false; b.anim = {side: who, phase: 'wind'};
   render(); scrollBlog();
   setTimeout(() => {
     const bb = ui.battle; if (!bb) return;
@@ -1746,6 +1852,10 @@ function battleStep(order, i) {
     const tag = eff > 1 ? ' \u2014 super effective!' : eff < 1 ? ' \u2014 not very effective...' : '';
     bb.log.push(`Turn ${bb.turn}: ${atkName} used ${mvName}: ${dmg} dmg${tag}`);
     if (bb.log.length > 40) bb.log = bb.log.slice(-40);
+    if (defF === bb.e && bb.e.boss && !bb.e.enraged && bb.e.hp > 0 && bb.e.hp <= bb.e.maxHp * DG.enrageAt) {
+      bb.e.enraged = true; bb.e.atk = Math.round(bb.e.atk * DG.enrageAtk); bb.e.stamina = bb.e.maxStamina; bb.rageFx = true;
+      bb.log.push(`${SP(bb.e.id).name} is enraged!`);
+    }
     bb.anim = {side: who, phase: 'hit', dmg, crit: eff > 1};
     render(); scrollBlog();
     setTimeout(() => battleStep(order, i + 1), 850);
@@ -1840,6 +1950,31 @@ function questsPanel() {
   return `<section class="panel questpanel"><h3>Daily Quests</h3>${rows}</section>`;
 }
 function viewQuests() { return `${topbar('Daily Quests', 'go', 'home')}${questsPanel()}`; }
+function viewDungeon() {
+  if (ui.battle) return viewBattleFight();
+  tickEnergy();
+  if (ui.dgSel) {
+    const D = DG_BY(ui.dgSel), owned = Object.keys(S.sp).filter(isOwned);
+    const grid = owned.map(id => { const sp = SP(id), sel = ui.bPick === id, rec = S.sp[id], dur = durOf(rec), low = dur < durCost(sp);
+      return `<button class="bpick${sel ? ' sel' : ''}${low ? ' hungry' : ''}" data-act="bpick" data-id="${id}" aria-pressed="${sel}">${monSVG(sp, 'normal')}<b>${esc(sp.name)}</b><span class="bmeta">Lv. ${monLv(rec)}</span><span class="durmini"><i style="width:${dur}%"></i></span></button>`; }).join('');
+    const popup = ui.bPick ? `<div class="dockbackdrop" data-act="bpickclose"></div><div class="dockpopup">${(() => { const psp = SP(ui.bPick), prec = S.sp[ui.bPick], d = durOf(prec), c = durCost(psp), okD = d >= c, okE = S.energy >= DG.energy;
+      return `<p class="bpinfo"><b>${esc(psp.name)}</b> · Lv. ${monLv(prec)} · Durability <b${okD ? '' : ' style="color:var(--signal)"'}>${d}/${TRAIN.maxDur}</b><span>Costs ${c} durability and ${DG.energy} energy</span></p>${feedRow(ui.bPick)}
+      <button class="cta" data-act="dgstart" aria-disabled="${!okD || !okE}">${!okD ? 'Too hungry \u2014 feed first' : !okE ? 'Not enough energy' : `Enter ${esc(D.n)}`}</button>`; })()}</div>` : '';
+    return `${topbar(D.n, 'dgback')}${energyBar()}
+      <div class="dgboss" style="--tint:${EL[D.el].a}"><img src="${DG.art}${D.id}${DG.ext}" alt="" draggable="false"><div><b>${esc(D.boss)}</b><span>${elTag(D.el)} Lv. ${D.lv} \u00b7 3 floors</span><span>${S.dg[D.id] ? 'Cleared. Repeat runs pay less.' : `First clear: ${num(D.first.coins)} coins, ${num(D.first.dp)} data, ${esc(D.trophy)}`}</span></div></div>
+      <p class="count">${owned.length ? 'Choose your fighter. Health does not recover between floors.' : 'Discover a monster first.'}</p>
+      <div class="bpickgrid">${grid}</div>${popup}`;
+  }
+  const done = DUNGEONS.filter(D => S.dg[D.id]).length;
+  const cards = DUNGEONS.map(D => { const open = dgUnlocked(D), cl = !!S.dg[D.id];
+    return `<button class="dgcard${open ? '' : ' locked'}${cl ? ' done' : ''}" style="--tint:${EL[D.el].a}" data-act="dgpick" data-id="${D.id}">
+      <span class="dgart"><img src="${DG.art}${D.id}${DG.ext}" alt="" loading="lazy" draggable="false" onerror="this.style.display='none'"></span>
+      <span class="dgn">${D.n}</span><span class="dgb">${esc(D.boss)} \u00b7 Lv. ${D.lv}</span>
+      <span class="dgs">${!open ? ic('lock') + ' Locked' : cl ? ic('check') + ' Cleared' : 'Not cleared'}</span></button>`; }).join('');
+  return `${topbar('Dungeon', 'go', 'home')}${energyBar()}
+    <p class="count">${done} of ${DUNGEONS.length} cleared. Each run has 3 floors and costs ${DG.energy} energy.</p>
+    <div class="dggrid">${cards}</div>`;
+}
 function viewBattle() {
   if (ui.battle) return viewBattleFight();
   const owned = Object.keys(S.sp).filter(isOwned);
@@ -1880,13 +2015,17 @@ function viewBattleFight() {
   const dmgPop = (side) => (a && a.side !== side && a.phase === 'hit')
     ? `<i class="impact"></i><span class="dmgpop${a.crit ? ' crit' : ''}">-${a.dmg}${a.crit ? '!' : ''}</span>` : '';
   const log = `<div class="arenaLog" id="blog">${b.log.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
+  const dgD = b.dg ? DG_BY(b.dg.id) : null;
+  const dgBg = dgD ? ` style="background-image:linear-gradient(180deg,rgba(10,12,20,.2),rgba(10,12,20,.5) 80%),url('${(b.floor === 3 || !dgD.loc) ? DG.room + dgD.room + DG.ext : ASSET.loc + dgD.loc + ASSET.locExt}')"` : '';
   let flagTxt = 'Your turn \u2014 choose a move';
   if (b.busy && a) {
     const who = a.side === 'p' ? psp.name : esp.name;
     flagTxt = a.phase === 'wind' ? `${who} is attacking\u2026` : `${who} lands the hit!`;
   } else if (b.busy) flagTxt = 'Battling\u2026';
   let controls;
-  if (b.over) {
+  if (b.over && b.dg) {
+    controls = dgResultHtml(b);
+  } else if (b.over) {
     if (b.over === 'win' && b.reward) {
       const spark = `<svg class="fx resultSpark" viewBox="0 0 300 160" aria-hidden="true">${STAR(28,22,.9,0)}${STAR(270,26,.7,.4)}${STAR(18,118,.8,.8)}${STAR(282,112,1,.2)}${STAR(150,8,.6,.5)}${STAR(60,140,.6,1)}${STAR(240,142,.7,.7)}</svg>`;
       controls = `<div class="winOverlay"><div class="result win"><div class="resultBurst"></div>${spark}
@@ -1926,11 +2065,11 @@ function viewBattleFight() {
   return `${topbar('Battle Arena', 'battleleave')}
     <div class="fightBody">
     <div class="hprow">${hpCard(b.p, psp, 'me')}${hpCard(b.e, esp, 'foe')}</div>
-    <div class="arena">
-      <span class="arenaVs">Turn ${Math.min(b.turn, MAX_TURNS)} / ${MAX_TURNS}</span>
+    <div class="arena"${dgBg}>
+      <span class="arenaVs">${b.dg ? 'Floor ' + b.floor + '/3 \u00b7 ' : ''}Turn ${Math.min(b.turn, b.maxTurns || MAX_TURNS)} / ${b.maxTurns || MAX_TURNS}</span>
       <div class="arenaGround me"></div><div class="arenaGround foe"></div>
       <div class="arenaFighter${fighterCls('p', b.p.hp)}">${monSVG(psp, 'normal')}${dmgPop('p')}</div>
-      <div class="arenaFighter${fighterCls('e', b.e.hp)}">${monSVG(esp, 'normal')}${dmgPop('e')}</div>
+      <div class="arenaFighter${fighterCls('e', b.e.hp)}${b.e.boss ? ' boss' : ''}${b.e.enraged ? ' enraged' : ''}">${b.e.boss ? bossArt(dgD, b.e.enraged) : monSVG(esp, 'normal')}${b.rageFx ? '<i class="rageBurst"></i>' : ''}${dmgPop('e')}</div>
       ${log}
     </div>
     ${controls}
@@ -1944,7 +2083,8 @@ function viewHome() {
     {to:'research', k:'research', t:'Research', s: affordable() ? 'Upgrade ready' : `${tOwned}/${TECH_TOTAL} upgrades`, grad:'#6D28D9,#C084FC', badge: affordable()},
     {to:'lab', k:'lab', t:'Lab', s:'Permits & gear', grad:'#047857,#34D399'},
     {to:'inv', k:'inv', t:'Inventory', s:`${Object.keys(S.inv).length} materials`, grad:'#B45309,#FBBF24'},
-    {to:'battle', k:'battle', t:'Battle', s:'Turn-based arena', grad:'#B91C1C,#FF5C7A'}
+    {to:'battle', k:'battle', t:'Battle', s:'Turn-based arena', grad:'#B91C1C,#FF5C7A'},
+    {to:'dungeon', k:'battle', t:'Dungeon', s:`${DUNGEONS.filter(D => S.dg[D.id]).length}/${DUNGEONS.length} cleared`, grad:'#7C2D12,#FB923C'}
   ];
   return `${statusBar()}
     ${heroRow()}
@@ -2260,6 +2400,7 @@ function viewInventory() {
     if (!rec) return;
     rec.drops.forEach(name => entries.push({name, qty: S.inv[name] || 1, sp}));
   });
+  DUNGEONS.forEach(D => { if (S.inv[D.trophy]) entries.push({name: D.trophy, qty: S.inv[D.trophy], sp: D.sp}); });
   const chips = [{id:'all', n:'All'}, {id:'food', n:'Food'}].concat(LOCS.map(l => ({id:l.id, n:l.n})))
     .map(c => `<button class="fc${ui.invFilter === c.id ? ' on' : ''}" data-act="invfilter" data-id="${c.id}">${c.n}</button>`).join('');
   const showFood = ui.invFilter === 'all' || ui.invFilter === 'food', showMats = ui.invFilter !== 'food';
@@ -2339,7 +2480,7 @@ window.addEventListener('resize', updateMenu);
 function render() {
   let h = '';
   document.body.classList.toggle('bg-home', ui.screen === 'home');
-  document.body.classList.toggle('bg-fight', ui.screen === 'battle' && !!ui.battle);
+  document.body.classList.toggle('bg-fight', (ui.screen === 'battle' || ui.screen === 'dungeon') && !!ui.battle);
   document.documentElement.style.setProperty('--home-img', `url('assets/backgrounds/${BG_OPTS[S.bg] ? BG_OPTS[S.bg].f : BG_OPTS.bright.f}')`);
   if (ui.evo) { app.innerHTML = viewEvolve(); return; }
   const oldMenu = document.getElementById('labMenu'), keepX = oldMenu ? oldMenu.scrollLeft : 0;
@@ -2354,15 +2495,16 @@ function render() {
     case 'settings': h = viewSettings(); break;
     case 'quests': h = viewQuests(); break;
     case 'battle': h = viewBattle(); break;
+    case 'dungeon': h = viewDungeon(); break;
   }
   app.innerHTML = h;
   if (ui.screen === 'home') { const m = document.getElementById('labMenu'); if (m) { if (keepX) m.scrollLeft = keepX; updateMenu(); requestAnimationFrame(updateMenu); } }
-  if (ui.screen === 'battle' && ui.battle && ui.battle.over === 'win') animateRewardCounts();
+  if ((ui.screen === 'battle' || ui.screen === 'dungeon') && ui.battle && ui.battle.over === 'win') animateRewardCounts();
   if (ui.fx) playFx();
 }
 function go(to) {
   stopGauge(); clearTimeout(ui.timer); clearTimeout(ui.evoTimer);
-  ui.enc = null; ui.detail = null; ui.evoAsk = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null; ui.battle = null; ui.bPick = null;
+  ui.enc = null; ui.detail = null; ui.evoAsk = null; ui.reset = false; ui.screen = to; ui.locPicked = false; ui.evo = null; ui.battle = null; ui.bPick = null; ui.dg = null; ui.dgSel = null;
   render(); window.scrollTo(0, 0);
 }
 
@@ -2598,7 +2740,12 @@ app.addEventListener('click', (ev) => {
     case 'battlestart': if (!ui.bPick) break; startBattle(ui.bPick); break;
     case 'bmove': battleTurn(d.id); break;
     case 'battleagain': { const pid = ui.battle && ui.battle.p.id; ui.battle = null; if (pid) startBattle(pid); break; }
-    case 'battleleave': ui.battle = null; ui.bPick = null; go('home'); break;
+    case 'battleleave': if (ui.dg) { ui.battle = null; ui.dg = null; ui.dgSel = null; ui.bPick = null; render(); break; } ui.battle = null; ui.bPick = null; go('home'); break;
+    case 'dgpick': { const D = DG_BY(d.id); if (!D) break; if (!dgUnlocked(D)) { toast(dgLockMsg(D)); break; } ui.dgSel = d.id; ui.bPick = null; render(); window.scrollTo(0, 0); break; }
+    case 'dgback': ui.dgSel = null; ui.bPick = null; render(); break;
+    case 'dgstart': if (ui.dgSel && ui.bPick) startDungeon(ui.dgSel, ui.bPick); break;
+    case 'dgnext': { const b = ui.battle; if (!b || !b.dg || b.over !== 'win') break; b.dg.hp = b.p.hp; b.dg.floor++; dgStartFloor(); break; }
+    case 'dgleave': ui.battle = null; ui.dg = null; ui.dgSel = null; ui.bPick = null; render(); break;
   }
 });
 boot();
