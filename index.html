@@ -248,7 +248,7 @@ svg{display:block}
   border:1.5px solid color-mix(in srgb,var(--tint) 42%,var(--line));min-height:150px}
 .permit::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.55;pointer-events:none;
   background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--tint) 30%,transparent),transparent 72%)}
-.permit .lic{width:56px;height:56px;color:var(--tint);display:grid;place-items:center}
+.permit .lic{width:56px;height:56px;color:var(--tint);position:relative;flex:none}
 .permit .lic svg{width:19px;height:19px}
 .permit .ln{font:700 15px/1.15 var(--display)}
 .permit .lb{font-size:11.5px;color:var(--ink2);line-height:1.32;flex:1}
@@ -264,7 +264,7 @@ svg{display:block}
   border:1.5px solid var(--line)}
 .gear2::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.5;pointer-events:none;
   background:radial-gradient(ellipse 90% 55% at 50% -10%,color-mix(in srgb,var(--lamp) 24%,transparent),transparent 72%)}
-.gear2 .gicon{width:56px;height:56px;display:grid;place-items:center;color:var(--lamp)}
+.gear2 .gicon{width:56px;height:56px;color:var(--lamp);position:relative;flex:none}
 .gear2 .gicon svg{width:19px;height:19px}
 .gear2 .gn{font:700 14px/1.15 var(--display)}
 .gear2 .gs{font-size:11px;color:var(--ink2);line-height:1.3;min-height:28px}
@@ -427,17 +427,17 @@ svg{display:block}
   background:radial-gradient(ellipse 90% 60% at 50% -8%,color-mix(in srgb,var(--rc,var(--lamp)) 28%,transparent),transparent 70%)}
 .lootqty{position:absolute;right:4px;top:4px;background:var(--plate);border:1px solid color-mix(in srgb,var(--rc,var(--lamp)) 55%,var(--plateline));
   color:var(--ink);font:700 9.5px/1 var(--display);padding:3px 6px;border-radius:99px;box-shadow:0 0 6px color-mix(in srgb,var(--rc,var(--lamp)) 30%,transparent)}
-.lootico{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--rc,var(--lamp));margin-top:0;
+.lootico{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;position:relative;flex:none;color:var(--rc,var(--lamp));margin-top:0;
   background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rc,var(--lamp)) 45%,var(--surface2)),var(--surface2) 72%);
   border:1.5px solid color-mix(in srgb,var(--rc,var(--lamp)) 68%,var(--line));
   box-shadow:0 0 8px color-mix(in srgb,var(--rc,var(--lamp)) 50%,transparent)}
 .lootico svg{width:17px;height:17px}
 .loot.food .lootico{width:46px;height:46px;border:0;background:none;box-shadow:none}
-.itemimg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
-.itemfb{display:grid;place-items:center;width:100%;height:100%}
+.itemimg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.itemfb{position:absolute;inset:0;display:grid;place-items:center}
 .itemfb[hidden],.itemimg[hidden]{display:none}
-.feedbtn .fi{width:30px;height:30px}
-.potbtn .pi{width:22px;height:22px;display:block}
+.feedbtn .fi{width:30px;height:30px;position:relative;display:block}
+.potbtn .pi{width:22px;height:22px;position:relative;display:block}
 .loot b{font:700 11px/1.15 var(--display);word-break:break-word;max-width:100%;padding:0 2px}
 .lootsrc{font-size:9px;line-height:1.15;color:var(--ink2);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lootrar{font:700 8px/1 var(--display);letter-spacing:.04em;color:var(--rc,var(--lamp));
